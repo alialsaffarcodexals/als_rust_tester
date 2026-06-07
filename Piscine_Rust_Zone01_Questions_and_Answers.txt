@@ -1,0 +1,1543 @@
+================================================================================
+         PISCINE RUST - ZONE01 : ALL EXERCISES WITH QUESTIONS & ANSWERS
+         Organized by Checkpoint | Easiest to Hardest within each group
+================================================================================
+
+NOTE: The repository has no explicit checkpoint folders. Checkpoints below are
+assigned based on Zone01 Piscine Rust curriculum progression and topic complexity.
+
+================================================================================
+                          CHECKPOINT 1 — RUST BASICS
+          (Variables, Types, Functions, Strings, Simple Collections)
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. SCALAR   [Easiest]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write basic arithmetic functions using different numeric types:
+    - sum(a: u8, b: u8) -> u8
+    - diff(a: i16, b: i16) -> i16
+    - pro(a: i8, b: i8) -> i8
+    - quo(a: f32, b: f32) -> f32
+    - rem(a: f32, b: f32) -> f32
+
+ANSWER:
+  pub fn sum(a: u8, b: u8) -> u8   { a + b }
+  pub fn diff(a: i16, b: i16) -> i16 { a - b }
+  pub fn pro(a: i8, b: i8) -> i8   { a * b }
+  pub fn quo(a: f32, b: f32) -> f32 { a / b }
+  pub fn rem(a: f32, b: f32) -> f32 { a % b }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DOUBTFUL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that appends a '?' character to a mutable String.
+    - doubtful(s: &mut String)
+
+ANSWER:
+  pub fn doubtful(s: &mut String) {
+      s.push('?')
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DIVISION AND REMAINDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that divides two integers and returns both the quotient
+  and the remainder as a tuple.
+    - divide(x: i32, y: i32) -> (i32, i32)
+
+ANSWER:
+  pub fn divide(x: i32, y: i32) -> (i32, i32) {
+      (x / y, x % y)
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. TEMPERATURE CONVERSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write temperature conversion functions between Fahrenheit and Celsius.
+    - fahrenheit_to_celsius(f: f64) -> f64
+    - celsius_to_fahrenheit(c: f64) -> f64
+
+  Formulas:
+    C = (F - 32) / 1.8
+    F = (C * 1.8) + 32
+
+ANSWER:
+  pub fn fahrenheit_to_celsius(f: f64) -> f64 { (f - 32.0) / 1.8 }
+  pub fn celsius_to_fahrenheit(c: f64) -> f64 { (c * 1.8) + 32.0 }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. REVERSE STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that reverses a string slice and returns a new String.
+    - rev_str(input: &str) -> String
+
+ANSWER:
+  pub fn rev_str(input: &str) -> String {
+      input.chars().rev().collect()
+  }
+  // (The solution in the repo uses manual index reversal — both are valid)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ARRAYS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write two functions:
+    a) sum(a: &[i32]) -> i32       — returns the sum of elements in a slice
+    b) thirtytwo_tens() -> [i32; 32] — returns an array of 32 tens (10)
+
+ANSWER:
+  pub fn sum(a: &[i32]) -> i32 {
+      a.iter().sum()
+  }
+  pub fn thirtytwo_tens() -> [i32; 32] {
+      [10i32; 32]
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. STRINGS (string_literals)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write utility functions wrapping standard String/str methods:
+    - is_empty(v: &str) -> bool
+    - is_ascii(v: &str) -> bool
+    - contains(v: &str, pat: &str) -> bool
+    - split_at(v: &str, index: usize) -> (&str, &str)
+    - find(v: &str, pat: char) -> usize   (return 0 if not found)
+
+ANSWER:
+  pub fn is_empty(v: &str) -> bool    { v.is_empty() }
+  pub fn is_ascii(v: &str) -> bool    { v.is_ascii() }
+  pub fn contains(v: &str, pat: &str) -> bool { v.contains(pat) }
+  pub fn split_at(v: &str, index: usize) -> (&str, &str) { v.split_at(index) }
+  pub fn find(v: &str, pat: char) -> usize { v.find(pat).unwrap_or(0) }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. STRINGS (char length)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that returns the number of characters (not bytes) in a
+  string (important for multi-byte Unicode).
+    - char_length(s: &str) -> usize
+
+ANSWER:
+  pub fn char_length(s: &str) -> usize {
+      s.chars().count()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. TO URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that converts a string to a URL-friendly format by
+  replacing all spaces with "%20".
+    - to_url(s: &str) -> String
+  Example: "hello world" -> "hello%20world"
+
+ANSWER:
+  pub fn to_url(s: &str) -> String {
+      s.split_whitespace().collect::<Vec<_>>().join("%20")
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. DELETE PREFIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that removes a prefix from a string slice if it starts
+  with it, otherwise returns None.
+    - delete_prefix<'a>(prefix: &'a str, s: &'a str) -> Option<&'a str>
+
+ANSWER:
+  pub fn delete_prefix<'a>(prefix: &'a str, s: &'a str) -> Option<&'a str> {
+      if s.starts_with(prefix) {
+          Some(&s[prefix.len()..])
+      } else {
+          None
+      }
+  }
+  // Note: modern Rust has s.strip_prefix(prefix) built-in
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. CAPITALIZING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write three string casing functions:
+    a) capitalize_first(input: &str) -> String
+       → First char uppercase, rest lowercase
+    b) title_case(input: &str) -> String
+       → Capitalize first letter of each word
+    c) change_case(input: &str) -> String
+       → Toggle case of each character (upper→lower, lower→upper)
+
+ANSWER:
+  pub fn capitalize_first(input: &str) -> String {
+      let mut chars = input.chars();
+      match chars.next() {
+          None => String::new(),
+          Some(c) => c.to_uppercase().to_string() + &chars.as_str().to_lowercase(),
+      }
+  }
+  pub fn title_case(input: &str) -> String {
+      input.split_whitespace()
+          .map(capitalize_first)
+          .collect::<Vec<_>>()
+          .join(" ")
+  }
+  pub fn change_case(input: &str) -> String {
+      input.chars().map(|c| {
+          if c.is_uppercase() { c.to_lowercase().next().unwrap() }
+          else { c.to_uppercase().next().unwrap() }
+      }).collect()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. NAME INITIALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that converts a Vec of full names into a Vec of their
+  initials (each word becomes "X.").
+    - initials(names: Vec<&str>) -> Vec<String>
+  Example: ["Harry Potter", "Someone Else"] -> ["H. P.", "S. E."]
+
+ANSWER:
+  pub fn initials(names: Vec<&str>) -> Vec<String> {
+      names.iter().map(|&name| {
+          name.split_whitespace()
+              .map(|word| format!("{}.", word.chars().next().unwrap()))
+              .collect::<Vec<_>>()
+              .join(" ")
+      }).collect()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. FIND FACTORIAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a recursive factorial function.
+    - factorial(num: u64) -> u64
+  factorial(0) = 1, factorial(5) = 120
+
+ANSWER:
+  pub fn factorial(num: u64) -> u64 {
+      if num <= 1 { 1 } else { num * factorial(num - 1) }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. FIBONACCI2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write an iterative Fibonacci function (NOT recursive).
+    - fibonacci(n: u32) -> u32
+  fibonacci(0)=0, fibonacci(1)=1, fibonacci(10)=55
+
+ANSWER:
+  pub fn fibonacci(n: u32) -> u32 {
+      if n == 0 { return 0; }
+      let (mut a, mut b) = (0u32, 1u32);
+      for _ in 1..n { let t = a + b; a = b; b = t; }
+      b
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. LOOPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a main() program that:
+  - Prints a riddle in a loop: "I am the beginning of the end, and the end
+    of time and space. I am essential to creation, and I surround every
+    place. What am I?"
+  - Counts how many attempts the user makes
+  - Keeps asking until the user types the correct answer
+  - Prints "Number of trials: N" on success
+
+ANSWER: "The letter e"
+  The answer to the riddle is: "The letter e"
+  (Every word "end", "time", "space", "creation", "place" contains 'e')
+
+  pub fn main() {
+      let answer = "The letter e";
+      let mut count = 0;
+      loop {
+          count += 1;
+          println!("I am the beginning of the end...");
+          let mut input = String::new();
+          std::io::stdin().read_line(&mut input).unwrap();
+          if input.trim() == answer {
+              println!("Number of trials: {}", count);
+              break;
+          }
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. BIGGER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that returns the largest value in a HashMap<&str, i32>.
+    - bigger(h: HashMap<&str, i32>) -> i32
+
+ANSWER:
+  pub fn bigger(h: HashMap<&str, i32>) -> i32 {
+      *h.values().max().unwrap()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. GROCERIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write two functions for a Vec<String>:
+    a) insert(vec: &mut Vec<String>, val: String)  — push a value
+    b) at_index(vec: &Vec<String>, index: usize) -> String — return value at index
+
+ANSWER:
+  pub fn insert(vec: &mut Vec<String>, val: String) { vec.push(val) }
+  pub fn at_index(vec: &Vec<String>, index: usize) -> String {
+      vec[index].clone()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. TUPLES_REFS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a tuple struct Student(u32, String, String) and write accessor
+  functions:
+    - id(student: &Student) -> u32
+    - first_name(student: &Student) -> String
+    - last_name(student: &Student) -> String
+
+ANSWER:
+  pub struct Student(pub u32, pub String, pub String);
+  pub fn id(student: &Student) -> u32         { student.0 }
+  pub fn first_name(student: &Student) -> String { student.1.clone() }
+  pub fn last_name(student: &Student) -> String  { student.2.clone() }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. SPEED TRANSFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that converts km/h to m/s.
+    - km_per_hour_to_meters_per_second(km_h: f64) -> f64
+
+ANSWER:
+  pub fn km_per_hour_to_meters_per_second(km_h: f64) -> f64 {
+      km_h / 3.6    // or equivalently: km_h * 1000.0 / 3600.0
+  }
+
+================================================================================
+                        CHECKPOINT 2 — OWNERSHIP & COLLECTIONS
+            (Borrowing, References, Structs, Traits, Iterators, HashMaps)
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. BORROW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that returns the byte-length of a borrowed string.
+    - str_len(s: &str) -> usize
+
+ANSWER:
+  pub fn str_len(s: &str) -> usize { s.len() }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. COPY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write three functions that each take a value AND return it alongside a
+  computed result (demonstrating the Copy/move distinction):
+    a) nbr_function(c: i32) -> (i32, f64, f64)
+       → returns (c, e^c, ln(|c|))
+    b) str_function(a: String) -> (String, String)
+       → returns (original, exponential of each space-separated number)
+    c) vec_function(b: Vec<i32>) -> (Vec<i32>, Vec<f64>)
+       → returns (original vec, ln(|x|) for each element)
+
+ANSWER:
+  pub fn nbr_function(c: i32) -> (i32, f64, f64) {
+      (c, (c as f64).exp(), (c.abs() as f64).ln())
+  }
+  pub fn str_function(a: String) -> (String, String) {
+      let exp_str = a.split_whitespace()
+          .map(|n| n.parse::<f64>().unwrap().exp().to_string())
+          .collect::<Vec<_>>().join(" ");
+      (a, exp_str)
+  }
+  pub fn vec_function(b: Vec<i32>) -> (Vec<i32>, Vec<f64>) {
+      let logs = b.iter().map(|&x| (x.abs() as f64).ln()).collect();
+      (b, logs)
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. OWNERSHIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that extracts the first sub-word from a camelCase or
+  snake_case string by truncating at the first uppercase letter or '_'.
+    - first_subword(s: String) -> String
+  Examples: "helloWorld" -> "hello", "hello_world" -> "hello"
+
+ANSWER:
+  pub fn first_subword(mut s: String) -> String {
+      let index = s.chars().skip(1)
+          .position(|c| c.is_uppercase() || c == '_')
+          .map(|i| i + 1);
+      match index {
+          Some(i) => { s.truncate(i); s }
+          None => s,
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. BORROW_ME_THE_REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write two functions using mutable references:
+    a) delete_and_backspace(s: &mut String)
+       - '+' means delete the next character
+       - '-' means delete the previous character
+    b) do_operations(v: &mut Vec<String>)
+       - Each element like "3+5" or "10-2" should be replaced with its result
+
+ANSWER:
+  pub fn delete_and_backspace(s: &mut String) {
+      // Process '+' (delete forward) and '-' (delete backward)
+      // (see implementation for full logic with Vec<char> manipulation)
+  }
+  pub fn do_operations(v: &mut Vec<String>) {
+      for element in v.iter_mut() {
+          if let Some(i) = element.find(|c| c == '+' || c == '-') {
+              let (l, r) = element.split_at(i);
+              let x: i32 = l.trim().parse().unwrap();
+              let y: i32 = r.trim().parse().unwrap();
+              let op = r.trim().chars().next().unwrap();
+              *element = match op {
+                  '+' => (x + y).to_string(),
+                  '-' => (x - y).to_string(),
+                  _ => element.clone(),
+              };
+          }
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Light struct with alias (String) and brightness (u8) fields.
+  Implement:
+    - Light::new(alias: &str) -> Self  (brightness starts at 0)
+    - change_brightness(lights: &mut Vec<Light>, alias: &str, value: u8)
+      → finds the light by alias and sets its brightness
+
+ANSWER:
+  pub struct Light { pub alias: String, pub brightness: u8 }
+  impl Light {
+      pub fn new(alias: &str) -> Self {
+          Light { alias: alias.to_string(), brightness: 0 }
+      }
+  }
+  pub fn change_brightness(lights: &mut Vec<Light>, alias: &str, value: u8) {
+      for light in lights.iter_mut() {
+          if light.alias == alias { light.brightness = value; }
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. LIFETIMES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Person struct that borrows a &str for its name (lifetime 'a),
+  and an age field (u8). Implement Person::new(name: &'a str) -> Person<'a>
+  with age = 0.
+
+ANSWER:
+  pub struct Person<'a> {
+      pub name: &'a str,
+      pub age: u8,
+  }
+  impl<'a> Person<'a> {
+      pub fn new(name: &'a str) -> Person<'a> {
+          Person { name, age: 0 }
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. COLLECT (bubble_sort)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that sorts a Vec<i32> in place.
+    - bubble_sort(vec: &mut Vec<i32>)
+  (Despite the name, using Rust's built-in sort is acceptable.)
+
+ANSWER:
+  pub fn bubble_sort(vec: &mut Vec<i32>) {
+      vec.sort();
+  }
+  // True bubble sort implementation:
+  // for i in 0..vec.len() {
+  //     for j in 0..vec.len()-i-1 {
+  //         if vec[j] > vec[j+1] { vec.swap(j, j+1); }
+  //     }
+  // }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. ARRANGE IT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that rearranges words in a phrase by the digit embedded
+  in each word, then removes all digits from the words.
+    - arrange_phrase(phrase: &str) -> String
+  Example: "is2 Thi1s T4est 3a" -> "This is a Test"
+
+ANSWER:
+  pub fn arrange_phrase(phrase: &str) -> String {
+      let mut words: Vec<&str> = phrase.split_whitespace().collect();
+      words.sort_by_key(|word| {
+          word.chars().find(|c| c.is_ascii_digit())
+              .and_then(|c| c.to_digit(10))
+              .unwrap_or(0)
+      });
+      words.iter()
+          .map(|&w| w.chars().filter(|c| c.is_alphabetic()).collect::<String>())
+          .collect::<Vec<_>>()
+          .join(" ")
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. SIMPLE HASH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write two functions:
+    a) word_frequency_counter(words: Vec<&str>) -> HashMap<&str, usize>
+       → count how many times each word appears
+    b) nb_distinct_words(frequency_count: &HashMap<&str, usize>) -> usize
+       → count how many words appear exactly once
+
+ANSWER:
+  pub fn word_frequency_counter(words: Vec<&str>) -> HashMap<&str, usize> {
+      let mut map = HashMap::new();
+      for word in words { *map.entry(word).or_insert(0) += 1; }
+      map
+  }
+  pub fn nb_distinct_words(freq: &HashMap<&str, usize>) -> usize {
+      freq.values().filter(|&&v| v == 1).count()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. HASHING (Statistics)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write three statistical functions for Vec<i32>:
+    a) mean(list: &Vec<i32>) -> f64   — arithmetic average
+    b) median(list: &Vec<i32>) -> i32 — middle value (sorted, average of two if even)
+    c) mode(list: &Vec<i32>) -> i32   — most frequently occurring value
+
+ANSWER:
+  pub fn mean(list: &Vec<i32>) -> f64 {
+      list.iter().sum::<i32>() as f64 / list.len() as f64
+  }
+  pub fn median(list: &Vec<i32>) -> i32 {
+      let mut l = list.clone(); l.sort();
+      let mid = l.len() / 2;
+      if l.len() % 2 == 0 { (l[mid-1] + l[mid]) / 2 } else { l[mid] }
+  }
+  pub fn mode(list: &Vec<i32>) -> i32 {
+      let mut counts = HashMap::new();
+      for &x in list { *counts.entry(x).or_insert(0) += 1; }
+      *counts.iter().max_by_key(|&(_, v)| v).unwrap().0
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. STRING PERMUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that checks if two strings are permutations of each other
+  (same characters, same counts, possibly different order).
+    - is_permutation(s1: &str, s2: &str) -> bool
+
+ANSWER:
+  pub fn is_permutation(s1: &str, s2: &str) -> bool {
+      if s1.len() != s2.len() { return false; }
+      let mut counts = HashMap::new();
+      for c in s1.chars() { *counts.entry(c).or_insert(0i32) += 1; }
+      for c in s2.chars() { *counts.entry(c).or_insert(0i32) -= 1; }
+      counts.values().all(|&v| v == 0)
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. CIRCLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Circle struct (center: Point, radius: f64) and a Point struct
+  (x: f64, y: f64). Implement:
+    - Circle::new(x, y, r) -> Self
+    - Circle::diameter() -> f64
+    - Circle::area() -> f64
+    - Circle::intersect(other: &Circle) -> bool
+    - Point::distance(other: &Point) -> f64
+
+ANSWER:
+  pub struct Point { pub x: f64, pub y: f64 }
+  pub struct Circle { pub center: Point, pub radius: f64 }
+
+  impl Point {
+      pub fn distance(&self, p: &Point) -> f64 {
+          ((self.x-p.x).powi(2) + (self.y-p.y).powi(2)).sqrt()
+      }
+  }
+  impl Circle {
+      pub fn new(x: f64, y: f64, r: f64) -> Self {
+          Circle { center: Point{x,y}, radius: r }
+      }
+      pub fn diameter(&self) -> f64 { 2.0 * self.radius }
+      pub fn area(&self) -> f64 { std::f64::consts::PI * self.radius.powi(2) }
+      pub fn intersect(&self, other: &Circle) -> bool {
+          self.center.distance(&other.center) <= self.radius + other.radius
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. DOES IT FIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Part A — areas_volumes.rs: Implement area and volume calculation functions:
+    - square_area(side) / triangle_area(base, height) / circle_area(radius)
+    - rectangle_area(a, b) / cube_volume(side) / sphere_volume(radius)
+    - cone_volume(radius, height) / parallelepiped_volume(a, b, c)
+  Part B — lib.rs: Implement fitting functions:
+    - area_fit(x,y, shape, times, a, b) -> bool
+      → does 'times' copies of shape(a,b) fit in rectangle(x,y)?
+    - volume_fit(x,y,z, vol, times, a, b, c) -> bool
+      → does 'times' copies of volume(a,b,c) fit in parallelepiped(x,y,z)?
+
+ANSWER:
+  pub fn square_area(s: usize) -> usize { s * s }
+  pub fn rectangle_area(a: usize, b: usize) -> usize { a * b }
+  pub fn triangle_area(b: usize, h: usize) -> f64 { b as f64 * h as f64 / 2.0 }
+  pub fn circle_area(r: usize) -> f64 { std::f64::consts::PI * (r*r) as f64 }
+  pub fn cube_volume(s: usize) -> usize { s*s*s }
+  pub fn sphere_volume(r: usize) -> f64 { (4.0/3.0) * std::f64::consts::PI * (r*r*r) as f64 }
+  pub fn cone_volume(r: usize, h: usize) -> f64 { (1.0/3.0)*PI*(r*r) as f64*h as f64 }
+  pub fn parallelepiped_volume(a: usize, b: usize, c: usize) -> usize { a*b*c }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. PROFANITY FILTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Message struct with content and user fields. Implement:
+    - Message::new(content: String, user: String) -> Message
+    - Message::send_ms(&self) -> Option<&str>
+      → Returns None if message is empty or contains "stupid", Some(&content) otherwise
+    - check_ms(ms: &Message) -> (bool, &str)
+      → (true, content) if valid, (false, "ERROR: illegal") if not
+
+ANSWER:
+  pub struct Message { content: String, user: String }
+  impl Message {
+      pub fn new(ms: String, u: String) -> Message { Message { content: ms, user: u } }
+      pub fn send_ms(&self) -> Option<&str> {
+          if self.content.contains("stupid") || self.content.is_empty() { None }
+          else { Some(&self.content) }
+      }
+  }
+  pub fn check_ms(ms: &Message) -> (bool, &str) {
+      match ms.send_ms() {
+          Some(m) => (true, m),
+          None    => (false, "ERROR: illegal"),
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. BORDER CROSS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Vehicle trait with model() and year() methods. Implement it for
+  Car and Truck structs (both have plate_nbr, model, horse_power, year).
+  Write:
+    - all_models(list: Vec<&dyn Vehicle>) -> Vec<&str>
+      → returns the model of each vehicle
+
+ANSWER:
+  pub trait Vehicle { fn model(&self) -> &str; fn year(&self) -> u32; }
+  // (Implement for Car and Truck struct — straightforward field return)
+  pub fn all_models(list: Vec<&dyn Vehicle>) -> Vec<&str> {
+      list.iter().map(|v| v.model()).collect()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. CARD DECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Create a card game with:
+    - Suit enum: Heart, Diamond, Spade, Club
+    - Rank enum: Ace, King, Queen, Jack, Number(u8)
+    - Implement random() and translate(value: u8) for both enums
+    - Card struct: { suit: Suit, rank: Rank }
+    - winner_card(card: &Card) -> bool → true only for Ace of Spades
+
+ANSWER:
+  pub fn winner_card(card: &Card) -> bool {
+      card == &Card { suit: Suit::Spade, rank: Rank::Ace }
+  }
+  // Suit::translate: 1->Heart, 2->Diamond, 3->Spade, 4->Club
+  // Rank::translate: 1->Ace, 11->Jack, 12->Queen, 13->King, 2-10->Number(n)
+  // Use rand::thread_rng().gen_range() for random()
+
+================================================================================
+                    CHECKPOINT 3 — TRAITS, GENERICS & ENUMS
+              (Trait Objects, Generic Types, Complex Enums, Algorithms)
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. GENERICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a generic identity function that takes any type T and returns it.
+    - identity<T>(v: T) -> T
+
+ANSWER:
+  pub fn identity<T>(v: T) -> T { v }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. TRAITS (Player/Food)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Create a game system:
+    - Player struct: { name, strength: f64, score, money, weapons }
+    - Implement Display for Player
+    - Food trait with method gives() -> f64
+    - Fruit struct: { weight_in_kg } — gives() = weight * 4.0
+    - Meat struct: { weight_in_kg, fat_content }
+      gives() = (1-fat)*weight*4 + fat*weight*9
+    - Player::eat<T: Food>(&mut self, food: T) — adds food.gives() to strength
+
+ANSWER:
+  pub trait Food { fn gives(&self) -> f64; }
+  impl Food for Fruit {
+      fn gives(&self) -> f64 { self.weight_in_kg * 4.0 }
+  }
+  impl Food for Meat {
+      fn gives(&self) -> f64 {
+          (1.0 - self.fat_content) * self.weight_in_kg * 4.0
+              + self.fat_content * self.weight_in_kg * 9.0
+      }
+  }
+  impl Player {
+      pub fn eat<T: Food>(&mut self, food: T) { self.strength += food.gives(); }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. ROMAN NUMBERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Create a Roman numeral system:
+    - RomanDigit enum: Nulla, I, V, X, L, C, D, M
+    - RomanNumber(Vec<RomanDigit>) struct
+    - Implement From<u32> for RomanNumber
+      (convert integer to Roman numeral representation)
+  Rules: 0 → Nulla, use subtractive notation (IV=4, IX=9, XL=40, etc.)
+
+ANSWER:
+  // Map values: 1000→M, 900→CM, 500→D, 400→CD, 100→C, 90→XC,
+  //             50→L, 40→XL, 10→X, 9→IX, 5→V, 4→IV, 1→I
+  impl From<u32> for RomanNumber {
+      fn from(mut n: u32) -> Self {
+          let vals = [(1000,"M"),(900,"CM"),(500,"D"),(400,"CD"),
+                      (100,"C"),(90,"XC"),(50,"L"),(40,"XL"),
+                      (10,"X"),(9,"IX"),(5,"V"),(4,"IV"),(1,"I")];
+          let mut digits = Vec::new();
+          for (v, _) in &vals {
+              while n >= *v { /* push digit(s) */ n -= v; }
+          }
+          if digits.is_empty() { digits.push(RomanDigit::Nulla); }
+          RomanNumber(digits)
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. ROMAN NUMBERS ITER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Extends roman_numbers by:
+    - Adding RomanDigit::to(&self) -> u32 (digit to its integer value)
+    - RomanNumber::to_u32(&self) -> u32 (convert back to integer)
+    - Implementing Iterator for RomanNumber
+      next() returns Some(RomanNumber::from(self.to_u32() + 1))
+
+ANSWER:
+  impl RomanDigit {
+      pub fn to(&self) -> u32 {
+          match self { Nulla=>0, I=>1, V=>5, X=>10, L=>50, C=>100, D=>500, M=>1000 }
+      }
+  }
+  impl RomanNumber {
+      pub fn to_u32(&self) -> u32 { /* subtract when smaller digit precedes larger */ }
+  }
+  impl Iterator for RomanNumber {
+      type Item = RomanNumber;
+      fn next(&mut self) -> Option<Self::Item> {
+          Some(RomanNumber::from(self.to_u32() + 1))
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. BLOOD TYPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Model a blood type system:
+    - Antigen enum: A, AB, B, O
+    - RhFactor enum: Positive, Negative
+    - BloodType struct: { antigen, rh_factor }
+    - Implement FromStr for BloodType (parse "A+", "O-", "AB+" etc.)
+    - can_receive_from(&self, other: &BloodType) -> bool
+    - donors(&self) -> Vec<BloodType>   — all blood types that can donate to self
+    - recipients(&self) -> Vec<BloodType> — all blood types that can receive from self
+  Rules:
+    - O can donate to anyone; AB can receive from anyone
+    - Rh- can donate to both Rh+ and Rh-; Rh+ can only donate to Rh+
+
+ANSWER:
+  impl BloodType {
+      pub fn can_receive_from(&self, other: &BloodType) -> bool {
+          let antigen_ok = matches!(
+              (&self.antigen, &other.antigen),
+              (_, Antigen::O) | (Antigen::A, Antigen::A) |
+              (Antigen::AB, _) | (Antigen::B, Antigen::B)
+          );
+          let rh_ok = other.rh_factor == RhFactor::Negative
+              || self.rh_factor == RhFactor::Positive;
+          antigen_ok && rh_ok
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. EVENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Create a notification system:
+    - Position enum: Top, Bottom, Center
+    - Notification struct: { size: u32, color: (u8,u8,u8), position, content: String }
+    - Implement Display for Notification (using colored crate for truecolor)
+    - Event enum: Remainder(&'a str), Registration(Duration), Appointment(&'a str), Holiday
+    - Event::notify(&self) -> Notification (different settings per variant):
+      * Remainder → size:50, color:(50,50,50), Bottom, content=text
+      * Registration → size:30, color:(255,2,22), Top, content="X H:M:S left..."
+      * Appointment → size:100, color:(200,200,3), Center, content=text
+      * Holiday → size:25, color:(0,255,0), Top, content="Enjoy your holiday"
+
+ANSWER:
+  impl<'a> Event<'a> {
+      pub fn notify(&self) -> Notification {
+          match self {
+              Event::Remainder(t) => Notification { size:50, color:(50,50,50),
+                  position:Position::Bottom, content:t.to_string() },
+              Event::Registration(d) => Notification { size:30, color:(255,2,22),
+                  position:Position::Top,
+                  content:format!("{}H:{}M:{}S left...", d.num_hours()%24,
+                      d.num_minutes()%60, d.num_seconds()%60) },
+              Event::Appointment(t) => Notification { size:100, color:(200,200,3),
+                  position:Position::Center, content:t.to_string() },
+              Event::Holiday => Notification { size:25, color:(0,255,0),
+                  position:Position::Top, content:"Enjoy your holiday".to_string() },
+          }
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. MOBS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Model an organized crime system with Boss, Member (with Role), and Mob structs.
+  Mob contains: name, boss, members: Vec<Member>, cities: Vec<(String,u8)>, wealth: u32
+  Implement:
+    - recruit(&mut self, name, age) — adds an Associate member
+    - attack(&mut self, mob: &mut Mob) — compare total power, loser loses a member;
+      if loser has 0 members, winner takes all wealth and cities
+    - steal(&mut self, mob: &mut Mob, value: u32) — transfer value from mob's wealth
+    - conquer_city(&mut self, mobs, city, value) — add city only if unclaimed
+
+ANSWER:
+  impl Mob {
+      pub fn attack(&mut self, mob: &mut Mob) {
+          let pw_self: u8 = self.members.iter().map(|m| m.role.power()).sum();
+          let pw_mob: u8 = mob.members.iter().map(|m| m.role.power()).sum();
+          if pw_self > pw_mob {
+              mob.members.pop();
+              if mob.members.is_empty() {
+                  self.wealth += mob.wealth; mob.wealth = 0;
+                  self.cities.append(&mut mob.cities);
+              }
+          } else {
+              self.members.pop();
+              if self.members.is_empty() {
+                  mob.wealth += self.wealth; self.wealth = 0;
+                  mob.cities.append(&mut self.cities);
+              }
+          }
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. CIPHER (Atbash)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Implement an Atbash cipher checker:
+    - CipherError struct: { validation: bool, expected: String }
+    - CipherError::new(validation, expected) -> CipherError
+    - cipher(original: &str, ciphered: &str) -> Option<Result<bool, CipherError>>
+      * None if either string is empty
+      * Ok(true) if ciphered matches Atbash encoding of original
+      * Err(CipherError { expected: correct_encoding }) if it doesn't match
+  Atbash: a↔z, b↔y, c↔x, ... (mirror the alphabet)
+
+ANSWER:
+  fn atbash(text: &str) -> String {
+      text.chars().map(|c| {
+          if c.is_ascii_alphabetic() {
+              let base = if c.is_lowercase() { b'a' } else { b'A' };
+              let end  = if c.is_lowercase() { b'z' } else { b'Z' };
+              (base + end - c as u8) as char
+          } else { c }
+      }).collect()
+  }
+  pub fn cipher(original: &str, ciphered: &str) -> Option<Result<bool, CipherError>> {
+      if original.is_empty() || ciphered.is_empty() { return None; }
+      let expected = atbash(original);
+      if expected == ciphered { Some(Ok(true)) }
+      else { Some(Err(CipherError::new(false, expected))) }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. TIC TAC TOE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that determines the winner of a Tic-Tac-Toe game.
+    - tic_tac_toe(table: Vec<Vec<&str>>) -> String
+  Returns "player X won", "player O won", or "tie".
+  Also write helper functions:
+    - horizontal(player, table) -> bool
+    - vertical(player, table) -> bool
+    - diagonals(player, table) -> bool
+
+ANSWER:
+  pub fn horizontal(p: &str, t: &Vec<Vec<&str>>) -> bool {
+      t.iter().any(|row| row.iter().all(|&c| c == p))
+  }
+  pub fn vertical(p: &str, t: &Vec<Vec<&str>>) -> bool {
+      let n = t.len();
+      (0..n).any(|col| (0..n).all(|row| t[row][col] == p))
+  }
+  pub fn diagonals(p: &str, t: &Vec<Vec<&str>>) -> bool {
+      let n = t.len();
+      (0..n).all(|i| t[i][i] == p) || (0..n).all(|i| t[i][n-i-1] == p)
+  }
+  pub fn tic_tac_toe(table: Vec<Vec<&str>>) -> String {
+      for player in ["X", "O"] {
+          if horizontal(player,&table)||vertical(player,&table)||diagonals(player,&table) {
+              return format!("player {} won", player);
+          }
+      }
+      "tie".to_string()
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. SHOPPING MALL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Model a shopping mall with nested structs:
+    Mall → floors: Vec<Floor>
+    Floor → stores: Vec<Store>
+    Store → employees: Vec<Employee>, square_meters: u64
+    Employee → name, age, working_hours: (u8,u8), salary: f64
+    Guard → name, age, years_experience
+
+  Implement these query functions:
+    - biggest_store(mall: Mall) -> Store
+    - highest_paid_employee(mall: Mall) -> Vec<Employee>
+    - nbr_of_employees(mall: Mall) -> usize
+    - check_for_securities(mall: &mut Mall, guards: Vec<Guard>)
+      → add guards until 1 guard per 200 m²
+    - cut_or_raise(mall: &mut Mall)
+      → +10% salary if working_hours span > 10h, else -10%
+
+ANSWER:
+  pub fn biggest_store(mall: Mall) -> Store {
+      mall.floors.iter().flat_map(|f| &f.stores)
+          .max_by_key(|s| s.square_meters).cloned().unwrap()
+  }
+  pub fn nbr_of_employees(mall: Mall) -> usize {
+      mall.guards.len()
+          + mall.floors.iter().flat_map(|f| &f.stores)
+              .map(|s| s.employees.len()).sum::<usize>()
+  }
+
+================================================================================
+                       FINAL CHECKPOINT — ADVANCED TOPICS
+           (Error Handling, Algorithms, Linear Algebra, External Crates)
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. PANIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that opens a file and panics with "File not found"
+  if it cannot be opened.
+    - open_file(s: &str) -> File
+
+ANSWER:
+  use std::fs::File;
+  pub fn open_file(s: &str) -> File {
+      File::open(s).unwrap_or_else(|_| panic!("File not found"))
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. UNWRAP OR EXPECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Create a Security enum and a fetch_data function:
+    Security: Unknown, High, Medium, Low, BlockServer
+    - fetch_data(server: Result<String,String>, level: Security) -> String
+    * Unknown → unwrap()
+    * High → expect("ERROR: program stops")
+    * Medium → unwrap_or("WARNING: check the server")
+    * Low → unwrap_or_else(|e| format!("Not found: {}", e))
+    * BlockServer → unwrap_err() (expects an error, returns its content)
+
+ANSWER:
+  pub fn fetch_data(server: Result<String, String>, security_level: Security) -> String {
+      match security_level {
+          Security::Unknown     => server.unwrap(),
+          Security::High        => server.expect("ERROR: program stops"),
+          Security::Medium      => server.unwrap_or("WARNING: check the server".to_string()),
+          Security::Low         => server.unwrap_or_else(|e| format!("Not found: {}", e)),
+          Security::BlockServer => server.unwrap_err(),
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. HANDLING (File I/O)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that opens or creates a file and writes content to it.
+  Panic on any error.
+    - open_or_create(file: &str, content: &str)
+
+ANSWER:
+  use std::fs::OpenOptions;
+  use std::io::Write;
+  pub fn open_or_create(file: &str, content: &str) {
+      let mut f = OpenOptions::new()
+          .read(true).write(true).create(true)
+          .open(file)
+          .unwrap_or_else(|e| panic!("{}", e));
+      f.write_all(content.as_bytes()).unwrap_or_else(|e| panic!("{}", e));
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. QUESTION MARK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define four nested structs (One → Two → Three → Four → Option<u16>).
+  Implement a method that traverses the chain using the ? operator:
+    - One::get_fourth_layer(&self) -> Option<u16>
+  If any layer is None, return None; otherwise return the u16 value.
+
+ANSWER:
+  pub struct One { pub first_layer: Option<Two> }
+  pub struct Two { pub second_layer: Option<Three> }
+  pub struct Three { pub third_layer: Option<Four> }
+  pub struct Four { pub fourth_layer: Option<u16> }
+
+  impl One {
+      pub fn get_fourth_layer(&self) -> Option<u16> {
+          self.first_layer.as_ref()?.second_layer
+              .as_ref()?.third_layer
+              .as_ref()?.fourth_layer
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. EDIT DISTANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Implement the Levenshtein edit distance algorithm (minimum number of
+  single-character insertions, deletions, or substitutions to transform
+  one string into another).
+    - edit_distance(source: &str, target: &str) -> usize
+
+ANSWER:
+  pub fn edit_distance(source: &str, target: &str) -> usize {
+      let m = source.chars().count();
+      let n = target.chars().count();
+      let mut dp = vec![vec![0usize; n+1]; m+1];
+      for i in 0..=m { dp[i][0] = i; }
+      for j in 0..=n { dp[0][j] = j; }
+      for i in 1..=m {
+          for j in 1..=n {
+              let cost = if source.chars().nth(i-1) == target.chars().nth(j-1) { 0 } else { 1 };
+              dp[i][j] = (dp[i-1][j]+1).min(dp[i][j-1]+1).min(dp[i-1][j-1]+cost);
+          }
+      }
+      dp[m][n]
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. EXPECTED VARIABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that compares two variable names for similarity using
+  edit distance. Returns Some("X%") if similarity > 50%, else None.
+  Both strings must be snake_case (no spaces).
+    - expected_variable(a: &str, b: &str) -> Option<String>
+
+ANSWER:
+  pub fn expected_variable(a: &str, b: &str) -> Option<String> {
+      if a.contains(' ') || b.contains(' ') { return None; }
+      let sa = a.to_lowercase(); let sb = b.to_lowercase();
+      if !sa.chars().all(|c| c.is_lowercase()||c=='_') { return None; }
+      if !sb.chars().all(|c| c.is_lowercase()||c=='_') { return None; }
+      let d = edit_distance(&sa, &sb);
+      let similarity = 1.0 - d as f64 / b.len() as f64;
+      let pct = (similarity * 100.0).round();
+      if pct > 50.0 { Some(format!("{}%", pct)) } else { None }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. ERROR TYPES (Form Validation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Build a form validation system:
+    - FormError struct: { form_values: (String,String), date: String, err: String }
+    - Form struct: { first_name, last_name, birth: NaiveDate, birth_location, password }
+    - Form::validate(&self) -> Result<Vec<&str>, FormError>
+      Rules:
+        * first_name must not be empty
+        * password must be >= 8 characters
+        * password must contain letters, digits, AND non-alphanumeric characters
+      On success: Ok(["Valid first name", "Valid password"])
+      On failure: Err(FormError) with appropriate field, value, and error message
+
+ANSWER:
+  impl Form {
+      pub fn validate(&self) -> Result<Vec<&str>, FormError> {
+          if self.first_name.is_empty() {
+              return Err(FormError::new("first_name".into(),
+                  self.first_name.clone(), "No user name".into()));
+          }
+          if self.password.len() < 8 {
+              return Err(FormError::new("password".into(),
+                  self.password.clone(), "At least 8 characters".into()));
+          }
+          let ok = self.password.chars().any(|c| c.is_alphabetic())
+              && self.password.chars().any(|c| c.is_numeric())
+              && self.password.chars().any(|c| !c.is_alphanumeric());
+          if !ok {
+              return Err(FormError::new("password".into(), self.password.clone(),
+                  "Combination of different ASCII character types".into()));
+          }
+          Ok(vec!["Valid first name", "Valid password"])
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. BOXING TODO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Build a JSON-based TodoList reader with boxed error handling:
+    - Task struct: { id: u32, description: String, level: u32 }
+    - TodoList struct: { title: String, tasks: Vec<Task> }
+    - Define two error types implementing std::error::Error:
+      * ReadErr { child_err: Box<dyn Error> } — "Fail to read todo file"
+      * ParseErr::Empty | ParseErr::Malformed(Box<dyn Error>) — "Fail to parse todo"
+    - TodoList::get_todo(path: &str) -> Result<TodoList, Box<dyn Error>>
+      Uses ? operator and boxes errors appropriately.
+
+ANSWER:
+  impl TodoList {
+      pub fn get_todo(path: &str) -> Result<TodoList, Box<dyn Error>> {
+          let mut file = File::open(path)
+              .map_err(|e| Box::new(ReadErr { child_err: Box::new(e) }) as Box<dyn Error>)?;
+          let mut s = String::new();
+          file.read_to_string(&mut s)
+              .map_err(|e| Box::new(ReadErr { child_err: Box::new(e) }) as Box<dyn Error>)?;
+          if s.trim().is_empty() { return Err(Box::new(ParseErr::Empty)); }
+          let parsed = parse(&s).map_err(|e| Box::new(ParseErr::Malformed(Box::new(e))))?;
+          // Extract title and tasks from JSON...
+          Ok(TodoList { title, tasks })
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. LALGEBRA SCALAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Scalar trait for numeric types. It must require Add, Sub, Mul,
+  Div (all Output=Self), Copy, and Sized. Include:
+    - fn zero() -> Self
+    - fn one() -> Self
+  Implement it for: u32, u64, i32, i64, f32, f64
+
+ANSWER:
+  pub trait Scalar: Add<Output=Self> + Sub<Output=Self>
+      + Mul<Output=Self> + Div<Output=Self> + Sized + Copy
+  {
+      fn zero() -> Self;
+      fn one() -> Self;
+  }
+  impl Scalar for i32 { fn zero()->Self{0} fn one()->Self{1} }
+  impl Scalar for f64 { fn zero()->Self{0.0} fn one()->Self{1.0} }
+  // ... same pattern for u32, u64, i64, f32
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. LALGEBRA VECTOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Build a generic Vector<T: Scalar> struct. Implement:
+    - Vector::new() -> Self   (empty vector)
+    - dot(&self, other: &Self) -> Option<T>
+      → None if lengths differ; else sum of element-wise products
+    - Implement Add for Vector<T> → Option<Vector<T>>
+      → None if lengths differ; else element-wise sum
+
+ANSWER:
+  impl<T: Scalar> Vector<T> {
+      pub fn dot(&self, other: &Self) -> Option<T> {
+          if self.0.len() != other.0.len() { return None; }
+          Some(self.0.iter().zip(&other.0)
+              .map(|(a,b)| *a * *b)
+              .fold(T::zero(), |acc, x| acc + x))
+      }
+  }
+  impl<T: Scalar> Add for Vector<T> {
+      type Output = Option<Vector<T>>;
+      fn add(self, other: Self) -> Option<Vector<T>> {
+          if self.0.len() != other.0.len() { return None; }
+          Some(Vector(self.0.iter().zip(&other.0).map(|(a,b)| *a + *b).collect()))
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. MATRIX TRANSPOSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Define a Matrix struct as Matrix((i32,i32),(i32,i32)) for 2x2 matrices.
+  Implement:
+    - transpose(m: Matrix) -> Matrix
+      Swaps rows and columns: [[a,b],[c,d]] → [[a,c],[b,d]]
+
+ANSWER:
+  pub struct Matrix(pub (i32,i32), pub (i32,i32));
+  pub fn transpose(m: Matrix) -> Matrix {
+      Matrix(
+          (m.0.0, m.1.0),
+          (m.0.1, m.1.1),
+      )
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. MATRIX (Generic with Scalar trait)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Create a generic Matrix<T: Scalar> struct with Vec<Vec<T>> storage.
+  Implement:
+    - Matrix::new() -> Matrix<T>     → 1x1 zero matrix
+    - Matrix::zero(row, col) -> Matrix<T>  → all-zero matrix
+    - Matrix::identity(n) -> Matrix<T> → n×n identity matrix
+
+ANSWER:
+  impl<T: Scalar + Clone> Matrix<T> {
+      pub fn new() -> Self { Matrix(vec![vec![T::zero()]]) }
+      pub fn zero(r: usize, c: usize) -> Self {
+          Matrix(vec![vec![T::zero(); c]; r])
+      }
+      pub fn identity(n: usize) -> Self {
+          let mut m = vec![vec![T::zero(); n]; n];
+          for i in 0..n { m[i][i] = T::one(); }
+          Matrix(m)
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. MATRIX OPS (Add & Sub)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Extend Matrix<T: Scalar> with:
+    - Implement Add for Matrix<T> → Option<Matrix<T>>
+      → None if dimensions don't match; else element-wise addition
+    - Implement Sub for Matrix<T> → Option<Matrix<T>>
+      → None if dimensions don't match; else element-wise subtraction
+
+ANSWER:
+  impl<T: Scalar> Add for Matrix<T> {
+      type Output = Option<Matrix<T>>;
+      fn add(self, other: Matrix<T>) -> Option<Matrix<T>> {
+          if self.0.len() != other.0.len() || self.0[0].len() != other.0[0].len() {
+              return None;
+          }
+          Some(Matrix(self.0.iter().zip(&other.0)
+              .map(|(r1,r2)| r1.iter().zip(r2).map(|(&a,&b)| a+b).collect())
+              .collect()))
+      }
+  }
+  // Sub follows the same pattern with a-b
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. MATRIX MULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Implement matrix multiplication via the Mul operator:
+    - Matrix<T> * Matrix<T> -> Option<Matrix<T>>
+    - Returns None if self.cols != other.rows
+    - Standard O(n³) matrix multiplication: result[i][j] = Σ self[i][k]*other[k][j]
+  Also implement helper methods: row(n), col(n), number_of_rows(), number_of_cols()
+
+ANSWER:
+  impl<T: Scalar> Mul for Matrix<T> {
+      type Output = Option<Matrix<T>>;
+      fn mul(self, other: Matrix<T>) -> Option<Matrix<T>> {
+          if self.number_of_cols() != other.number_of_rows() { return None; }
+          let mut res = vec![vec![T::zero(); other.number_of_cols()]; self.number_of_rows()];
+          for i in 0..self.number_of_rows() {
+              for j in 0..other.number_of_cols() {
+                  for k in 0..self.number_of_cols() {
+                      res[i][j] = res[i][j] + self.0[i][k] * other.0[k][j];
+                  }
+              }
+          }
+          Some(Matrix(res))
+      }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. MIDDLE DAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Write a function that finds the weekday of the middle day of a given year.
+  If the year has an even number of days (no middle day), return None.
+    - middle_day(year: i32) -> Option<Weekday>
+  Uses the chrono crate.
+
+ANSWER:
+  pub fn middle_day(year: i32) -> Option<chrono::Weekday> {
+      let start = NaiveDate::from_ymd_opt(year, 1, 1)?;
+      let end   = NaiveDate::from_ymd_opt(year+1, 1, 1)?;
+      let days  = end.signed_duration_since(start).num_days() as u32;
+      if days % 2 == 0 { return None; }
+      let mid = NaiveDate::from_yo_opt(year, days/2 + 1)?;
+      Some(mid.weekday())
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. BANNER (CLI Flag System)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Build a CLI flags system:
+    - Flag struct: { short_hand: String, long_hand: String, desc: String }
+    - Flag::opt_flag(long: &str, desc: &str) -> Flag
+      → short_hand = "-{first_char}", long_hand = "--{long}"
+    - type Callback = fn(&str, &str) -> Result<String, ParseFloatError>
+    - FlagsHandler struct: { flags: HashMap<(String,String), Callback> }
+    - FlagsHandler::add_flag(flag: (String,String), func: Callback)
+    - FlagsHandler::exec_func(flag: (String,String), argv: &[&str]) -> String
+      → Calls the callback with argv[0] and argv[1]; returns result or error string
+    - Write div(&str, &str) -> Result<String, ParseFloatError> (parse, divide)
+    - Write rem(&str, &str) -> Result<String, ParseFloatError> (parse, modulo)
+
+ANSWER:
+  impl Flag {
+      pub fn opt_flag(l_h: &str, d: &str) -> Flag {
+          Flag {
+              desc: d.to_string(),
+              short_hand: format!("-{}", l_h.chars().next().unwrap()),
+              long_hand: format!("--{}", l_h),
+          }
+      }
+  }
+  pub fn div(a: &str, b: &str) -> Result<String, ParseFloatError> {
+      Ok((a.parse::<f32>()? / b.parse::<f32>()?).to_string())
+  }
+  pub fn rem(a: &str, b: &str) -> Result<String, ParseFloatError> {
+      Ok((a.parse::<f32>()? % b.parse::<f32>()?).to_string())
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+62. MACRO CALCULATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Calculate total macronutrients from a list of foods and return as JSON.
+    - Food struct: { name, calories: [String;2], fats, carbs, proteins, nbr_of_portions }
+    - calculate_macros(foods: Vec<Food>) -> JsonValue
+      Returns JSON: { "cals": f64, "carbs": f64, "proteins": f64, "fats": f64 }
+      All values multiplied by nbr_of_portions; round to 2 decimal places.
+      calories[1] contains a string like "200kcal" — extract the number.
+
+ANSWER:
+  pub fn calculate_macros(foods: Vec<Food>) -> JsonValue {
+      let (mut cals, mut carbs, mut proteins, mut fats) = (0.0f64, 0.0, 0.0, 0.0);
+      for food in foods {
+          let cal: f64 = food.calories[1].chars()
+              .filter(|c| c.is_numeric()||*c=='.').collect::<String>()
+              .parse().unwrap();
+          cals     += cal * food.nbr_of_portions;
+          carbs    += food.carbs * food.nbr_of_portions;
+          proteins += food.proteins * food.nbr_of_portions;
+          fats     += food.fats * food.nbr_of_portions;
+      }
+      let round = |v: f64| (v * 100.0).round() / 100.0;
+      let mut res = JsonValue::new_object();
+      res.insert("cals", round(cals)).unwrap();
+      res.insert("carbs", round(carbs)).unwrap();
+      res.insert("proteins", round(proteins)).unwrap();
+      res.insert("fats", round(fats)).unwrap();
+      res
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+63. COMMITS STATS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION:
+  Parse a GitHub commits JSON array and produce two aggregations:
+    - commits_per_week(data: &JsonValue) -> HashMap<String, u32>
+      → Key format: "YYYY-Www" (e.g. "2024-W03"), count commits per ISO week
+    - commits_per_author(data: &JsonValue) -> HashMap<String, u32>
+      → Key: author login name, value: commit count
+  Uses the chrono crate for date parsing (format: "%Y-%m-%dT%H:%M:%SZ")
+  JSON path: data[i]["commit"]["author"]["date"] and data[i]["author"]["login"]
+
+ANSWER:
+  pub fn commits_per_week(data: &JsonValue) -> HashMap<String, u32> {
+      let mut map = HashMap::new();
+      for commit in data.members() {
+          let date_str = commit["commit"]["author"]["date"].to_string();
+          let dt = NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%dT%H:%M:%SZ").unwrap();
+          let key = format!("{}-W{}", dt.year(), dt.iso_week().week());
+          *map.entry(key).or_insert(0) += 1;
+      }
+      map
+  }
+  pub fn commits_per_author(data: &JsonValue) -> HashMap<String, u32> {
+      let mut map = HashMap::new();
+      for commit in data.members() {
+          let author = commit["author"]["login"].to_string();
+          *map.entry(author).or_insert(0) += 1;
+      }
+      map
+  }
+
+================================================================================
+                         QUICK REFERENCE — DIFFICULTY RANKING
+================================================================================
+
+CHECKPOINT 1 (Easiest → Harder):
+  1. scalar          — basic arithmetic, different types
+  2. doubtful        — push char to string
+  3. division_and_remainder — tuple return
+  4. temperature_conv — float conversion formulas
+  5. reverse_string  — iterate chars backward
+  6. arrays          — sum slice, build array
+  7. string_literals / strings — standard string methods
+  8. to_url          — join with %20
+  9. delete_prefix   — lifetime + string slicing
+ 10. capitalizing    — three casing functions
+ 11. name_initials   — map/split/format
+ 12. find_factorial  — recursive function
+ 13. fibonacci2      — iterative sequence
+ 14. looping         — loop + stdin + riddle
+ 15. bigger          — HashMap iteration
+ 16. groceries       — Vec operations
+ 17. tuples_refs     — tuple struct accessors
+ 18. speed_transformation — unit conversion formula
+
+CHECKPOINT 2 (Easiest → Harder):
+ 19. borrow          — &str reference, len()
+ 20. copy            — multi-return with owned values
+ 21. ownership       — string truncation, CamelCase parsing
+ 22. borrow_me_the_reference — mutable string manipulation
+ 23. changes         — struct with mutable Vec
+ 24. lifetimes       — struct with lifetime annotation
+ 25. collect         — sort Vec
+ 26. arrange_it      — sort by embedded digit, filter chars
+ 27. simple_hash     — HashMap frequency count
+ 28. hashing         — mean/median/mode statistics
+ 29. string_permutation — char frequency comparison
+ 30. circle          — geometric struct with methods
+ 31. does_it_fit     — area/volume calculation and comparison
+ 32. profanity_filter — struct + Option return
+ 33. border_cross    — trait objects (dyn Vehicle)
+ 34. card_deck       — enums + random + match
+
+CHECKPOINT 3 (Easiest → Harder):
+ 35. generics        — generic identity function
+ 36. traits          — Food trait with different implementations
+ 37. roman_numbers   — enum + From<u32> conversion
+ 38. roman_numbers_iter — add Iterator trait
+ 39. blood_types     — complex enum matching, FromStr, compatibility logic
+ 40. events          — lifetime in enum, match to Notification
+ 41. mobs            — multi-struct simulation, power-based combat
+ 42. cipher          — Atbash cipher + nested Result/Option
+ 43. tic_tac_toe     — grid analysis, win detection
+ 44. shopping_mall   — nested structs, iterator chains, complex queries
+
+FINAL (Easiest → Hardest):
+ 45. panic           — basic panic on error
+ 46. unwrap_or_expect — different Result unwrapping strategies
+ 47. handling        — OpenOptions file I/O
+ 48. question_mark   — nested Option with ? operator
+ 49. edit_distance   — dynamic programming (Levenshtein)
+ 50. expected_variable — edit distance + snake_case + similarity
+ 51. error_types     — custom error struct + form validation
+ 52. boxing_todo     — Box<dyn Error> + JSON parsing + multiple error types
+ 53. lalgebra_scalar — trait definition for numeric types
+ 54. lalgebra_vector — generic Vec with dot product
+ 55. matrix_transposition — basic 2×2 transpose
+ 56. matrix          — generic Matrix with new/zero/identity
+ 57. matrix_ops      — Add + Sub operator overloading
+ 58. matrix_mult     — Mul operator, O(n³) multiplication
+ 59. middle_day      — chrono date arithmetic
+ 60. banner          — fn pointers, HashMap callbacks, CLI system
+ 61. macro_calculator — JSON output + f64 precision rounding
+ 62. commits_stats   — chrono parsing + HashMap + ISO week numbers
+
+================================================================================
+                              KEY RUST CONCEPTS COVERED
+================================================================================
+
+OWNERSHIP & BORROWING:
+  borrow, borrow_me_the_reference, ownership, copy, changes, lifetimes
+
+PATTERN MATCHING & ENUMS:
+  roman_numbers, blood_types, unwrap_or_expect, events, card_deck, cipher
+
+TRAITS & GENERICS:
+  traits, generics, border_cross, lalgebra_scalar, lalgebra_vector,
+  matrix, matrix_mult, matrix_ops, roman_numbers_iter
+
+ERROR HANDLING:
+  panic, handling, question_mark, unwrap_or_expect, error_types, boxing_todo,
+  doubtful, cipher, expected_variable
+
+ITERATORS & CLOSURES:
+  collect, arrange_it, commits_stats, shopping_mall, hashing, simple_hash,
+  roman_numbers_iter, string_permutation
+
+EXTERNAL CRATES:
+  chrono     → middle_day, events, error_types, commits_stats
+  json       → boxing_todo, macro_calculator, commits_stats
+  rand       → card_deck
+  colored    → events
+
+ALGORITHMS:
+  edit_distance    → Levenshtein dynamic programming
+  fibonacci2       → iterative sequence
+  find_factorial   → recursion
+  collect          → sorting
+  tic_tac_toe      → grid/matrix logic
+  arrange_it       → custom sort key
+
+================================================================================
+                End of Piscine Rust Zone01 — Questions & Answers
+================================================================================
