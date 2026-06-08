@@ -3,6 +3,63 @@ import { useNavigate } from 'react-router-dom';
 import type { UserProgress } from '../types';
 import { getCheckpointStats, getOverallStats } from '../store/progress';
 
+interface TutorialVideo {
+  topic: string;
+  title: string;
+  channel: string;
+  url: string;
+}
+
+interface TutorialCategory {
+  label: string;
+  icon: string;
+  videos: TutorialVideo[];
+}
+
+const TUTORIAL_CATEGORIES: TutorialCategory[] = [
+  {
+    label: 'Rust Basics',
+    icon: '🦀',
+    videos: [
+      { topic: 'Variables & Types', title: 'Rust Tutorial #5 — Variable Data Types', channel: 'dcode', url: 'https://www.youtube.com/watch?v=RBo8Vcbpc4o' },
+      { topic: 'Strings', title: 'Rust Tutorial #22 — Strings', channel: 'dcode', url: 'https://www.youtube.com/watch?v=ABYdoxzNJJ8' },
+      { topic: 'String Methods', title: 'Rust Tutorial #33 — String Methods', channel: 'dcode', url: 'https://www.youtube.com/watch?v=IYYlc26vgyU' },
+      { topic: 'Arrays & Slices', title: 'Rust Tutorial #20 — Arrays', channel: 'dcode', url: 'https://www.youtube.com/watch?v=cH6Qv47MPwk' },
+      { topic: 'Loops & Control Flow', title: 'Rust Tutorial #9 — For Loop', channel: 'dcode', url: 'https://www.youtube.com/watch?v=gtoj6vOeb1A' },
+    ],
+  },
+  {
+    label: 'Memory Model',
+    icon: '⚙️',
+    videos: [
+      { topic: 'Ownership', title: 'Understanding Ownership in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=VFIOSWy93H0' },
+      { topic: 'Borrowing & References', title: 'References and Borrowing', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=DiwD_9B-k5w' },
+      { topic: 'Lifetimes', title: 'Crust of Rust: Lifetime Annotations', channel: 'Jon Gjengset', url: 'https://www.youtube.com/watch?v=rAl-9HwD858' },
+    ],
+  },
+  {
+    label: 'Types & Abstractions',
+    icon: '🔮',
+    videos: [
+      { topic: 'Structs & impl', title: 'Structs in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=n3bPhdiJm9I' },
+      { topic: 'Traits', title: 'Traits in Rust', channel: 'Tensor Programming', url: 'https://www.youtube.com/watch?v=T0Xfltu4h3A' },
+      { topic: 'Generics', title: 'Generic Types in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=6rcTSxPJ6Bw' },
+      { topic: 'Enums & Pattern Matching', title: 'Enums and Pattern Matching', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=DSZqIJhkNCM' },
+    ],
+  },
+  {
+    label: 'Collections & Advanced',
+    icon: '🏆',
+    videos: [
+      { topic: 'HashMaps', title: 'Vectors and Hash Maps', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=ic9WEuto-gE' },
+      { topic: 'Closures', title: 'Closures in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=kZXJvLfjUS4' },
+      { topic: 'Iterators', title: 'Iterators in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=4GcKrj4By8k' },
+      { topic: 'Error Handling', title: 'Error Handling in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=wM6o70NAWUI' },
+      { topic: 'File I/O', title: 'Reading Files in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=cJLRKj_N1dw' },
+    ],
+  },
+];
+
 interface DashboardProps {
   progress: UserProgress;
   totalExercises: number;
@@ -211,6 +268,72 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
         </div>
       )}
 
+      {/* Resources */}
+      <div className="resources-section">
+        <h3 className="resources-heading">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 2h12v12H2V2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+            <path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          Learning Resources
+        </h3>
+
+        {/* Rust Docs banner */}
+        <a
+          className="rust-docs-banner"
+          href="https://doc.rust-lang.org/book/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="rust-docs-icon">📘</span>
+          <div className="rust-docs-text">
+            <span className="rust-docs-title">The Rust Programming Language</span>
+            <span className="rust-docs-sub">doc.rust-lang.org/book — the official free Rust book</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="rust-docs-arrow">
+            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </a>
+
+        {/* YouTube tutorials */}
+        <div className="yt-section-label">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="2" width="12" height="10" rx="2" fill="#FF0000" opacity="0.15" stroke="#FF0000" strokeWidth="1.1"/>
+            <path d="M5.5 5l4 2-4 2V5z" fill="#FF0000"/>
+          </svg>
+          YouTube Tutorials
+        </div>
+
+        {TUTORIAL_CATEGORIES.map((cat) => (
+          <div key={cat.label} className="yt-category">
+            <div className="yt-cat-header">
+              <span className="yt-cat-icon">{cat.icon}</span>
+              <span className="yt-cat-label">{cat.label}</span>
+            </div>
+            <div className="yt-grid">
+              {cat.videos.map((v) => (
+                <a
+                  key={v.url}
+                  className="yt-card"
+                  href={v.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className="yt-card-topic">{v.topic}</span>
+                  <span className="yt-card-title">{v.title}</span>
+                  <div className="yt-card-footer">
+                    <span className="yt-card-channel">{v.channel}</span>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="yt-card-ext">
+                      <path d="M2 8L8 2M5 2h3v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Exam results */}
       {Object.keys(progress.examResults).length > 0 && (
         <div className="exam-results-section">
@@ -407,6 +530,73 @@ function CheckpointCard({
         }
         .cp-exam-btn:not(.locked):hover { background: var(--rust-dim); border-color: var(--rust); color: var(--rust-light); }
         .cp-exam-btn.locked { opacity: 0.5; cursor: not-allowed; }
+
+        /* Resources section */
+        .resources-section { display: flex; flex-direction: column; gap: 14px; }
+        .resources-heading {
+          display: flex; align-items: center; gap: 7px;
+          font-size: 1rem; font-weight: 600; color: var(--text-primary);
+        }
+
+        /* Rust Docs banner */
+        .rust-docs-banner {
+          display: flex; align-items: center; gap: 14px;
+          padding: 14px 18px;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-lg);
+          text-decoration: none;
+          transition: all var(--transition);
+          background-image: radial-gradient(ellipse at top left, rgba(96,165,250,0.07) 0%, transparent 60%);
+        }
+        .rust-docs-banner:hover {
+          border-color: #60a5fa;
+          transform: translateY(-1px);
+          background-image: radial-gradient(ellipse at top left, rgba(96,165,250,0.13) 0%, transparent 60%);
+        }
+        .rust-docs-icon { font-size: 1.6rem; flex-shrink: 0; }
+        .rust-docs-text { flex: 1; }
+        .rust-docs-title { display: block; font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+        .rust-docs-sub { display: block; font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); }
+        .rust-docs-arrow { color: var(--text-muted); transition: color var(--transition); }
+        .rust-docs-banner:hover .rust-docs-arrow { color: #60a5fa; }
+
+        /* YouTube label */
+        .yt-section-label {
+          display: flex; align-items: center; gap: 7px;
+          font-size: 0.875rem; font-weight: 600; color: var(--text-secondary);
+          padding: 4px 0 2px;
+        }
+
+        /* Category */
+        .yt-category { display: flex; flex-direction: column; gap: 8px; }
+        .yt-cat-header { display: flex; align-items: center; gap: 6px; }
+        .yt-cat-icon { font-size: 1rem; }
+        .yt-cat-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Video cards grid */
+        .yt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+        .yt-card {
+          display: flex; flex-direction: column; gap: 4px;
+          padding: 11px 13px;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-md);
+          text-decoration: none;
+          transition: all var(--transition);
+        }
+        .yt-card:hover {
+          border-color: #FF4444;
+          background: var(--bg-elevated);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(255,68,68,0.08);
+        }
+        .yt-card-topic { font-size: 0.8rem; font-weight: 700; color: var(--text-primary); }
+        .yt-card-title { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; flex: 1; }
+        .yt-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+        .yt-card-channel { font-size: 0.68rem; color: var(--text-disabled); }
+        .yt-card-ext { color: var(--text-disabled); transition: color var(--transition); }
+        .yt-card:hover .yt-card-ext { color: #FF4444; }
       `}</style>
     </div>
   );
