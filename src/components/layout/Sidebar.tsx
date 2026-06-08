@@ -171,8 +171,8 @@ export default function Sidebar({ progress }: SidebarProps) {
             return (
               <div key={section.key} className="sidebar-section">
                 <button
-                  className={`sidebar-section-item ${isActive(section.path) ? 'active' : ''}`}
-                  onClick={() => navigate(section.path)}
+                  className={`sidebar-section-item ${isActive(section.path ?? '') ? 'active' : ''}`}
+                  onClick={() => section.path && navigate(section.path)}
                 >
                   <span>{section.icon}</span>
                   <span className="flex-1 truncate">{section.label}</span>
@@ -198,7 +198,7 @@ export default function Sidebar({ progress }: SidebarProps) {
                 </div>
                 <div className="sidebar-section-meta">
                   <span className="sidebar-section-count">
-                    {section.stats.completed}/{section.stats.total}
+                    {section.stats!.completed}/{section.stats!.total}
                   </span>
                   <svg
                     width="12" height="12" viewBox="0 0 12 12" fill="none"
@@ -213,7 +213,7 @@ export default function Sidebar({ progress }: SidebarProps) {
               <div className="sidebar-progress-bar">
                 <div
                   className="sidebar-progress-fill"
-                  style={{ width: `${section.stats.percentage}%` }}
+                  style={{ width: `${section.stats!.percentage}%` }}
                 />
               </div>
 
@@ -243,7 +243,7 @@ export default function Sidebar({ progress }: SidebarProps) {
                   {/* Exam button */}
                   <button
                     className={`sidebar-exam-btn ${section.examUnlocked ? '' : 'locked'}`}
-                    onClick={() => section.examUnlocked && navigate(section.examPath)}
+                    onClick={() => section.examUnlocked && section.examPath && navigate(section.examPath)}
                     disabled={!section.examUnlocked}
                   >
                     {section.examUnlocked ? '🎯' : '🔒'} {section.label} Exam

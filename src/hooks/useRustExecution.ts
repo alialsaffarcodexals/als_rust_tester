@@ -65,6 +65,15 @@ async function callPlayground(code: string): Promise<ExecutionResult> {
   }
 }
 
+function stripMain(code: string): string {
+  // Remove fn main() block from user code so test templates can inject their own
+  // Handles simple main with no nested braces and main with one level of nesting
+  return code
+    .replace(/\n?pub\s+fn\s+main\s*\(\s*\)\s*\{[^}]*\}/gs, '')
+    .replace(/\n?fn\s+main\s*\(\s*\)\s*\{(?:[^{}]|\{[^{}]*\})*\}/gs, '')
+    .trim();
+}
+
 export function useRustExecution() {
   const [isRunning, setIsRunning] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
@@ -82,11 +91,13 @@ export function useRustExecution() {
     async (userCode: string, testCases: TestCase[]): Promise<TestResult[]> => {
       setIsTesting(true);
       const results: TestResult[] = [];
+      // Strip user's fn main() so test harness can provide its own
+      const strippedCode = stripMain(userCode);
 
       try {
         for (const tc of testCases) {
-          // Replace placeholder with user's actual code
-          const fullCode = tc.code.replace('// USER_CODE_HERE', userCode);
+          // Prepend stripped user code before the test case's fn main() driver
+          const fullCode = strippedCode + '\n\n' + tc.code;
           const result = await callPlayground(fullCode);
 
           const actualOutput = result.stdout.trim();
