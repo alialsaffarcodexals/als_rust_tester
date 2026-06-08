@@ -1,78 +1,147 @@
-# RustPath — Piscine Rust Zone01 Learning Platform
+# RustPath — Interactive Rust Learning Platform
 
-A complete interactive learning platform for mastering Rust through the Zone01 Piscine Rust curriculum.
+A browser-based Rust learning platform built on the Zone01 Piscine Rust curriculum. It covers all 63 exercises across 4 checkpoints, with a Monaco code editor, live execution against the Rust Playground API, checkpoint exams, and progress tracking.
 
-## Features
+---
 
-- **63 Exercises** from the Piscine Rust curriculum across 4 checkpoints
-- **Interactive Code Editor** (Monaco — VS Code's editor) with Rust syntax highlighting
-- **Live Execution** via Rust Playground API — compile and run Rust in the browser
-- **Automated Tests** — submit your solution and get immediate feedback per test case
-- **Rich Lessons** — concept explanations, language comparisons (C#, Java, Go, JavaScript, Python), guided examples
-- **Checkpoint Exams** — timed exams testing your understanding
-- **Progress Tracking** — streaks, time spent, per-lesson status persisted in localStorage
-- **Dark Theme** — VS Code / GitHub Dark inspired
+## Tech Stack
 
-## Quick Start
+| Layer | Technology |
+|---|---|
+| Framework | React 18 + TypeScript |
+| Build tool | Vite |
+| Code editor | Monaco Editor |
+| Code execution | Rust Playground API (`play.rust-lang.org`) |
+| Routing | React Router v6 |
+| Animation | Framer Motion |
+| Progress storage | `localStorage` |
+
+---
+
+## Prerequisites
+
+- **Node.js** 18+ and **npm**
+- Internet connection (code runs on the Rust Playground API — no local Rust toolchain needed)
+
+---
+
+## Getting Started
 
 ```bash
+# 1. Clone the repo
+git clone <repo-url>
+cd "ALS_Rutst tester"
+
+# 2. Install dependencies
 npm install
+
+# 3. Start the dev server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+The app will be available at `http://localhost:5173` (or the next available port).
+
+---
+
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server with hot reload |
+| `npm run build` | Type-check and build for production (`dist/`) |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | Run ESLint on all `.ts` / `.tsx` files |
+
+---
 
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── editor/      # Monaco code editor + output console
-│   └── layout/      # Sidebar, header
+│   ├── editor/
+│   │   ├── CodeEditor.tsx      # Monaco editor wrapper
+│   │   └── Console.tsx         # stdout / stderr output panel
+│   └── layout/
+│       ├── Header.tsx          # Top navigation bar
+│       └── Sidebar.tsx         # Exercise list & progress sidebar
 ├── data/
-│   ├── chapter1.ts          # Chapter 1 intro content
-│   ├── curriculum.ts        # Aggregator
-│   ├── curriculum_part1.ts  # Exercises 1-31
-│   └── curriculum_part2.ts  # Exercises 32-63
+│   ├── curriculum_part1.ts     # Exercises 1–31 (Checkpoint 1 & 2)
+│   ├── curriculum_part2.ts     # Exercises 32–63 (Checkpoint 3 & Final)
+│   ├── curriculum.ts           # Aggregator — getAllExercises(), getExerciseById()
+│   └── chapter1.ts             # Intro chapter content
 ├── hooks/
-│   ├── useProgress.ts       # Progress state management
-│   └── useRustExecution.ts  # Rust Playground API integration
+│   └── useRustExecution.ts     # Run / Submit logic against Playground API
 ├── pages/
-│   ├── Dashboard.tsx        # Main dashboard
-│   ├── IntroPage.tsx        # Chapter 1 introduction
-│   ├── LessonPage.tsx       # Individual exercise page
-│   └── ExamPage.tsx         # Checkpoint exam
+│   ├── Dashboard.tsx           # Home screen with progress overview
+│   ├── LessonPage.tsx          # Exercise view: concept, editor, test runner
+│   ├── ExamPage.tsx            # Checkpoint exam (timed, scored)
+│   └── IntroPage.tsx           # Intro chapter reader
 ├── store/
-│   └── progress.ts          # localStorage persistence
-├── styles/
-│   └── globals.css          # Dark theme design system
-└── types/
-    └── index.ts             # TypeScript types
+│   └── progressStore.ts        # localStorage-backed progress & streak tracking
+├── types/
+│   └── index.ts                # All shared TypeScript types
+└── App.tsx                     # Routes & top-level layout
 ```
 
-## Architecture
+---
 
-- **Frontend**: Vite + React + TypeScript
-- **Editor**: Monaco Editor (@monaco-editor/react)
-- **Rust Execution**: Rust Playground API (play.rust-lang.org) via Vite proxy
-- **Progress Storage**: localStorage
-- **Routing**: React Router v6
-- **No backend required** — runs entirely in the browser
+## Curriculum Overview
 
-## Checkpoints
+63 exercises across 4 checkpoints:
 
 | Checkpoint | Exercises | Topics |
-|-----------|-----------|--------|
-| Chapter 1 | Intro | Install, cargo, variables, types, ownership basics |
-| Checkpoint 1 | 1–19 | Types, arithmetic, strings, arrays, loops, HashMaps |
-| Checkpoint 2 | 20–35 | Ownership, borrowing, structs, traits, iterators |
-| Checkpoint 3 | 36–45 | Generics, enums, algorithms, complex systems |
-| Final | 46–63 | Error handling, linear algebra, external crates |
+|---|---|---|
+| Checkpoint 1 | 1–19 | Scalars, strings, ownership, borrowing, structs, closures, iterators, collections |
+| Checkpoint 2 | 20–35 | Lifetimes, enums, pattern matching, Option, trait objects, error basics |
+| Checkpoint 3 | 36–45 | Generics, traits, From/Into, custom iterators, nested structs |
+| Final | 46–63 | Panic, Result, file I/O, `?` operator, DP algorithms, linear algebra, JSON, date arithmetic |
 
-## Running Tests
+Each exercise includes:
+- **Concept explanation** with comparisons to C#, Java, Go, JavaScript, and Python
+- **Guided examples** with annotated code
+- **Coding challenge** with starter code and hidden test cases
+- **Hints** (unlockable) and a **full solution** (shown after passing)
 
-The "Submit" button sends your code to the Rust Playground API with automated test cases. The dev server must be running for the proxy to work.
+---
 
-## Git History
+## How Code Execution Works
 
-See `git log` for the full development history.
+1. User writes Rust code in the Monaco editor.
+2. **Run** — executes the code as-is (must include `fn main`).
+3. **Submit** — runs each test case: the user's function definitions are prepended before the test's `fn main()` block, then the combined code is sent to the Rust Playground API.
+4. Pass/fail results appear per test case in the Console panel.
+
+The Vite dev server proxies `/playground` → `https://play.rust-lang.org` to avoid CORS issues during development.
+
+---
+
+## Progress & Unlock System
+
+All progress is saved in `localStorage` (key: `rust-learning-progress`).
+
+- Exercises unlock sequentially within each checkpoint.
+- Passing all tests marks an exercise complete and unlocks the next one.
+- Completing a checkpoint's exercises unlocks its timed exam.
+- Passing the exam (≥ 70%) unlocks the next checkpoint.
+- A daily streak counter increments when you complete at least one exercise per day.
+
+---
+
+## Production Deployment
+
+```bash
+npm run build
+# Serve the dist/ folder from any static host (Netlify, Vercel, GitHub Pages, etc.)
+```
+
+For production you need a reverse proxy rule: `/playground/*` → `https://play.rust-lang.org/*` with `changeOrigin: true`.
+
+---
+
+## Adding Exercises
+
+1. Add a new `Exercise` object to `curriculum_part1.ts` or `curriculum_part2.ts`.
+2. Follow the existing schema (see `src/types/index.ts` for the full interface).
+3. Write test cases where `code` is a standalone `fn main() { ... }` block — the runner prepends the user's function definitions automatically.
+4. The exercise appears in the sidebar immediately with no other registration needed.
