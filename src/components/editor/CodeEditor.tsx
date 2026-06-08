@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Editor, { type OnMount, type Monaco } from '@monaco-editor/react';
 
 interface CodeEditorProps {
@@ -17,11 +17,28 @@ export default function CodeEditor({
   language = 'rust',
 }: CodeEditorProps) {
   const monacoRef = useRef<Monaco | null>(null);
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const exitFullscreen = useCallback(() => setIsFullscreen(false), []);
+
+  // Escape key exits fullscreen
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') exitFullscreen(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isFullscreen, exitFullscreen]);
+
+  // Tell Monaco to re-layout after fullscreen toggle (size changed)
+  useEffect(() => {
+    editorRef.current?.layout();
+  }, [isFullscreen]);
 
   const handleMount: OnMount = (editor, monaco) => {
     monacoRef.current = monaco;
+    editorRef.current = editor;
 
-    // Custom Rust theme
     monaco.editor.defineTheme('rustpath-dark', {
       base: 'vs-dark',
       inherit: true,
@@ -66,7 +83,6 @@ export default function CodeEditor({
     });
     monaco.editor.setTheme('rustpath-dark');
 
-    // Register Rust language snippets
     monaco.languages.registerCompletionItemProvider('rust', {
       provideCompletionItems: (model, position) => {
         const word = model.getWordUntilPosition(position);
@@ -76,101 +92,50 @@ export default function CodeEditor({
           startColumn: word.startColumn,
           endColumn: word.endColumn,
         };
-
         const suggestions = [
-          {
-            label: 'fn',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Define a function',
-            range,
-          },
-          {
-            label: 'pub fn',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'pub fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Define a public function',
-            range,
-          },
-          {
-            label: 'println!',
-            kind: monaco.languages.CompletionItemKind.Function,
-            insertText: 'println!("${1:}")${0}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Print to stdout with newline',
-            range,
-          },
-          {
-            label: 'vec!',
-            kind: monaco.languages.CompletionItemKind.Function,
-            insertText: 'vec![${1}]',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Create a Vec',
-            range,
-          },
-          {
-            label: 'match',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'match ${1:value} {\n\t${2:pattern} => ${3:result},\n\t_ => ${4:default},\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Pattern matching',
-            range,
-          },
-          {
-            label: 'impl',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'impl ${1:TypeName} {\n\t${0}\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Implement methods for a type',
-            range,
-          },
-          {
-            label: 'struct',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'struct ${1:Name} {\n\t${2:field}: ${3:Type},\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Define a struct',
-            range,
-          },
-          {
-            label: 'enum',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'enum ${1:Name} {\n\t${2:Variant},\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Define an enum',
-            range,
-          },
-          {
-            label: 'if let',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'if let ${1:Some(val)} = ${2:expr} {\n\t${0}\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Pattern match with if let',
-            range,
-          },
-          {
-            label: 'HashMap::new',
-            kind: monaco.languages.CompletionItemKind.Function,
-            insertText: 'use std::collections::HashMap;\nlet mut ${1:map}: HashMap<${2:K}, ${3:V}> = HashMap::new();',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Create a new HashMap',
-            range,
-          },
+          { label: 'fn', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define a function', range },
+          { label: 'pub fn', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'pub fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define a public function', range },
+          { label: 'println!', kind: monaco.languages.CompletionItemKind.Function, insertText: 'println!("${1:}")${0}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Print to stdout with newline', range },
+          { label: 'vec!', kind: monaco.languages.CompletionItemKind.Function, insertText: 'vec![${1}]', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create a Vec', range },
+          { label: 'match', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'match ${1:value} {\n\t${2:pattern} => ${3:result},\n\t_ => ${4:default},\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Pattern matching', range },
+          { label: 'impl', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'impl ${1:TypeName} {\n\t${0}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Implement methods for a type', range },
+          { label: 'struct', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'struct ${1:Name} {\n\t${2:field}: ${3:Type},\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define a struct', range },
+          { label: 'enum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'enum ${1:Name} {\n\t${2:Variant},\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define an enum', range },
+          { label: 'if let', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if let ${1:Some(val)} = ${2:expr} {\n\t${0}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Pattern match with if let', range },
+          { label: 'HashMap::new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'use std::collections::HashMap;\nlet mut ${1:map}: HashMap<${2:K}, ${3:V}> = HashMap::new();', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create a new HashMap', range },
         ];
         return { suggestions };
       },
     });
 
-    // Focus editor
     editor.focus();
   };
 
-  return (
-    <div className="code-editor-wrapper">
+  const FullscreenIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  const ExitFullscreenIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M5 1v4H1M13 5H9V1M9 13v-4h4M1 9h4v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  const editorEl = (
+    <div className={`code-editor-wrapper ${isFullscreen ? 'fullscreen' : ''}`}>
+      {/* Fullscreen toggle button */}
+      <button
+        className="editor-fs-btn"
+        onClick={() => setIsFullscreen((v) => !v)}
+        title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
+      >
+        {isFullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}
+      </button>
+
       <Editor
-        height={height}
+        height={isFullscreen ? '100%' : height}
         language={language}
         value={value}
         onChange={(v) => onChange(v ?? '')}
@@ -198,6 +163,13 @@ export default function CodeEditor({
           roundedSelection: true,
           formatOnPaste: true,
           formatOnType: false,
+          scrollbar: {
+            vertical: 'auto',
+            horizontal: 'auto',
+            verticalScrollbarSize: 8,
+            horizontalScrollbarSize: 8,
+          },
+          overviewRulerLanes: 0,
         }}
         loading={
           <div className="editor-loading">
@@ -206,11 +178,60 @@ export default function CodeEditor({
           </div>
         }
       />
+
       <style>{`
         .code-editor-wrapper {
+          position: relative;
           border-radius: var(--radius-md);
           overflow: hidden;
           border: 1px solid var(--border-normal);
+          /* Resize handle */
+          resize: vertical;
+          min-height: 120px;
+        }
+        .code-editor-wrapper.fullscreen {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          border-radius: 0;
+          border: none;
+          resize: none;
+        }
+        /* Backdrop behind fullscreen editor */
+        .code-editor-wrapper.fullscreen::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.85);
+          z-index: -1;
+        }
+        .editor-fs-btn {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          z-index: 10;
+          width: 26px;
+          height: 26px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(13, 13, 20, 0.75);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-sm);
+          color: var(--text-muted);
+          cursor: pointer;
+          opacity: 0;
+          transition: opacity 0.15s, color 0.15s, background 0.15s;
+          backdrop-filter: blur(4px);
+        }
+        .code-editor-wrapper:hover .editor-fs-btn,
+        .code-editor-wrapper.fullscreen .editor-fs-btn {
+          opacity: 1;
+        }
+        .editor-fs-btn:hover {
+          color: var(--text-primary);
+          background: rgba(30, 30, 50, 0.95);
+          border-color: var(--rust);
         }
         .editor-loading {
           display: flex;
@@ -225,4 +246,6 @@ export default function CodeEditor({
       `}</style>
     </div>
   );
+
+  return editorEl;
 }
