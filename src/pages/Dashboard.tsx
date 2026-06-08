@@ -63,6 +63,29 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
         )}
       </div>
 
+      {/* Playground shortcut */}
+      <button className="playground-card" onClick={() => navigate('/playground')}>
+        <div className="playground-card-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="2" y="3" width="24" height="18" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M8 10l5 4-5 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 18h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            <rect x="7" y="23" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/>
+          </svg>
+        </div>
+        <div className="playground-card-text">
+          <span className="playground-card-title">Rust Playground</span>
+          <span className="playground-card-sub">
+            Free-form editor with main.rs + helpers.rs module — experiment with anything
+          </span>
+        </div>
+        <div className="playground-card-arrow">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </button>
+
       {/* Stats row */}
       <div className="stats-grid">
         <div className="stat-card">
@@ -216,6 +239,28 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
 
       <style>{`
         .dashboard { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .playground-card {
+          display: flex; align-items: center; gap: 16px;
+          padding: 16px 20px;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-lg);
+          cursor: pointer;
+          transition: all var(--transition);
+          text-align: left;
+          background-image: radial-gradient(ellipse at bottom left, rgba(249,115,22,0.07) 0%, transparent 60%);
+        }
+        .playground-card:hover {
+          border-color: var(--rust);
+          background-image: radial-gradient(ellipse at bottom left, rgba(249,115,22,0.13) 0%, transparent 60%);
+          transform: translateY(-1px);
+        }
+        .playground-card-icon { color: var(--rust-light); flex-shrink: 0; }
+        .playground-card-text { flex: 1; }
+        .playground-card-title { display: block; font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+        .playground-card-sub { display: block; font-size: 0.8125rem; color: var(--text-muted); }
+        .playground-card-arrow { color: var(--text-muted); transition: color var(--transition); }
+        .playground-card:hover .playground-card-arrow { color: var(--rust-light); }
         .dashboard-hero {
           display: flex; align-items: center; justify-content: space-between;
           padding: 28px 32px;

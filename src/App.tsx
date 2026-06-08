@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import IntroPage from './pages/IntroPage';
 import LessonPage from './pages/LessonPage';
 import ExamPage from './pages/ExamPage';
+import Playground from './pages/Playground';
 import { useProgress } from './hooks/useProgress';
 import type { Exercise } from './types';
 import './styles/globals.css';
@@ -68,6 +69,7 @@ function AppContent() {
                 />
               }
             />
+            <Route path="/playground" element={<Playground />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

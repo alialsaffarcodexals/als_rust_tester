@@ -158,6 +158,19 @@ export default function Sidebar({ progress }: SidebarProps) {
           </span>
           Dashboard
         </button>
+        <button
+          className={`sidebar-nav-item ${isActive('/playground') ? 'active' : ''}`}
+          onClick={() => navigate('/playground')}
+        >
+          <span className="sidebar-nav-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="2" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.2"/>
+              <path d="M5 6l3 2-3 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 10h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
+          </span>
+          Playground
+        </button>
       </nav>
 
       <div className="sidebar-divider" />
