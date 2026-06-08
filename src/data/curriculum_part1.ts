@@ -21,7 +21,7 @@ export const exercises1: Exercise[] = [
       {
         title: 'Typed arithmetic',
         explanation: 'Rust literal suffixes specify the type inline so the compiler knows exactly what you mean.',
-        code: 'fn main() {\n    let a: u8 = 200;\n    let b: u8 = 55;\n    println!("{}", a + b); // 255\n    // a + 300u8 would not compile â€” overflow!\n}',
+        code: 'fn main() {\n    let a: u8 = 200;\n    let b: u8 = 55;\n    println!("{}", a + b); // 255\n    // a + 300u8 would not compile — overflow!\n}',
       },
       {
         title: 'Float remainder',
@@ -52,7 +52,7 @@ export const exercises1: Exercise[] = [
       { id: 'test_1_5', description: 'rem(10.0, 3.0) == 1', code: 'fn main() { println!("{}", rem(10.0f32, 3.0f32)); }', expectedOutput: '1', hidden: true },
     ],
     hints: [
-      'Each function body is a single expression â€” no `return` keyword needed.',
+      'Each function body is a single expression — no `return` keyword needed.',
       'Use the exact operator: `+` sum, `-` diff, `*` pro, `/` quo, `%` rem.',
       'Rust does NOT auto-cast; keep types matching (u8+u8, f32+f32).',
     ],
@@ -60,17 +60,17 @@ export const exercises1: Exercise[] = [
   {
     id: 2,
     slug: 'doubtful',
-    title: 'Doubtful â€” Mutable References',
+    title: 'Doubtful — Mutable References',
     checkpoint: 'checkpoint1',
     difficulty: 'easiest',
     order: 2,
-    concept: 'In Rust, `&mut T` is a mutable reference â€” you borrow a value to modify it without taking ownership. Only one mutable reference can exist at a time (borrow checker rule). `String::push(char)` appends a single character.',
+    concept: 'In Rust, `&mut T` is a mutable reference — you borrow a value to modify it without taking ownership. Only one mutable reference can exist at a time (borrow checker rule). `String::push(char)` appends a single character.',
     whyItExists: 'Mutable references let functions modify caller data without copying. The single-writer rule prevents data races at compile time.',
     comparisons: [
       { language: 'C#', code: 'void Doubtful(ref string s) { s += "?"; }', note: 'C# uses `ref` keyword for pass-by-reference.' },
       { language: 'Java', code: '// Java strings are immutable; use StringBuilder\nvoid doubtful(StringBuilder s) { s.append("?"); }', note: 'Java String is immutable; StringBuilder allows mutation.' },
       { language: 'Go', code: 'func doubtful(s *string) { *s += "?" }', note: 'Go uses explicit pointer syntax.' },
-      { language: 'JavaScript', code: '// Strings are immutable in JS\nfunction doubtful(s) { return s + "?"; }', note: 'JS cannot mutate strings in place â€” must return new string.' },
+      { language: 'JavaScript', code: '// Strings are immutable in JS\nfunction doubtful(s) { return s + "?"; }', note: 'JS cannot mutate strings in place — must return new string.' },
       { language: 'Python', code: '# Python strings are immutable\ndef doubtful(s): return s + "?"', note: 'Python also returns new string.' },
     ],
     guidedExamples: [
@@ -100,15 +100,15 @@ export const exercises1: Exercise[] = [
       { id: 'test_2_3', description: '"Rust" becomes "Rust?"', code: 'fn main() { let mut s = String::from("Rust"); doubtful(&mut s); println!("{}", s); }', expectedOutput: 'Rust?', hidden: true },
     ],
     hints: [
-      "Use `s.push('?')` â€” single quotes for `char`, double quotes for `&str`.",
-      'The function signature already says `&mut String` â€” that grants write access.',
+      "Use `s.push('?')` — single quotes for `char`, double quotes for `&str`.",
+      'The function signature already says `&mut String` — that grants write access.',
       'No return value needed; push modifies in-place.',
     ],
   },
   {
     id: 3,
     slug: 'division-and-remainder',
-    title: 'Division and Remainder â€” Tuples',
+    title: 'Division and Remainder — Tuples',
     checkpoint: 'checkpoint1',
     difficulty: 'easiest',
     order: 3,
@@ -119,7 +119,7 @@ export const exercises1: Exercise[] = [
       { language: 'Java', code: '// Java has no tuple; use array or custom class\nint[] divide(int x, int y) { return new int[]{x/y, x%y}; }', note: 'Java requires a wrapper type or record.' },
       { language: 'Go', code: 'func divide(x, y int) (int, int) { return x / y, x % y }', note: 'Go natively supports multiple return values.' },
       { language: 'JavaScript', code: 'function divide(x, y) { return [Math.trunc(x/y), x%y]; }', note: 'JS uses array destructuring to fake tuples.' },
-      { language: 'Python', code: 'def divide(x, y): return x // y, x % y', note: 'Python tuples are implicit â€” just separate values with a comma.' },
+      { language: 'Python', code: 'def divide(x, y): return x // y, x % y', note: 'Python tuples are implicit — just separate values with a comma.' },
     ],
     guidedExamples: [
       {
@@ -143,7 +143,7 @@ export const exercises1: Exercise[] = [
       { id: 'test_3_3', description: 'divide(17, 5) == (3, 2)', code: 'fn main() { let (q, r) = divide(17, 5); println!("{} {}", q, r); }', expectedOutput: '3 2', hidden: true },
     ],
     hints: [
-      'Return `(x / y, x % y)` â€” parentheses form the tuple.',
+      'Return `(x / y, x % y)` — parentheses form the tuple.',
       'Integer division in Rust truncates toward zero.',
       'Destructure the result with `let (q, r) = divide(...)` to use each part.',
     ],
@@ -151,11 +151,11 @@ export const exercises1: Exercise[] = [
   {
     id: 4,
     slug: 'temperature-conversion',
-    title: 'Temperature Conversion â€” f64 Arithmetic',
+    title: 'Temperature Conversion — f64 Arithmetic',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 4,
-    concept: '`f64` is Rust\'s 64-bit floating-point type â€” the default for decimal numbers. Write `32.0` not `32` when you need a float literal; Rust won\'t silently convert integers to floats.',
+    concept: '`f64` is Rust\'s 64-bit floating-point type — the default for decimal numbers. Write `32.0` not `32` when you need a float literal; Rust won\'t silently convert integers to floats.',
     whyItExists: 'Explicit float literals prevent the class of bugs where integer division silently truncates (e.g., `5 / 2 == 2` not `2.5`).',
     comparisons: [
       { language: 'C#', code: 'double FtoC(double f) => (f - 32) / 1.8;', note: 'C# double is 64-bit like Rust f64.' },
@@ -180,7 +180,7 @@ export const exercises1: Exercise[] = [
       'pub fn fahrenheit_to_celsius(f: f64) -> f64',
       'pub fn celsius_to_fahrenheit(c: f64) -> f64',
     ],
-    constraints: ['Use f64 arithmetic â€” do not round the result'],
+    constraints: ['Use f64 arithmetic — do not round the result'],
     starterCode: 'pub fn fahrenheit_to_celsius(f: f64) -> f64 {\n    todo!()\n}\npub fn celsius_to_fahrenheit(c: f64) -> f64 {\n    todo!()\n}',
     solution: 'pub fn fahrenheit_to_celsius(f: f64) -> f64 { (f - 32.0) / 1.8 }\npub fn celsius_to_fahrenheit(c: f64) -> f64 { (c * 1.8) + 32.0 }',
     testCases: [
@@ -191,18 +191,18 @@ export const exercises1: Exercise[] = [
     hints: [
       'C = (F - 32.0) / 1.8',
       'F = (C * 1.8) + 32.0',
-      'Use float literals like `32.0` â€” Rust will not auto-convert int literals.',
+      'Use float literals like `32.0` — Rust will not auto-convert int literals.',
     ],
   },
   {
     id: 5,
     slug: 'reverse-string',
-    title: 'Reverse String â€” Iterator Chain',
+    title: 'Reverse String — Iterator Chain',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 5,
     concept: 'Rust strings are UTF-8. `.chars()` gives an iterator of Unicode scalar values. `.rev()` reverses any iterator. `.collect::<String>()` collapses it back into a String. This iterator pipeline pattern appears constantly in Rust.',
-    whyItExists: 'Iterators are lazy and composable. This chain replaces error-prone index loops and handles Unicode correctly â€” unlike byte-level reversal which would corrupt multi-byte characters.',
+    whyItExists: 'Iterators are lazy and composable. This chain replaces error-prone index loops and handles Unicode correctly — unlike byte-level reversal which would corrupt multi-byte characters.',
     comparisons: [
       { language: 'C#', code: 'string RevStr(string s) => new string(s.Reverse().ToArray());', note: 'LINQ Reverse works the same way.' },
       { language: 'Java', code: 'String revStr(String s) { return new StringBuilder(s).reverse().toString(); }', note: 'Java StringBuilder.reverse().' },
@@ -239,11 +239,11 @@ export const exercises1: Exercise[] = [
   {
     id: 6,
     slug: 'arrays',
-    title: 'Arrays â€” Slices and Fixed Arrays',
+    title: 'Arrays — Slices and Fixed Arrays',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 6,
-    concept: '`[T; N]` is a fixed-size array (size known at compile time). `&[T]` is a slice â€” a borrowed view into any contiguous sequence. `.iter().sum()` uses the `Sum` trait. `[value; N]` creates an array filled with one value repeated N times.',
+    concept: '`[T; N]` is a fixed-size array (size known at compile time). `&[T]` is a slice — a borrowed view into any contiguous sequence. `.iter().sum()` uses the `Sum` trait. `[value; N]` creates an array filled with one value repeated N times.',
     whyItExists: 'Fixed arrays live on the stack; slices let functions accept arrays of any length. This avoids the `int[]` vs `List<int>` fragmentation seen in C#/Java.',
     comparisons: [
       { language: 'C#', code: 'int Sum(int[] a) => a.Sum();\nint[] ThirtyTwoTens() => Enumerable.Repeat(10, 32).ToArray();', note: 'LINQ Sum and Repeat.' },
@@ -268,7 +268,7 @@ export const exercises1: Exercise[] = [
       { title: 'Rust Arrays and Slices', url: 'https://www.youtube.com/watch?v=t047Hseyj_k', description: 'Arrays, slices, Vec in Rust' },
       { title: 'Rust Iterators', url: 'https://www.youtube.com/watch?v=yozQ9C69pNs', description: 'Iterator methods' },
     ],
-    question: 'Write two functions:\na) sum(a: &[i32]) -> i32  â€” sum of elements in a slice\nb) thirtytwo_tens() -> [i32; 32] â€” array of 32 tens',
+    question: 'Write two functions:\na) sum(a: &[i32]) -> i32  — sum of elements in a slice\nb) thirtytwo_tens() -> [i32; 32] — array of 32 tens',
     functionSignatures: ['pub fn sum(a: &[i32]) -> i32', 'pub fn thirtytwo_tens() -> [i32; 32]'],
     constraints: ['sum must accept any slice length', 'thirtytwo_tens must return exactly [i32; 32]'],
     starterCode: 'pub fn sum(a: &[i32]) -> i32 {\n    todo!()\n}\npub fn thirtytwo_tens() -> [i32; 32] {\n    todo!()\n}',
@@ -280,13 +280,13 @@ export const exercises1: Exercise[] = [
     ],
     hints: [
       'Use `.iter().sum()` for sum.',
-      'Use `[10i32; 32]` for thirtytwo_tens â€” the `;` means "fill with this value".',
+      'Use `[10i32; 32]` for thirtytwo_tens — the `;` means "fill with this value".',
     ],
   },
   {
     id: 7,
     slug: 'string-literals',
-    title: 'String Literals â€” &str Methods',
+    title: 'String Literals — &str Methods',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 7,
@@ -340,7 +340,7 @@ export const exercises1: Exercise[] = [
   {
     id: 8,
     slug: 'char-length',
-    title: 'Char Length â€” Unicode vs Bytes',
+    title: 'Char Length — Unicode vs Bytes',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 8,
@@ -375,7 +375,7 @@ export const exercises1: Exercise[] = [
       { id: 'test_8_3', description: 'single char', code: 'fn main() { println!("{}", char_length("a")); }', expectedOutput: '1', hidden: true },
     ],
     hints: [
-      'Use `.chars().count()` â€” not `.len()`.',
+      'Use `.chars().count()` — not `.len()`.',
       '`.chars()` creates an iterator of Unicode scalar values.',
       '`.count()` drains the iterator and returns how many items there were.',
     ],
@@ -383,7 +383,7 @@ export const exercises1: Exercise[] = [
   {
     id: 9,
     slug: 'to-url',
-    title: 'to_url â€” Split-Join Pipeline',
+    title: 'to_url — Split-Join Pipeline',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 9,
@@ -425,17 +425,17 @@ export const exercises1: Exercise[] = [
   {
     id: 10,
     slug: 'delete-prefix',
-    title: 'delete_prefix â€” Option<T>',
+    title: 'delete_prefix — Option<T>',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 10,
-    concept: '`Option<T>` is Rust\'s null-safety type. `Some(value)` means a value exists; `None` means it does not. The compiler forces you to handle both cases â€” eliminating null-pointer exceptions.',
+    concept: '`Option<T>` is Rust\'s null-safety type. `Some(value)` means a value exists; `None` means it does not. The compiler forces you to handle both cases — eliminating null-pointer exceptions.',
     whyItExists: 'Option<T> makes "no value" explicit in the type signature. It\'s the same idea as Optional in Java or T? in C#, but enforced by the compiler.',
     comparisons: [
       { language: 'C#', code: 'string? DeletePrefix(string prefix, string s)\n    => s.StartsWith(prefix) ? s[prefix.Length..] : null;', note: 'Nullable reference type (opt-in).' },
       { language: 'Java', code: 'Optional<String> del(String prefix, String s) {\n    return s.startsWith(prefix)\n        ? Optional.of(s.substring(prefix.length()))\n        : Optional.empty();\n}', note: 'Java Optional.' },
       { language: 'Go', code: 'func del(prefix, s string) (string, bool) {\n    if strings.HasPrefix(s, prefix) { return s[len(prefix):], true }\n    return "", false\n}', note: 'Go multiple returns for ok pattern.' },
-      { language: 'JavaScript', code: "function del(prefix, s) {\n    return s.startsWith(prefix) ? s.slice(prefix.length) : null;\n}", note: 'Returns null â€” callers often forget to check.' },
+      { language: 'JavaScript', code: "function del(prefix, s) {\n    return s.startsWith(prefix) ? s.slice(prefix.length) : null;\n}", note: 'Returns null — callers often forget to check.' },
       { language: 'Python', code: "def del_prefix(prefix, s):\n    return s[len(prefix):] if s.startswith(prefix) else None", note: 'Python None.' },
     ],
     guidedExamples: [
@@ -468,7 +468,7 @@ export const exercises1: Exercise[] = [
   {
     id: 11,
     slug: 'capitalizing',
-    title: 'Capitalizing â€” Char Iteration',
+    title: 'Capitalizing — Char Iteration',
     checkpoint: 'checkpoint1',
     difficulty: 'medium',
     order: 11,
@@ -489,7 +489,7 @@ export const exercises1: Exercise[] = [
       },
       {
         title: 'Toggle each char case',
-        explanation: 'Map each char: upperâ†’lower, lowerâ†’upper.',
+        explanation: 'Map each char: upper→lower, lower→upper.',
         code: 'fn main() {\n    let toggled: String = "Hello".chars().map(|c| {\n        if c.is_uppercase() { c.to_lowercase().next().unwrap() }\n        else { c.to_uppercase().next().unwrap() }\n    }).collect();\n    println!("{}", toggled); // hELLO\n}',
       },
     ],
@@ -516,18 +516,18 @@ export const exercises1: Exercise[] = [
       'capitalize_first: `let mut c = input.chars(); match c.next() { None => String::new(), Some(f) => ... }`.',
       'title_case: split_whitespace, map(capitalize_first), join(" ").',
       'change_case: chars().map(|c| if c.is_uppercase() { lower } else { upper }).collect().',
-      '`.to_uppercase()` returns an iterator â€” call `.next().unwrap()` to get the char.',
+      '`.to_uppercase()` returns an iterator — call `.next().unwrap()` to get the char.',
     ],
   },
   {
     id: 12,
     slug: 'name-initials',
-    title: 'Name Initials â€” Nested Iterators',
+    title: 'Name Initials — Nested Iterators',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 12,
     concept: 'Iterator adapters like `.map()` transform collections lazily. You can nest iterators: map over a Vec of names, then within each name map over words. `.collect()` materialises the result into a Vec<String>.',
-    whyItExists: 'Functional collection pipelines replace nested loops. They are more readable and the compiler optimises them to equivalent loop code â€” zero-cost abstractions.',
+    whyItExists: 'Functional collection pipelines replace nested loops. They are more readable and the compiler optimises them to equivalent loop code — zero-cost abstractions.',
     comparisons: [
       { language: 'C#', code: 'names.Select(n => string.Join(" ", n.Split().Select(w => w[0]+"."))).ToList()', note: 'LINQ Select chains.' },
       { language: 'Java', code: 'names.stream().map(n -> Arrays.stream(n.split(" ")).map(w -> w.charAt(0)+".").collect(joining(" "))).collect(toList())', note: 'Java streams.' },
@@ -565,12 +565,12 @@ export const exercises1: Exercise[] = [
   {
     id: 13,
     slug: 'find-factorial',
-    title: 'Find Factorial â€” Recursion',
+    title: 'Find Factorial — Recursion',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 13,
     concept: 'Rust supports recursion: a function calls itself with `fn_name(args)`. Use `if/else` or `match` for the base case. The last expression is the return value. Rust does not guarantee TCO but handles small depths fine.',
-    whyItExists: 'Factorial maps naturally to a recursive definition. Rust handles recursion identically to Java/Go/C# â€” no special syntax needed.',
+    whyItExists: 'Factorial maps naturally to a recursive definition. Rust handles recursion identically to Java/Go/C# — no special syntax needed.',
     comparisons: [
       { language: 'C#', code: 'ulong Factorial(ulong n) => n <= 1 ? 1 : n * Factorial(n - 1);', note: 'Ternary recursion.' },
       { language: 'Java', code: 'long factorial(long n) { return n <= 1 ? 1 : n * factorial(n-1); }', note: 'Same pattern.' },
@@ -607,12 +607,12 @@ export const exercises1: Exercise[] = [
   {
     id: 14,
     slug: 'fibonacci2',
-    title: 'Fibonacci â€” Iterative Loop',
+    title: 'Fibonacci — Iterative Loop',
     checkpoint: 'checkpoint1',
     difficulty: 'medium',
     order: 14,
     concept: 'An iterative Fibonacci uses two mutable variables that swap each iteration. `let mut` declares a mutable binding. `for _ in 1..n` runs a loop n-1 times. The swap pattern avoids exponential recursion.',
-    whyItExists: 'Iterative Fibonacci runs in O(n) time vs O(2^n) for naive recursion. Mutable local variables are Rust\'s way to accumulate state â€” safe, stack-allocated, and fast.',
+    whyItExists: 'Iterative Fibonacci runs in O(n) time vs O(2^n) for naive recursion. Mutable local variables are Rust\'s way to accumulate state — safe, stack-allocated, and fast.',
     comparisons: [
       { language: 'C#', code: 'int Fib(int n){int a=0,b=1;for(int i=1;i<n;i++){int t=a+b;a=b;b=t;}return n==0?0:b;}', note: 'Classic temp-swap loop.' },
       { language: 'Java', code: 'int fib(int n){if(n==0)return 0;int a=0,b=1;for(int i=1;i<n;i++){int t=a+b;a=b;b=t;}return b;}', note: 'Same pattern.' },
@@ -651,12 +651,12 @@ export const exercises1: Exercise[] = [
   {
     id: 15,
     slug: 'looping',
-    title: 'Looping â€” loop, while, for',
+    title: 'Looping — loop, while, for',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 15,
     concept: 'Rust has three loop forms: `loop` (infinite, exit with `break`), `while condition`, and `for item in iterator`. `loop` is preferred when you don\'t know the iteration count in advance. `break value` returns a value from the loop.',
-    whyItExists: '`loop` is cleaner than `while true` and uniquely allows `break value` â€” a loop expression that returns a result, avoiding extra variables.',
+    whyItExists: '`loop` is cleaner than `while true` and uniquely allows `break value` — a loop expression that returns a result, avoiding extra variables.',
     comparisons: [
       { language: 'C#', code: 'while (true) { ... if (done) break; }', note: 'C# uses while(true).' },
       { language: 'Java', code: 'do { ... } while (!done);', note: 'Java do-while runs at least once.' },
@@ -699,7 +699,7 @@ export const exercises1: Exercise[] = [
   {
     id: 16,
     slug: 'bigger',
-    title: 'Bigger â€” HashMap & max()',
+    title: 'Bigger — HashMap & max()',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 16,
@@ -736,13 +736,13 @@ export const exercises1: Exercise[] = [
     hints: [
       'Add `use std::collections::HashMap;` at the top.',
       '`.values()` gives an iterator of `&i32`.',
-      '`.max().unwrap()` gives the largest `&i32` â€” dereference with `*` for the `i32`.',
+      '`.max().unwrap()` gives the largest `&i32` — dereference with `*` for the `i32`.',
     ],
   },
   {
     id: 17,
     slug: 'groceries',
-    title: 'Groceries â€” Vec<String> Mutation',
+    title: 'Groceries — Vec<String> Mutation',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 17,
@@ -766,7 +766,7 @@ export const exercises1: Exercise[] = [
       { title: 'Rust Vec', url: 'https://www.youtube.com/watch?v=t047Hseyj_k', description: 'Vec<T> in Rust' },
       { title: 'Rust for Beginners', url: 'https://www.youtube.com/watch?v=BpPEoZW5IiY', description: 'freeCodeCamp Rust course' },
     ],
-    question: 'Write two functions for a Vec<String>:\na) insert(vec: &mut Vec<String>, val: String) â€” push val into vec\nb) at_index(vec: &Vec<String>, index: usize) -> String â€” return cloned value at index',
+    question: 'Write two functions for a Vec<String>:\na) insert(vec: &mut Vec<String>, val: String) — push val into vec\nb) at_index(vec: &Vec<String>, index: usize) -> String — return cloned value at index',
     functionSignatures: [
       'pub fn insert(vec: &mut Vec<String>, val: String)',
       'pub fn at_index(vec: &Vec<String>, index: usize) -> String',
@@ -779,18 +779,18 @@ export const exercises1: Exercise[] = [
       { id: 'test_17_2', description: 'insert two, read second', code: 'fn main() { let mut v = Vec::new(); insert(&mut v, "a".to_string()); insert(&mut v, "b".to_string()); println!("{}", at_index(&v, 1)); }', expectedOutput: 'b', hidden: false },
     ],
     hints: [
-      '`insert`: call `vec.push(val)` â€” val is already an owned String.',
-      '`at_index`: return `vec[index].clone()` â€” clone gives an owned String.',
+      '`insert`: call `vec.push(val)` — val is already an owned String.',
+      '`at_index`: return `vec[index].clone()` — clone gives an owned String.',
     ],
   },
   {
     id: 18,
     slug: 'tuples-refs',
-    title: 'Tuple Structs â€” Positional Fields',
+    title: 'Tuple Structs — Positional Fields',
     checkpoint: 'checkpoint1',
     difficulty: 'easy',
     order: 18,
-    concept: 'A tuple struct `struct Foo(T1, T2)` is a named wrapper around positional fields, accessed as `foo.0`, `foo.1`. It adds type-safety over raw tuples â€” `struct Meters(f64)` and `struct Seconds(f64)` can\'t be mixed.',
+    concept: 'A tuple struct `struct Foo(T1, T2)` is a named wrapper around positional fields, accessed as `foo.0`, `foo.1`. It adds type-safety over raw tuples — `struct Meters(f64)` and `struct Seconds(f64)` can\'t be mixed.',
     whyItExists: 'Positional structs give you a named type without verbose field names. They prevent accidentally swapping arguments of the same type.',
     comparisons: [
       { language: 'C#', code: 'record Student(uint Id, string FirstName, string LastName);', note: 'C# positional records.' },
@@ -827,14 +827,14 @@ export const exercises1: Exercise[] = [
     ],
     hints: [
       'Access fields with `student.0`, `student.1`, `student.2`.',
-      'Use `.clone()` on String fields â€” you can\'t return a reference to owned data.',
+      'Use `.clone()` on String fields — you can\'t return a reference to owned data.',
       'Put `pub` on both the struct and its fields.',
     ],
   },
   {
     id: 19,
     slug: 'speed-transformation',
-    title: 'Speed Transformation â€” Unit Conversion',
+    title: 'Speed Transformation — Unit Conversion',
     checkpoint: 'checkpoint1',
     difficulty: 'easiest',
     order: 19,
@@ -870,17 +870,17 @@ export const exercises1: Exercise[] = [
     ],
     hints: [
       'Divide km_h by 3.6.',
-      'Or: km_h * 1000.0 / 3600.0 â€” same result.',
+      'Or: km_h * 1000.0 / 3600.0 — same result.',
     ],
   },
   {
     id: 20,
     slug: 'borrow',
-    title: 'Borrow â€” str_len with References',
+    title: 'Borrow — str_len with References',
     checkpoint: 'checkpoint2',
     difficulty: 'easiest',
     order: 20,
-    concept: 'Borrowing means lending a value temporarily without transferring ownership. `&str` is a borrowed string slice â€” the function can read it but the caller still owns the data. `.len()` returns the byte length of the string.',
+    concept: 'Borrowing means lending a value temporarily without transferring ownership. `&str` is a borrowed string slice — the function can read it but the caller still owns the data. `.len()` returns the byte length of the string.',
     whyItExists: 'Borrowing is Rust\'s way to let functions access data without copying it. Without borrowing you\'d have to move every value into every function that uses it, making code impossible to write.',
     comparisons: [
       { language: 'C#', code: 'int StrLen(string s) => s.Length;', note: 'C# strings are reference types; passing is implicit borrow.' },
@@ -892,7 +892,7 @@ export const exercises1: Exercise[] = [
     guidedExamples: [
       {
         title: 'Borrowing a string',
-        explanation: '`&str` is an immutable borrow â€” read it without consuming it.',
+        explanation: '`&str` is an immutable borrow — read it without consuming it.',
         code: 'fn print_len(s: &str) {\n    println!("{}", s.len());\n}\nfn main() {\n    let s = String::from("hello");\n    print_len(&s); // s is still valid here\n    println!("{}", s); // hello\n}',
       },
     ],
@@ -912,21 +912,21 @@ export const exercises1: Exercise[] = [
     ],
     hints: [
       'Use `.len()` on the string slice.',
-      '`.len()` returns bytes â€” for ASCII this equals character count.',
+      '`.len()` returns bytes — for ASCII this equals character count.',
     ],
   },
   {
     id: 21,
     slug: 'copy',
-    title: 'Copy â€” Value Semantics vs Move',
+    title: 'Copy — Value Semantics vs Move',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 21,
-    concept: 'Types that implement `Copy` (like `i32`, `f64`) are copied on assignment â€” the original is still usable. Types that don\'t implement `Copy` (like `String`, `Vec`) are *moved* â€” the original is gone. Returning both the original and a computed result demonstrates ownership transfer.',
-    whyItExists: 'Copy semantics make small fixed-size values cheap to duplicate. Move semantics make heap-allocated values explicit about ownership â€” preventing double-free and use-after-free.',
+    concept: 'Types that implement `Copy` (like `i32`, `f64`) are copied on assignment — the original is still usable. Types that don\'t implement `Copy` (like `String`, `Vec`) are *moved* — the original is gone. Returning both the original and a computed result demonstrates ownership transfer.',
+    whyItExists: 'Copy semantics make small fixed-size values cheap to duplicate. Move semantics make heap-allocated values explicit about ownership — preventing double-free and use-after-free.',
     comparisons: [
       { language: 'C#', code: '// Value types (struct) copy; reference types (class) reference-share', note: 'C# separates value/reference types similarly.' },
-      { language: 'Java', code: '// Primitives copy; objects share references (no move semantics)', note: 'Java has no move â€” everything is reference-counted at GC level.' },
+      { language: 'Java', code: '// Primitives copy; objects share references (no move semantics)', note: 'Java has no move — everything is reference-counted at GC level.' },
       { language: 'Go', code: '// Go copies structs by value; slices/maps share backing array', note: 'Go copies are explicit but no compiler enforcement.' },
       { language: 'JavaScript', code: '// Primitives copy; objects/arrays share references', note: 'No ownership system; GC handles cleanup.' },
       { language: 'Python', code: '# Everything is a reference; integers are interned for small values', note: 'No explicit ownership; GC reference-counts.' },
@@ -935,7 +935,7 @@ export const exercises1: Exercise[] = [
       {
         title: 'i32 copies; String moves',
         explanation: 'After moving a String you can\'t use the original.',
-        code: 'fn main() {\n    let x: i32 = 5;\n    let y = x;      // copy â€” x still valid\n    println!("{} {}", x, y);\n\n    let s = String::from("hi");\n    let t = s;      // move â€” s is invalid now!\n    // println!("{}", s); // compile error\n    println!("{}", t);\n}',
+        code: 'fn main() {\n    let x: i32 = 5;\n    let y = x;      // copy — x still valid\n    println!("{} {}", x, y);\n\n    let s = String::from("hi");\n    let t = s;      // move — s is invalid now!\n    // println!("{}", s); // compile error\n    println!("{}", t);\n}',
       },
       {
         title: 'Returning original + result',
@@ -947,7 +947,7 @@ export const exercises1: Exercise[] = [
       { title: 'Rust Ownership', url: 'https://www.youtube.com/watch?v=VFIOSWy93H0', description: 'Move vs Copy semantics' },
       { title: 'Rust for Beginners', url: 'https://www.youtube.com/watch?v=BpPEoZW5IiY', description: 'freeCodeCamp Rust course' },
     ],
-    question: 'Write three functions that each take a value AND return it alongside a computed result:\na) nbr_function(c: i32) -> (i32, f64, f64)  â€” returns (c, e^c, ln(|c|))\nb) str_function(a: String) -> (String, String)  â€” returns (original, exp of each space-separated number)\nc) vec_function(b: Vec<i32>) -> (Vec<i32>, Vec<f64>)  â€” returns (original vec, ln(|x|) for each element)',
+    question: 'Write three functions that each take a value AND return it alongside a computed result:\na) nbr_function(c: i32) -> (i32, f64, f64)  — returns (c, e^c, ln(|c|))\nb) str_function(a: String) -> (String, String)  — returns (original, exp of each space-separated number)\nc) vec_function(b: Vec<i32>) -> (Vec<i32>, Vec<f64>)  — returns (original vec, ln(|x|) for each element)',
     functionSignatures: [
       'pub fn nbr_function(c: i32) -> (i32, f64, f64)',
       'pub fn str_function(a: String) -> (String, String)',
@@ -964,18 +964,18 @@ export const exercises1: Exercise[] = [
     hints: [
       'nbr_function: `(c, (c as f64).exp(), (c.abs() as f64).ln())`.',
       'str_function: split_whitespace, parse each as f64, exp(), to_string(), join, return (a, result).',
-      'vec_function: collect logs first, then return (b, logs) â€” b is still valid after collecting logs from b.iter().',
+      'vec_function: collect logs first, then return (b, logs) — b is still valid after collecting logs from b.iter().',
     ],
   },
   {
     id: 22,
     slug: 'ownership',
-    title: 'Ownership â€” first_subword',
+    title: 'Ownership — first_subword',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 22,
-    concept: 'When a function takes `String` (not `&str`), it takes *ownership* â€” the caller can no longer use that value. The function can mutate it freely. `.truncate(n)` shrinks a String in-place to n bytes.',
-    whyItExists: 'Taking ownership lets a function modify and return the value without cloning. It\'s a zero-copy transformation pattern â€” common in parsers and text processors.',
+    concept: 'When a function takes `String` (not `&str`), it takes *ownership* — the caller can no longer use that value. The function can mutate it freely. `.truncate(n)` shrinks a String in-place to n bytes.',
+    whyItExists: 'Taking ownership lets a function modify and return the value without cloning. It\'s a zero-copy transformation pattern — common in parsers and text processors.',
     comparisons: [
       { language: 'C#', code: 'string FirstSubword(string s) {\n    int i = s.Skip(1).TakeWhile(c => !char.IsUpper(c) && c != \'_\').Count() + 1;\n    return s.Substring(0, i);\n}', note: 'C# creates new string.' },
       { language: 'Java', code: 'String firstSubword(String s) {\n    for(int i=1;i<s.length();i++) if(Character.isUpperCase(s.charAt(i))||s.charAt(i)==\'_\') return s.substring(0,i);\n    return s;\n}', note: 'Java substring.' },
@@ -986,7 +986,7 @@ export const exercises1: Exercise[] = [
     guidedExamples: [
       {
         title: 'Taking String ownership and truncating',
-        explanation: '`.truncate(i)` modifies the String in-place â€” only works with owned String, not &str.',
+        explanation: '`.truncate(i)` modifies the String in-place — only works with owned String, not &str.',
         code: 'fn shorten(mut s: String, n: usize) -> String {\n    if n < s.len() { s.truncate(n); }\n    s\n}\nfn main() { println!("{}", shorten("hello".to_string(), 3)); } // hel',
       },
     ],
@@ -1013,12 +1013,12 @@ export const exercises1: Exercise[] = [
   {
     id: 23,
     slug: 'borrow-me-the-reference',
-    title: 'Borrow Me the Reference â€” Mutable Vec Operations',
+    title: 'Borrow Me the Reference — Mutable Vec Operations',
     checkpoint: 'checkpoint2',
     difficulty: 'hard',
     order: 23,
     concept: 'Mutable references (`&mut T`) let you modify data in-place. When iterating with `.iter_mut()` you get `&mut T` elements you can assign to. `*element = new_value` dereferences and replaces.',
-    whyItExists: 'In-place mutation avoids allocating new collections. Mutable references enforce at compile time that only one writer exists at a time â€” no concurrent modification bugs.',
+    whyItExists: 'In-place mutation avoids allocating new collections. Mutable references enforce at compile time that only one writer exists at a time — no concurrent modification bugs.',
     comparisons: [
       { language: 'C#', code: 'void DoOperations(List<string> v) {\n    for(int i=0;i<v.Count;i++) { /* parse and replace */ }\n}', note: 'C# modifies list in-place with index.' },
       { language: 'Java', code: 'void doOperations(List<String> v) {\n    v.replaceAll(s -> /* parse and compute */ s);\n}', note: 'Java List.replaceAll.' },
@@ -1037,7 +1037,7 @@ export const exercises1: Exercise[] = [
       { title: 'Rust Mutable References', url: 'https://www.youtube.com/watch?v=VFIOSWy93H0', description: 'Mutable references and iter_mut' },
       { title: 'Rust for Beginners', url: 'https://www.youtube.com/watch?v=BpPEoZW5IiY', description: 'freeCodeCamp Rust course' },
     ],
-    question: 'Write two functions using mutable references:\na) delete_and_backspace(s: &mut String)  â€” \'+\' deletes next char, \'-\' deletes previous char\nb) do_operations(v: &mut Vec<String>)  â€” each "N+M" or "N-M" element replaced with result',
+    question: 'Write two functions using mutable references:\na) delete_and_backspace(s: &mut String)  — \'+\' deletes next char, \'-\' deletes previous char\nb) do_operations(v: &mut Vec<String>)  — each "N+M" or "N-M" element replaced with result',
     functionSignatures: [
       'pub fn delete_and_backspace(s: &mut String)',
       'pub fn do_operations(v: &mut Vec<String>)',
@@ -1059,7 +1059,7 @@ export const exercises1: Exercise[] = [
   {
     id: 24,
     slug: 'changes',
-    title: 'Changes â€” Struct with Mutable Vec',
+    title: 'Changes — Struct with Mutable Vec',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 24,
@@ -1105,14 +1105,14 @@ export const exercises1: Exercise[] = [
   {
     id: 25,
     slug: 'lifetimes',
-    title: 'Lifetimes â€” Borrowing Structs',
+    title: 'Lifetimes — Borrowing Structs',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 25,
-    concept: 'Lifetime annotations (`\'a`) tell the compiler how long a borrowed reference must remain valid. A struct that stores a `&\'a str` must live no longer than the string it borrows. The compiler checks this automatically â€” lifetimes prevent dangling references.',
+    concept: 'Lifetime annotations (`\'a`) tell the compiler how long a borrowed reference must remain valid. A struct that stores a `&\'a str` must live no longer than the string it borrows. The compiler checks this automatically — lifetimes prevent dangling references.',
     whyItExists: 'Lifetimes are Rust\'s solution to use-after-free bugs. Instead of a runtime check or garbage collector, the compiler statically proves references outlive the data they point to.',
     comparisons: [
-      { language: 'C#', code: 'class Person { public string Name; public byte Age; }', note: 'C# stores a reference without lifetime tracking â€” GC prevents dangling.' },
+      { language: 'C#', code: 'class Person { public string Name; public byte Age; }', note: 'C# stores a reference without lifetime tracking — GC prevents dangling.' },
       { language: 'Java', code: 'class Person { String name; byte age; }', note: 'Java GC tracks object lifetimes.' },
       { language: 'Go', code: 'type Person struct { Name string; Age uint8 }', note: 'Go copies string headers; GC manages memory.' },
       { language: 'JavaScript', code: 'class Person { constructor(name) { this.name=name; this.age=0; } }', note: 'GC-managed, no lifetime concept.' },
@@ -1122,7 +1122,7 @@ export const exercises1: Exercise[] = [
       {
         title: 'Lifetime annotation on a struct',
         explanation: 'The \'a on Person means "the struct can\'t outlive the str it borrows".',
-        code: "struct Greeting<'a> {\n    text: &'a str,\n}\nfn main() {\n    let s = String::from(\"hello\");\n    let g = Greeting { text: &s };\n    println!(\"{}\", g.text);\n    // s dropped here â€” g must not be used after this\n}",
+        code: "struct Greeting<'a> {\n    text: &'a str,\n}\nfn main() {\n    let s = String::from(\"hello\");\n    let g = Greeting { text: &s };\n    println!(\"{}\", g.text);\n    // s dropped here — g must not be used after this\n}",
       },
     ],
     videos: [
@@ -1134,7 +1134,7 @@ export const exercises1: Exercise[] = [
       "pub struct Person<'a> { pub name: &'a str, pub age: u8 }",
       "impl<'a> Person<'a> { pub fn new(name: &'a str) -> Person<'a> }",
     ],
-    constraints: ["Person<'a> borrows name â€” it doesn't own it", "new() sets age to 0"],
+    constraints: ["Person<'a> borrows name — it doesn't own it", "new() sets age to 0"],
     starterCode: "pub struct Person<'a> {\n    pub name: &'a str,\n    pub age: u8,\n}\nimpl<'a> Person<'a> {\n    pub fn new(name: &'a str) -> Person<'a> {\n        todo!()\n    }\n}",
     solution: "pub struct Person<'a> {\n    pub name: &'a str,\n    pub age: u8,\n}\nimpl<'a> Person<'a> {\n    pub fn new(name: &'a str) -> Person<'a> {\n        Person { name, age: 0 }\n    }\n}",
     testCases: [
@@ -1143,18 +1143,18 @@ export const exercises1: Exercise[] = [
     ],
     hints: [
       "The struct declaration: `pub struct Person<'a> { pub name: &'a str, pub age: u8 }`.",
-      "new(): `Person { name, age: 0 }` â€” shorthand field init.",
+      "new(): `Person { name, age: 0 }` — shorthand field init.",
       "The 'a appears on both the struct and the impl block.",
     ],
   },
   {
     id: 26,
     slug: 'collect-bubble-sort',
-    title: 'Collect â€” bubble_sort',
+    title: 'Collect — bubble_sort',
     checkpoint: 'checkpoint2',
     difficulty: 'easy',
     order: 26,
-    concept: 'Sorting a `Vec<i32>` in Rust: call `.sort()` on a `&mut Vec<i32>`. Rust\'s standard sort is stable and O(n log n). The "bubble sort" name in this exercise is a convention â€” using the built-in `.sort()` is perfectly acceptable.',
+    concept: 'Sorting a `Vec<i32>` in Rust: call `.sort()` on a `&mut Vec<i32>`. Rust\'s standard sort is stable and O(n log n). The "bubble sort" name in this exercise is a convention — using the built-in `.sort()` is perfectly acceptable.',
     whyItExists: 'Sorting is a fundamental algorithm. Rust\'s `.sort()` is implemented as introsort (quicksort + heapsort hybrid). Knowing how to call it vs. implementing bubble sort illustrates when to use stdlib vs. custom logic.',
     comparisons: [
       { language: 'C#', code: 'v.Sort();', note: 'C# List<T>.Sort() in-place.' },
@@ -1166,7 +1166,7 @@ export const exercises1: Exercise[] = [
     guidedExamples: [
       {
         title: 'Sort in place',
-        explanation: '.sort() mutates the Vec â€” requires &mut.',
+        explanation: '.sort() mutates the Vec — requires &mut.',
         code: 'fn main() {\n    let mut v = vec![3, 1, 4, 1, 5, 9];\n    v.sort();\n    println!("{:?}", v); // [1, 1, 3, 4, 5, 9]\n}',
       },
     ],
@@ -1176,7 +1176,7 @@ export const exercises1: Exercise[] = [
     ],
     question: 'Write a function that sorts a Vec<i32> in place.\n- bubble_sort(vec: &mut Vec<i32>)',
     functionSignatures: ['pub fn bubble_sort(vec: &mut Vec<i32>)'],
-    constraints: ['Sort in ascending order', 'In-place â€” do not return a new Vec'],
+    constraints: ['Sort in ascending order', 'In-place — do not return a new Vec'],
     starterCode: 'pub fn bubble_sort(vec: &mut Vec<i32>) {\n    todo!()\n}',
     solution: 'pub fn bubble_sort(vec: &mut Vec<i32>) {\n    vec.sort();\n}',
     testCases: [
@@ -1185,20 +1185,20 @@ export const exercises1: Exercise[] = [
       { id: 'test_26_3', description: 'reverse order', code: 'fn main() { let mut v = vec![5,4,3,2,1]; bubble_sort(&mut v); println!("{:?}", v); }', expectedOutput: '[1, 2, 3, 4, 5]', hidden: true },
     ],
     hints: [
-      'Call `vec.sort();` â€” it mutates in place.',
+      'Call `vec.sort();` — it mutates in place.',
       'For a true bubble sort: two nested loops swapping adjacent elements.',
-      '.sort() is stable and O(n log n) â€” much better than bubble sort for large inputs.',
+      '.sort() is stable and O(n log n) — much better than bubble sort for large inputs.',
     ],
   },
   {
     id: 27,
     slug: 'arrange-it',
-    title: 'Arrange It â€” Sort by Embedded Digit',
+    title: 'Arrange It — Sort by Embedded Digit',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 27,
     concept: '`.sort_by_key()` takes a closure that extracts a comparison key from each element. `.chars().find()` searches for the first character matching a predicate. Combining these lets you sort by an embedded number then strip digits from words.',
-    whyItExists: 'Key-based sorting is a common pattern â€” sort CSV rows by a column, sort events by timestamp, sort words by position. Rust\'s sort_by_key is zero-allocation and very fast.',
+    whyItExists: 'Key-based sorting is a common pattern — sort CSV rows by a column, sort events by timestamp, sort words by position. Rust\'s sort_by_key is zero-allocation and very fast.',
     comparisons: [
       { language: 'C#', code: "words.OrderBy(w => w.FirstOrDefault(char.IsDigit) - '0').Select(w => Regex.Replace(w, \"\\\\d\", \"\"))", note: 'LINQ OrderBy + Regex.' },
       { language: 'Java', code: "words.sort(Comparator.comparingInt(w -> w.chars().filter(Character::isDigit).findFirst().orElse('0') - '0'));", note: 'Java Comparator.' },
@@ -1236,7 +1236,7 @@ export const exercises1: Exercise[] = [
   {
     id: 28,
     slug: 'simple-hash',
-    title: 'Simple Hash â€” Word Frequency Counter',
+    title: 'Simple Hash — Word Frequency Counter',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 28,
@@ -1260,7 +1260,7 @@ export const exercises1: Exercise[] = [
       { title: 'Rust HashMaps', url: 'https://www.youtube.com/watch?v=w_1GQiOFrK4', description: 'HashMap and the entry API' },
       { title: 'Rust for Beginners', url: 'https://www.youtube.com/watch?v=BpPEoZW5IiY', description: 'freeCodeCamp Rust course' },
     ],
-    question: 'Write two functions:\na) word_frequency_counter(words: Vec<&str>) -> HashMap<&str, usize>  â€” count occurrences of each word\nb) nb_distinct_words(frequency_count: &HashMap<&str, usize>) -> usize  â€” count words appearing exactly once',
+    question: 'Write two functions:\na) word_frequency_counter(words: Vec<&str>) -> HashMap<&str, usize>  — count occurrences of each word\nb) nb_distinct_words(frequency_count: &HashMap<&str, usize>) -> usize  — count words appearing exactly once',
     functionSignatures: [
       'pub fn word_frequency_counter(words: Vec<&str>) -> HashMap<&str, usize>',
       'pub fn nb_distinct_words(frequency_count: &HashMap<&str, usize>) -> usize',
@@ -1282,7 +1282,7 @@ export const exercises1: Exercise[] = [
   {
     id: 29,
     slug: 'hashing-statistics',
-    title: 'Hashing â€” Statistics (mean, median, mode)',
+    title: 'Hashing — Statistics (mean, median, mode)',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 29,
@@ -1306,7 +1306,7 @@ export const exercises1: Exercise[] = [
       { title: 'Rust HashMaps', url: 'https://www.youtube.com/watch?v=w_1GQiOFrK4', description: 'HashMap and iterators' },
       { title: 'Rust for Beginners', url: 'https://www.youtube.com/watch?v=BpPEoZW5IiY', description: 'freeCodeCamp Rust course' },
     ],
-    question: 'Write three statistical functions for Vec<i32>:\na) mean(list: &Vec<i32>) -> f64  â€” arithmetic average\nb) median(list: &Vec<i32>) -> i32  â€” middle value when sorted\nc) mode(list: &Vec<i32>) -> i32  â€” most frequently occurring value',
+    question: 'Write three statistical functions for Vec<i32>:\na) mean(list: &Vec<i32>) -> f64  — arithmetic average\nb) median(list: &Vec<i32>) -> i32  — middle value when sorted\nc) mode(list: &Vec<i32>) -> i32  — most frequently occurring value',
     functionSignatures: [
       'pub fn mean(list: &Vec<i32>) -> f64',
       'pub fn median(list: &Vec<i32>) -> i32',
@@ -1329,12 +1329,12 @@ export const exercises1: Exercise[] = [
   {
     id: 30,
     slug: 'string-permutation',
-    title: 'String Permutation â€” HashMap Frequency Check',
+    title: 'String Permutation — HashMap Frequency Check',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 30,
     concept: 'Two strings are permutations of each other if they have the same characters in the same frequencies. Strategy: count chars in s1 incrementing, then count chars in s2 decrementing. If all counts are 0, they\'re permutations.',
-    whyItExists: 'Permutation checking appears in anagram detection, password validation, and combinatorics problems. The HashMap frequency approach is O(n) â€” better than sorting (O(n log n)).',
+    whyItExists: 'Permutation checking appears in anagram detection, password validation, and combinatorics problems. The HashMap frequency approach is O(n) — better than sorting (O(n log n)).',
     comparisons: [
       { language: 'C#', code: "bool IsPerm(string s1, string s2) => s1.Length==s2.Length && s1.OrderBy(c=>c).SequenceEqual(s2.OrderBy(c=>c));", note: 'Sort and compare.' },
       { language: 'Java', code: "char[] a=s1.toCharArray(); char[] b=s2.toCharArray(); Arrays.sort(a); Arrays.sort(b); return Arrays.equals(a,b);", note: 'Sort arrays approach.' },
@@ -1372,7 +1372,7 @@ export const exercises1: Exercise[] = [
   {
     id: 31,
     slug: 'circle',
-    title: 'Circle â€” Structs with Methods',
+    title: 'Circle — Structs with Methods',
     checkpoint: 'checkpoint2',
     difficulty: 'medium',
     order: 31,
