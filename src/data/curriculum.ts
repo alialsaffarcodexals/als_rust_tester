@@ -1,8 +1,9 @@
 import type { Exercise } from '../types';
 import { exercises1 } from './curriculum_part1';
 import { exercises2 } from './curriculum_part2';
+import { zone01Exercises } from './zone01';
 
-const allExercises: Exercise[] = [...exercises1, ...exercises2];
+const allExercises: Exercise[] = [...exercises1, ...exercises2, ...zone01Exercises];
 
 export function getAllExercises(): Exercise[] {
   return allExercises;

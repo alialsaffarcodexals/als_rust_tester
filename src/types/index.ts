@@ -1,4 +1,4 @@
-export type Checkpoint = 'intro' | 'checkpoint1' | 'checkpoint2' | 'checkpoint3' | 'final';
+export type Checkpoint = 'intro' | 'checkpoint1' | 'checkpoint2' | 'checkpoint3' | 'final' | 'zone01_cp1' | 'zone01_cp2' | 'zone01_cp3' | 'zone01_final';
 
 export type Difficulty = 'easiest' | 'easy' | 'medium' | 'hard' | 'hardest';
 

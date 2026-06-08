@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+﻿import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { UserProgress, Exercise } from '../../types';
 import { getCheckpointStats } from '../../store/progress';
@@ -32,10 +32,14 @@ const LockIcon = () => (
 );
 
 const CHECKPOINT_RANGES = {
-  checkpoint1: { first: 1, last: 19 },
-  checkpoint2: { first: 20, last: 35 },
-  checkpoint3: { first: 36, last: 45 },
-  final: { first: 46, last: 63 },
+  checkpoint1:  { first: 1,   last: 19  },
+  checkpoint2:  { first: 20,  last: 35  },
+  checkpoint3:  { first: 36,  last: 45  },
+  final:        { first: 46,  last: 63  },
+  zone01_cp1:   { first: 64,  last: 72  },
+  zone01_cp2:   { first: 73,  last: 87  },
+  zone01_cp3:   { first: 88,  last: 109 },
+  zone01_final: { first: 110, last: 138 },
 };
 
 // Loaded once at module level — no re-fetching on re-render
@@ -47,6 +51,10 @@ const CHECKPOINT_LABELS: Record<string, string> = {
   checkpoint2: 'CP 2',
   checkpoint3: 'CP 3',
   final: 'Final',
+  zone01_cp1:   'Z01 CP1',
+  zone01_cp2:   'Z01 CP2',
+  zone01_cp3:   'Z01 CP3',
+  zone01_final: 'Z01 Final',
 };
 
 function searchExercises(query: string): Exercise[] {
@@ -122,6 +130,10 @@ export default function Sidebar({ progress }: SidebarProps) {
   const checkpoint2Stats = getCheckpointStats(progress, 20, 35);
   const checkpoint3Stats = getCheckpointStats(progress, 36, 45);
   const finalStats = getCheckpointStats(progress, 46, 63);
+  const z01cp1Stats = getCheckpointStats(progress, 64, 72);
+  const z01cp2Stats = getCheckpointStats(progress, 73, 87);
+  const z01cp3Stats = getCheckpointStats(progress, 88, 109);
+  const z01finalStats = getCheckpointStats(progress, 110, 138);
 
   const sections = [
     {
@@ -186,6 +198,66 @@ export default function Sidebar({ progress }: SidebarProps) {
       examUnlocked: finalStats.completed === finalStats.total,
       stats: finalStats,
       items: Array.from({ length: 18 }, (_, i) => i + 46).map((id) => ({
+        id,
+        label: getExerciseName(id),
+        path: `/lesson/${id}`,
+        status: getLessonStatus(id),
+      })),
+    },
+    {
+      key: 'zone01_cp1',
+      label: 'Zone01 — CP1',
+      sublabel: 'Basics & Algorithms',
+      icon: '🦀',
+      examPath: null as string | null,
+      examUnlocked: false,
+      stats: z01cp1Stats,
+      items: Array.from({ length: 9 }, (_, i) => i + 64).map((id) => ({
+        id,
+        label: getExerciseName(id),
+        path: `/lesson/${id}`,
+        status: getLessonStatus(id),
+      })),
+    },
+    {
+      key: 'zone01_cp2',
+      label: 'Zone01 — CP2',
+      sublabel: 'Structs & Enums',
+      icon: '⚙️',
+      examPath: null as string | null,
+      examUnlocked: false,
+      stats: z01cp2Stats,
+      items: Array.from({ length: 15 }, (_, i) => i + 73).map((id) => ({
+        id,
+        label: getExerciseName(id),
+        path: `/lesson/${id}`,
+        status: getLessonStatus(id),
+      })),
+    },
+    {
+      key: 'zone01_cp3',
+      label: 'Zone01 — CP3',
+      sublabel: 'Traits & Lifetimes',
+      icon: '🔮',
+      examPath: null as string | null,
+      examUnlocked: false,
+      stats: z01cp3Stats,
+      items: Array.from({ length: 22 }, (_, i) => i + 88).map((id) => ({
+        id,
+        label: getExerciseName(id),
+        path: `/lesson/${id}`,
+        status: getLessonStatus(id),
+      })),
+    },
+    {
+      key: 'zone01_final',
+      label: 'Zone01 — Final',
+      sublabel: 'Advanced Rust',
+      icon: '🏆',
+      examPath: null as string | null,
+      examUnlocked: false,
+      stats: z01finalStats,
+      items: Array.from({ length: 29 }, (_, i) => i + 110).map((id) => ({
         id,
         label: getExerciseName(id),
         path: `/lesson/${id}`,
@@ -377,14 +449,14 @@ export default function Sidebar({ progress }: SidebarProps) {
                     </button>
                   ))}
 
-                  {/* Exam button */}
-                  <button
+                  {/* Exam button — only shown for original checkpoints */}
+                  {section.examPath !== null && <button
                     className={`sidebar-exam-btn ${section.examUnlocked ? '' : 'locked'}`}
                     onClick={() => section.examUnlocked && section.examPath && navigate(section.examPath)}
                     disabled={!section.examUnlocked}
                   >
                     {section.examUnlocked ? '🎯' : '🔒'} {section.label} Exam
-                  </button>
+                  </button>}
                 </div>
               )}
             </div>
@@ -650,26 +722,5 @@ function highlightMatch(text: string, query: string): React.ReactNode {
 }
 
 function getExerciseName(id: number): string {
-  const names: Record<number, string> = {
-    1: 'Scalar Types', 2: 'Doubtful', 3: 'Division & Remainder', 4: 'Temperature',
-    5: 'Reverse String', 6: 'Arrays', 7: 'String Methods', 8: 'Char Length',
-    9: 'To URL', 10: 'Delete Prefix', 11: 'Capitalizing', 12: 'Name Initials',
-    13: 'Factorial', 14: 'Fibonacci', 15: 'Looping', 16: 'Bigger',
-    17: 'Groceries', 18: 'Tuples & Refs', 19: 'Speed Transform',
-    20: 'Borrow', 21: 'Copy Types', 22: 'Ownership', 23: 'Borrow References',
-    24: 'Changes', 25: 'Lifetimes', 26: 'Bubble Sort', 27: 'Arrange It',
-    28: 'Word Frequency', 29: 'Statistics', 30: 'Permutation',
-    31: 'Circle', 32: 'Does It Fit', 33: 'Profanity Filter', 34: 'Border Cross',
-    35: 'Card Deck',
-    36: 'Generics', 37: 'Traits (Food)', 38: 'Roman Numbers', 39: 'Roman Iterator',
-    40: 'Blood Types', 41: 'Events', 42: 'Mobs', 43: 'Cipher (Atbash)',
-    44: 'Tic Tac Toe', 45: 'Shopping Mall',
-    46: 'Panic', 47: 'Unwrap/Expect', 48: 'File Handling', 49: 'Question Mark',
-    50: 'Edit Distance', 51: 'Expected Variable', 52: 'Error Types',
-    53: 'Boxing Errors', 54: 'Linear Algebra Scalar', 55: 'Linear Algebra Vector',
-    56: 'Matrix Transpose', 57: 'Generic Matrix', 58: 'Matrix Add/Sub',
-    59: 'Matrix Multiply', 60: 'Middle Day', 61: 'CLI Flags', 62: 'Macro Calculator',
-    63: 'Commit Stats',
-  };
-  return names[id] ?? `Exercise ${id}`;
+  return ALL_EXERCISES.find((e) => e.id === id)?.title ?? `Exercise `;
 }

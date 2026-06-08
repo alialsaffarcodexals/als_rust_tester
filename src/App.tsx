@@ -27,7 +27,7 @@ export default function App() {
 
 function AppContent() {
   const { progress, completeLesson, saveExam, markIntroComplete } = useProgress();
-  const totalExercises = 63;
+  const totalExercises = exercises.length;
 
   return (
     <div className="app-layout">
