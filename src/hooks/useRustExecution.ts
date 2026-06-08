@@ -81,7 +81,10 @@ export function useRustExecution() {
   const runCode = useCallback(async (code: string): Promise<ExecutionResult> => {
     setIsRunning(true);
     try {
-      return await callPlayground(code);
+      // If the user's code has no fn main, inject an empty one so it compiles
+      const hasMain = /fn\s+main\s*\(\s*\)/.test(code);
+      const codeToRun = hasMain ? code : code + '\n\nfn main() {}';
+      return await callPlayground(codeToRun);
     } finally {
       setIsRunning(false);
     }
