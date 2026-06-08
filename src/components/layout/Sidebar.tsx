@@ -115,8 +115,7 @@ export default function Sidebar({ progress }: SidebarProps) {
   const getLessonStatus = (id: number) => {
     const lesson = progress.lessons[id];
     if (lesson?.completed) return 'completed';
-    if (id === 1 || progress.lessons[id - 1]?.completed) return 'unlocked';
-    return 'locked';
+    return 'unlocked';
   };
 
   const checkpoint1Stats = getCheckpointStats(progress, 1, 19);

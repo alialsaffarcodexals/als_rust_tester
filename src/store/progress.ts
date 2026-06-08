@@ -82,10 +82,8 @@ function updateStreak(progress: UserProgress): void {
   progress.lastActiveDate = today;
 }
 
-export function isLessonUnlocked(progress: UserProgress, exerciseId: number): boolean {
-  if (exerciseId === 1) return true;
-  // Each lesson unlocks when the previous is complete
-  return progress.lessons[exerciseId - 1]?.completed === true;
+export function isLessonUnlocked(_progress: UserProgress, _exerciseId: number): boolean {
+  return true;
 }
 
 export function isExamUnlocked(

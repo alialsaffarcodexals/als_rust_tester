@@ -29,7 +29,6 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
 
   const { runCode, runTests, isRunning, isTesting } = useRustExecution();
   const lessonProgress = progress.lessons[exerciseId];
-  const isLocked = exerciseId > 1 && !progress.lessons[exerciseId - 1]?.completed;
 
   // Initialize code from progress or starter
   useEffect(() => {
@@ -87,23 +86,6 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
     );
   }
 
-  if (isLocked) {
-    return (
-      <div className="lesson-locked">
-        <div className="lesson-locked-inner">
-          <div className="locked-icon">🔒</div>
-          <h2>Exercise Locked</h2>
-          <p>Complete exercise {exerciseId - 1} first to unlock this one.</p>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate(`/lesson/${exerciseId - 1}`)}
-          >
-            Go to Exercise {exerciseId - 1}
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const allTestsPassed = testResults?.every((t) => t.passed) ?? false;
   const totalTests = exercise.testCases.length;

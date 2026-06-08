@@ -159,7 +159,6 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
           examUnlocked={cp2.completed === cp2.total && cp1.completed === cp1.total}
           color="purple"
           description="Borrowing, references, structs, traits, iterators, sorting"
-          locked={cp1.completed === 0}
         />
         <CheckpointCard
           title="Checkpoint 3"
@@ -171,7 +170,6 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
           examUnlocked={cp3.completed === cp3.total && cp2.completed === cp2.total}
           color="teal"
           description="Generic types, trait objects, complex enums, algorithms"
-          locked={cp2.completed === 0}
         />
         <CheckpointCard
           title="Final"
@@ -183,7 +181,6 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
           examUnlocked={final.completed === final.total && cp3.completed === cp3.total}
           color="gold"
           description="Error handling, linear algebra, chrono, JSON, external crates"
-          locked={cp3.completed === 0}
         />
       </div>
 
