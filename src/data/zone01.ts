@@ -431,7 +431,65 @@ parts_sums(&[1, 2, 3, 4, 5]) // == [15, 10, 6, 3 ,1, 0]
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_70_1',
+        description: 'Normal case: [1,2,3,4,5] produces shrinking prefix sums ending with 0',
+        code: `fn main() {
+    assert_eq!(
+        parts_sums(&[1, 2, 3, 4, 5]),
+        vec![15, 10, 6, 3, 1, 0]
+    );
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_70_2',
+        description: 'Empty slice returns [0]',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[]), vec![0u64]);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_70_3',
+        description: 'Single element returns [element, 0]',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[42]), vec![42, 0]);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_70_4',
+        description: 'Two elements',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[1, 2]), vec![3, 1, 0]);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_70_5',
+        description: 'All zeros: result is all zeros with length n+1',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[0, 0, 0]), vec![0, 0, 0, 0]);
+    // result always has input.len() + 1 elements
+    let r = parts_sums(&[1, 2, 3]);
+    assert_eq!(r.len(), 4);
+    assert_eq!(*r.last().unwrap(), 0u64);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+    ],
     hints: [],
   },
   {
