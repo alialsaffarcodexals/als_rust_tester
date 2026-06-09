@@ -230,15 +230,19 @@ The function must respect the following rules:
     testCases: [{
       id: 'tc_68_1',
       description: 'Usage example',
-      code: `fn main() {
-    println!("{:?}", counting_words("Hello, world!"));
-    println!("{:?}", counting_words("“Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.”
-    ― Albert Einstein "));
-    println!("{:?}", counting_words("Batman, BATMAN, batman, Stop stop"));
+      code: `use std::collections::BTreeMap;
+
+fn main() {
+    let s1: BTreeMap<_, _> = counting_words(“Hello, world!”).into_iter().collect();
+    println!(“{:?}”, s1);
+    let s2: BTreeMap<_, _> = counting_words(“\\u{201c}Two things are infinite: the universe and human stupidity; and I\\u{2019}m not sure about the universe.\\u{201d}\\n    \\u{2015} Albert Einstein “).into_iter().collect();
+    println!(“{:?}”, s2);
+    let s3: BTreeMap<_, _> = counting_words(“Batman, BATMAN, batman, Stop stop”).into_iter().collect();
+    println!(“{:?}”, s3);
 }`,
-      expectedOutput: `{"world": 1, "hello": 1}
-{"are": 1, "about": 1, "stupidity": 1, "human": 1, "infinite": 1, "i'm": 1, "things": 1, "einstein": 1, "albert": 1, "sure": 1, "the": 2, "not": 1, "universe": 2, "and": 2, "two": 1}
-{"stop": 2, "batman": 3}`,
+      expectedOutput: `{“hello”: 1, “world”: 1}
+{“about”: 1, “albert”: 1, “and”: 2, “are”: 1, “einstein”: 1, “human”: 1, “i'm”: 1, “infinite”: 1, “not”: 1, “stupidity”: 1, “sure”: 1, “the”: 2, “things”: 1, “two”: 1, “universe”: 2}
+{“batman”: 3, “stop”: 2}`,
       hidden: false,
     }],
     hints: [],
