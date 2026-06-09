@@ -2,7 +2,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { UserProgress, Exercise } from '../../types';
 import { getCheckpointStats } from '../../store/progress';
-import { getAllExercises } from '../../data/curriculum';
+import { getAllExercises, getExercisesByCheckpoint } from '../../data/curriculum';
 
 interface NavItem {
   id: string;
@@ -36,14 +36,29 @@ const CHECKPOINT_RANGES = {
   checkpoint2:  { first: 20,  last: 35  },
   checkpoint3:  { first: 36,  last: 45  },
   final:        { first: 46,  last: 63  },
-  zone01_cp1:   { first: 64,  last: 72  },
-  zone01_cp2:   { first: 73,  last: 87  },
-  zone01_cp3:   { first: 88,  last: 109 },
-  zone01_final: { first: 110, last: 138 },
 };
 
 // Loaded once at module level — no re-fetching on re-render
 const ALL_EXERCISES: Exercise[] = getAllExercises();
+
+function getExerciseListStats(
+  progress: UserProgress,
+  exercises: Exercise[]
+): { completed: number; total: number; percentage: number } {
+  const total = exercises.length;
+  const completed = exercises.filter((ex) => progress.lessons[ex.id]?.completed).length;
+  return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+}
+
+function groupByLevel(exercises: Exercise[]): [number, Exercise[]][] {
+  const map = new Map<number, Exercise[]>();
+  for (const ex of exercises) {
+    const lvl = ex.order;
+    if (!map.has(lvl)) map.set(lvl, []);
+    map.get(lvl)!.push(ex);
+  }
+  return Array.from(map.entries()).sort(([a], [b]) => a - b);
+}
 
 const CHECKPOINT_LABELS: Record<string, string> = {
   intro: 'Intro',
@@ -120,7 +135,7 @@ export default function Sidebar({ progress }: SidebarProps) {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const getLessonStatus = (id: number) => {
+  const getLessonStatus = (id: number): 'completed' | 'unlocked' | 'locked' => {
     const lesson = progress.lessons[id];
     if (lesson?.completed) return 'completed';
     return 'unlocked';
@@ -130,10 +145,16 @@ export default function Sidebar({ progress }: SidebarProps) {
   const checkpoint2Stats = getCheckpointStats(progress, 20, 35);
   const checkpoint3Stats = getCheckpointStats(progress, 36, 45);
   const finalStats = getCheckpointStats(progress, 46, 63);
-  const z01cp1Stats = getCheckpointStats(progress, 64, 72);
-  const z01cp2Stats = getCheckpointStats(progress, 73, 87);
-  const z01cp3Stats = getCheckpointStats(progress, 88, 109);
-  const z01finalStats = getCheckpointStats(progress, 110, 138);
+
+  const z01cp1Exercises = getExercisesByCheckpoint('zone01_cp1');
+  const z01cp2Exercises = getExercisesByCheckpoint('zone01_cp2');
+  const z01cp3Exercises = getExercisesByCheckpoint('zone01_cp3');
+  const z01finalExercises = getExercisesByCheckpoint('zone01_final');
+
+  const z01cp1Stats = getExerciseListStats(progress, z01cp1Exercises);
+  const z01cp2Stats = getExerciseListStats(progress, z01cp2Exercises);
+  const z01cp3Stats = getExerciseListStats(progress, z01cp3Exercises);
+  const z01finalStats = getExerciseListStats(progress, z01finalExercises);
 
   const sections = [
     {
@@ -212,12 +233,8 @@ export default function Sidebar({ progress }: SidebarProps) {
       examPath: null as string | null,
       examUnlocked: false,
       stats: z01cp1Stats,
-      items: Array.from({ length: 9 }, (_, i) => i + 64).map((id) => ({
-        id,
-        label: getExerciseName(id),
-        path: `/lesson/${id}`,
-        status: getLessonStatus(id),
-      })),
+      zoneExercises: z01cp1Exercises,
+      items: [],
     },
     {
       key: 'zone01_cp2',
@@ -227,12 +244,8 @@ export default function Sidebar({ progress }: SidebarProps) {
       examPath: null as string | null,
       examUnlocked: false,
       stats: z01cp2Stats,
-      items: Array.from({ length: 15 }, (_, i) => i + 73).map((id) => ({
-        id,
-        label: getExerciseName(id),
-        path: `/lesson/${id}`,
-        status: getLessonStatus(id),
-      })),
+      zoneExercises: z01cp2Exercises,
+      items: [],
     },
     {
       key: 'zone01_cp3',
@@ -242,12 +255,8 @@ export default function Sidebar({ progress }: SidebarProps) {
       examPath: null as string | null,
       examUnlocked: false,
       stats: z01cp3Stats,
-      items: Array.from({ length: 22 }, (_, i) => i + 88).map((id) => ({
-        id,
-        label: getExerciseName(id),
-        path: `/lesson/${id}`,
-        status: getLessonStatus(id),
-      })),
+      zoneExercises: z01cp3Exercises,
+      items: [],
     },
     {
       key: 'zone01_final',
@@ -257,12 +266,8 @@ export default function Sidebar({ progress }: SidebarProps) {
       examPath: null as string | null,
       examUnlocked: false,
       stats: z01finalStats,
-      items: Array.from({ length: 29 }, (_, i) => i + 110).map((id) => ({
-        id,
-        label: getExerciseName(id),
-        path: `/lesson/${id}`,
-        status: getLessonStatus(id),
-      })),
+      zoneExercises: z01finalExercises,
+      items: [],
     },
   ];
 
@@ -429,25 +434,58 @@ export default function Sidebar({ progress }: SidebarProps) {
               {/* Exercise list */}
               {isOpen && (
                 <div className="sidebar-items">
-                  {section.items.map((item) => (
-                    <button
-                      key={item.id}
-                      className={`sidebar-item ${isActive(item.path) ? 'active' : ''} ${item.status}`}
-                      onClick={() => item.status !== 'locked' && navigate(item.path)}
-                      disabled={item.status === 'locked'}
-                    >
-                      <span className="sidebar-item-dot">
-                        {item.status === 'completed' ? (
-                          <CheckIcon />
-                        ) : item.status === 'locked' ? (
-                          <LockIcon />
-                        ) : (
-                          <span className="sidebar-item-number">{item.id}</span>
-                        )}
-                      </span>
-                      <span className="sidebar-item-label truncate">{item.label}</span>
-                    </button>
-                  ))}
+                  {'zoneExercises' in section && section.zoneExercises && section.zoneExercises.length > 0 ? (
+                    // Zone01 sections: group by level
+                    groupByLevel(section.zoneExercises).map(([level, exs]) => (
+                      <div key={level}>
+                        <div className="sidebar-level-header">Level {level}</div>
+                        {exs.map((ex) => {
+                          const status = getLessonStatus(ex.id);
+                          const path = `/lesson/${ex.id}`;
+                          return (
+                            <button
+                              key={ex.id}
+                              className={`sidebar-item ${isActive(path) ? 'active' : ''} ${status}`}
+                              onClick={() => status !== 'locked' && navigate(path)}
+                              disabled={status === 'locked'}
+                            >
+                              <span className="sidebar-item-dot">
+                                {status === 'completed' ? (
+                                  <CheckIcon />
+                                ) : status === 'locked' ? (
+                                  <LockIcon />
+                                ) : (
+                                  <span className="sidebar-item-number">{ex.id}</span>
+                                )}
+                              </span>
+                              <span className="sidebar-item-label truncate">{ex.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))
+                  ) : (
+                    // Regular sections: flat list
+                    section.items.map((item) => (
+                      <button
+                        key={item.id}
+                        className={`sidebar-item ${isActive(item.path) ? 'active' : ''} ${item.status}`}
+                        onClick={() => item.status !== 'locked' && navigate(item.path)}
+                        disabled={item.status === 'locked'}
+                      >
+                        <span className="sidebar-item-dot">
+                          {item.status === 'completed' ? (
+                            <CheckIcon />
+                          ) : item.status === 'locked' ? (
+                            <LockIcon />
+                          ) : (
+                            <span className="sidebar-item-number">{item.id}</span>
+                          )}
+                        </span>
+                        <span className="sidebar-item-label truncate">{item.label}</span>
+                      </button>
+                    ))
+                  )}
 
                   {/* Exam button — only shown for original checkpoints */}
                   {section.examPath !== null && <button
@@ -556,6 +594,15 @@ export default function Sidebar({ progress }: SidebarProps) {
           transition: width 0.4s ease;
         }
         .sidebar-items { padding: 2px 0 8px 8px; display: flex; flex-direction: column; gap: 1px; }
+        .sidebar-level-header {
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--text-disabled);
+          padding: 6px 8px 2px;
+          margin-top: 4px;
+        }
         .sidebar-item {
           width: 100%;
           display: flex; align-items: center; gap: 8px;

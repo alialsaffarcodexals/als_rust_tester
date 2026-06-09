@@ -1381,7 +1381,7 @@ Is 2147483647 prime? Some(Ok(2147483647))`,
     title: 'Queens',
     checkpoint: 'zone01_cp2',
     difficulty: 'hard',
-    order: 4,
+    order: 5,
     concept: `In a chess game, a queen can attack pieces which are on the same rank (row), file (column), or diagonal.
 
 The purpose of this exercise is to find out if two queens can attack each other.
@@ -5597,5 +5597,521 @@ Any other character is a comment.
     solution: '',
     testCases: [],
     hints: [],
+  },
+  // ── Exam-1 missing exercises ─────────────────────────────────────────────
+  {
+    id: 139,
+    slug: 'division_and_remainder',
+    title: 'Division And Remainder',
+    checkpoint: 'zone01_cp1',
+    difficulty: 'easiest',
+    order: 1,
+    concept: `Create a **function** named \`divide\` that receives two \`i32\` and returns a \`tuple\`. The first element is the result of the integer division between the two numbers, and the second is the remainder of the division.
+
+\`\`\`rust
+pub fn divide(x: i32, y: i32) -> (i32, i32) {
+}
+\`\`\``,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `Create a **function** named \`divide\` that receives two \`i32\` and returns a \`tuple\`. The first element is the result of the integer division between the two numbers, and the second is the remainder of the division.
+
+\`\`\`rust
+pub fn divide(x: i32, y: i32) -> (i32, i32) {
+}
+\`\`\``,
+    functionSignatures: [`pub fn divide(x: i32, y: i32) -> (i32, i32) {
+    todo!()
+}`],
+    constraints: [],
+    starterCode: `pub fn divide(x: i32, y: i32) -> (i32, i32) {
+    todo!()
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_139_1',
+      description: 'Usage example',
+      code: `fn main() {
+    let x = 9;
+    let y = 4;
+    let (division, remainder) = divide(x, y);
+    println!(
+        "{}/{}: division = {}, remainder = {}",
+        x, y, division, remainder
+    );
+}`,
+      expectedOutput: `9/4: division = 2, remainder = 1`,
+      hidden: false,
+    }],
+    hints: [`The Tuple Type — https://doc.rust-lang.org/stable/book/ch03-02-data-types.html`, `Tuples — https://doc.rust-lang.org/rust-by-example/primitives/tuples.html`],
+  },
+  {
+    id: 140,
+    slug: 'matrix_transposition',
+    title: 'Matrix Transposition',
+    checkpoint: 'zone01_cp1',
+    difficulty: 'easiest',
+    order: 1,
+    concept: `- Define a \`struct\` named \`Matrix\` as a tuple of 2 tuples. The nested tuple will contain 2 \`i32\`s.
+
+- Create a **function** named \`transpose\` that calculates the transposition of a 2x2 matrix.
+
+\`\`\`rust
+pub fn transpose(m: Matrix) -> Matrix {
+}
+\`\`\`
+
+The transposition of a matrix switches the columns to rows, and the rows to columns. For example:
+
+\`\`\`
+( a b )   __ transposition __>   ( a c )
+( c d )                          ( b d )
+\`\`\`
+
+\`Matrix\` must implement \`Debug\`, \`PartialEq\` and \`Eq\`. You can use \`derive\`.
+
+> Remember that you are defining a library, so any element that can be called from an external crate must be made public.`,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `- Define a \`struct\` named \`Matrix\` as a tuple of 2 tuples. The nested tuple will contain 2 \`i32\`s.
+
+- Create a **function** named \`transpose\` that calculates the transposition of a 2x2 matrix.
+
+\`\`\`rust
+pub fn transpose(m: Matrix) -> Matrix {
+}
+\`\`\`
+
+The transposition of a matrix switches the columns to rows, and the rows to columns. For example:
+
+\`\`\`
+( a b )   __ transposition __>   ( a c )
+( c d )                          ( b d )
+\`\`\`
+
+\`Matrix\` must implement \`Debug\`, \`PartialEq\` and \`Eq\`. You can use \`derive\`.`,
+    functionSignatures: [`#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix(pub (i32, i32), pub (i32, i32));
+
+pub fn transpose(m: Matrix) -> Matrix {
+    todo!()
+}`],
+    constraints: [],
+    starterCode: `#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix(pub (i32, i32), pub (i32, i32));
+
+pub fn transpose(m: Matrix) -> Matrix {
+    todo!()
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_140_1',
+      description: 'Usage example',
+      code: `fn main() {
+    let matrix = Matrix((1, 3), (4, 5));
+    println!("Original matrix {:?}", matrix);
+    println!("Transpose matrix {:?}", transpose(matrix));
+}`,
+      expectedOutput: `Original matrix Matrix((1, 3), (4, 5))
+Transpose matrix Matrix((1, 4), (3, 5))`,
+      hidden: false,
+    }],
+    hints: [`Defining a struct — https://doc.rust-lang.org/stable/book/ch05-01-defining-structs.html`, `Tuple Structs without Named Fields — https://doc.rust-lang.org/stable/book/ch05-01-defining-structs.html`, `Adding Useful Functionality with Derived Traits — https://doc.rust-lang.org/stable/book/ch05-02-example-structs.html`],
+  },
+  {
+    id: 141,
+    slug: 'bigger',
+    title: 'Bigger',
+    checkpoint: 'zone01_cp1',
+    difficulty: 'easy',
+    order: 2,
+    concept: `Create a function named \`bigger\` that gets the biggest positive number in the \`HashMap\`.
+
+\`\`\`rust
+pub fn bigger(h: HashMap<&str, i32>) -> i32 {
+}
+\`\`\``,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `Create a function named \`bigger\` that gets the biggest positive number in the \`HashMap\`.
+
+\`\`\`rust
+pub fn bigger(h: HashMap<&str, i32>) -> i32 {
+}
+\`\`\``,
+    functionSignatures: [`pub fn bigger(h: HashMap<&str, i32>) -> i32 {
+    todo!()
+}`],
+    constraints: [],
+    starterCode: `use std::collections::HashMap;
+
+pub fn bigger(h: HashMap<&str, i32>) -> i32 {
+    todo!()
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_141_1',
+      description: 'Usage example',
+      code: `fn main() {
+    let mut hash = HashMap::new();
+    hash.insert("Daniel", 122);
+    hash.insert("Ashley", 333);
+    hash.insert("Katie", 334);
+    hash.insert("Robert", 14);
+
+    println!("The biggest of the elements in the HashMap is {}", bigger(hash));
+}`,
+      expectedOutput: `The biggest of the elements in the HashMap is 334`,
+      hidden: false,
+    }],
+    hints: [`hash maps — https://doc.rust-lang.org/book/ch08-03-hash-maps.html`],
+  },
+  {
+    id: 142,
+    slug: 'capitalizing',
+    title: 'Capitalizing',
+    checkpoint: 'zone01_cp1',
+    difficulty: 'easy',
+    order: 2,
+    concept: `Complete the \`capitalize_first\` **function** which converts the first letter of the string to uppercase.
+
+Complete the \`title_case\` **function** which converts the first letter of each word in a string to uppercase.
+
+Complete the \`change_case\` **function** which converts the uppercase letters of a string into lowercase, and the lowercase to uppercase.
+
+\`\`\`rust
+pub fn capitalize_first(input: &str) -> String {
+}
+
+pub fn title_case(input: &str) -> String {
+}
+
+pub fn change_case(input: &str) -> String {
+}
+\`\`\``,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `Complete the \`capitalize_first\` **function** which converts the first letter of the string to uppercase.
+
+Complete the \`title_case\` **function** which converts the first letter of each word in a string to uppercase.
+
+Complete the \`change_case\` **function** which converts the uppercase letters of a string into lowercase, and the lowercase to uppercase.`,
+    functionSignatures: [`pub fn capitalize_first(input: &str) -> String {
+    todo!()
+}
+
+pub fn title_case(input: &str) -> String {
+    todo!()
+}
+
+pub fn change_case(input: &str) -> String {
+    todo!()
+}`],
+    constraints: [],
+    starterCode: `pub fn capitalize_first(input: &str) -> String {
+    todo!()
+}
+
+pub fn title_case(input: &str) -> String {
+    todo!()
+}
+
+pub fn change_case(input: &str) -> String {
+    todo!()
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_142_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{}", capitalize_first("joe is missing"));
+    println!("{}", title_case("jill is leaving A"));
+    println!("{}", change_case("heLLo THere"));
+}`,
+      expectedOutput: `Joe is missing
+Jill Is Leaving A
+HEllO thERE`,
+      hidden: false,
+    }],
+    hints: [],
+  },
+  {
+    id: 143,
+    slug: 'modify_letter',
+    title: 'Modify Letter',
+    checkpoint: 'zone01_cp1',
+    difficulty: 'easy',
+    order: 2,
+    concept: `Create a **function** \`remove_letter_sensitive\` that returns a string without the letter specified as argument.
+
+Create a **function** \`remove_letter_insensitive\` that returns a string without the letter specified as argument (ignoring case).
+
+Create a **function** \`swap_letter_case\` that returns a string swapping the case for the chosen letter.
+
+\`\`\`rust
+pub fn remove_letter_sensitive(s: &str, letter: char) -> String {
+}
+
+pub fn remove_letter_insensitive(s: &str, letter: char) -> String {
+}
+
+pub fn swap_letter_case(s: &str, letter: char) -> String {
+}
+\`\`\``,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `Create a **function** \`remove_letter_sensitive\` that returns a string without the letter specified as argument.
+
+Create a **function** \`remove_letter_insensitive\` that returns a string without the letter specified as argument (ignoring case).
+
+Create a **function** \`swap_letter_case\` that returns a string swapping the case for the chosen letter.`,
+    functionSignatures: [`pub fn remove_letter_sensitive(s: &str, letter: char) -> String {
+    todo!()
+}
+
+pub fn remove_letter_insensitive(s: &str, letter: char) -> String {
+    todo!()
+}
+
+pub fn swap_letter_case(s: &str, letter: char) -> String {
+    todo!()
+}`],
+    constraints: [],
+    starterCode: `pub fn remove_letter_sensitive(s: &str, letter: char) -> String {
+    todo!()
+}
+
+pub fn remove_letter_insensitive(s: &str, letter: char) -> String {
+    todo!()
+}
+
+pub fn swap_letter_case(s: &str, letter: char) -> String {
+    todo!()
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_143_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{}", remove_letter_sensitive("Jojhn jis sljeepjjing", 'j'));
+    println!("{}", remove_letter_insensitive("JaimA ais swiaAmmingA", 'A'));
+    println!("{}", swap_letter_case("byE bye", 'e'));
+}`,
+      expectedOutput: `Joe is sleeping
+Jim is swimming
+bye byE`,
+      hidden: false,
+    }],
+    hints: [],
+  },
+  // ── Exam-2 missing exercises ─────────────────────────────────────────────
+  {
+    id: 144,
+    slug: 'scytale_cipher',
+    title: 'Scytale Cipher',
+    checkpoint: 'zone01_cp2',
+    difficulty: 'hard',
+    order: 5,
+    concept: `Create a **function** which creates a scytale cipher (also known as spartan cipher).
+
+In practice, it is represented by a strip wrapped around a cylinder. The message is written across the loops of the strip (not along the strip). The message becomes *coded* if the radius of the cylinder changes, or the strip is removed from the cylinder.
+
+Your function should recreate the scytale cipher, so that the \`String\` represents the message, and the \`u32\` represents the number of times the strip is wrapped around the cylinder.
+
+### Example
+
+**size 6:** \`"scytale Code"\` -> \`"sec yCtoadle"\`
+
+\`\`\`console
+--------------------------------
+  |s|  |c|  |y|  |t|  |a|  |l|
+  |e|  | |  |C|  |o|  |d|  |e|
+--------------------------------
+\`\`\`
+
+**size 8:** \`"scytale Code"\` -> \`"sCcoydtea l e"\`
+
+\`\`\`console
+------------------------------------------
+  |s|  |c|  |y|  |t|  |a|  |l|  |e|  | |
+  |C|  |o|  |d|  |e|  | |  | |  | |  | |
+------------------------------------------
+\`\`\``,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `Create a **function** which creates a scytale cipher (also known as spartan cipher).
+
+The \`String\` represents the message, and the \`u32\` represents the number of times the strip is wrapped around the cylinder.
+
+**size 6:** \`"scytale Code"\` -> \`"sec yCtoadle"\`
+
+**size 8:** \`"scytale Code"\` -> \`"sCcoydtea l e"\``,
+    functionSignatures: [`pub fn scytale_cipher(message: String, i: u32) -> String {
+    todo!()
+}`],
+    constraints: [],
+    starterCode: `pub fn scytale_cipher(message: String, i: u32) -> String {
+    todo!()
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_144_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{:?}", scytale_cipher(String::from("scytale Code"), 6));
+    println!("{:?}", scytale_cipher(String::from("scytale Code"), 8));
+}`,
+      expectedOutput: `"sec yCtoadle"
+"sCcoydtea l e"`,
+      hidden: false,
+    }],
+    hints: [],
+  },
+  // ── Exam-4 missing exercises ─────────────────────────────────────────────
+  {
+    id: 145,
+    slug: 'lunch_queue',
+    title: 'Lunch Queue',
+    checkpoint: 'zone01_final',
+    difficulty: 'hardest',
+    order: 6,
+    concept: `You will need to create an _API_, so that a program can organize a queue of people.
+
+The program requires the following functions. Add them as associated functions to the \`Queue\` structure:
+
+- \`new\`: which will initialize the \`Queue\`.
+- \`add\`: which adds a person to the queue.
+- \`invert_queue\`: which reverses the queue.
+- \`rm\`: which removes the person who finished ordering their food. The removal should respect the FIFO method (first in first out). It should return the person's details.
+- \`search\`: which returns the details for a given person's \`name\`.
+
+You must also create a type named \`Link\`. This will be the connection of the structures \`Queue\` and \`Person\`. This will be a recursion type, and must point to \`None\` if there is no \`Person\` to point to.`,
+    whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
+    comparisons: [],
+    guidedExamples: [],
+    videos: [],
+    question: `You will need to create an _API_, so that a program can organize a queue of people.
+
+The program requires the following functions as associated functions on the \`Queue\` structure:
+
+- \`new\`: initialize the \`Queue\`.
+- \`add\`: adds a person to the queue.
+- \`invert_queue\`: reverses the queue.
+- \`rm\`: removes the first person (FIFO) and returns their details.
+- \`search\`: returns the details for a given person's \`name\`.
+
+Also create a type \`Link\` — a recursion type that connects \`Queue\` and \`Person\`, pointing to \`None\` if no \`Person\` exists.`,
+    functionSignatures: [`pub struct Queue {
+    pub node: Link,
+}
+
+pub type Link = Option<Box<Person>>;
+
+#[derive(Debug)]
+pub struct Person {
+    pub discount: i32,
+    pub name: String,
+    pub next_person: Link,
+}
+
+impl Queue {
+    pub fn new() -> Queue {
+        todo!()
+    }
+
+    pub fn add(&mut self, name: String, discount: i32) {
+        todo!()
+    }
+
+    pub fn invert_queue(&mut self) {
+        todo!()
+    }
+
+    pub fn rm(&mut self) -> Option<(String, i32)> {
+        todo!()
+    }
+
+    pub fn search(&self, name: &str) -> Option<(String, i32)> {
+        todo!()
+    }
+}`],
+    constraints: [],
+    starterCode: `pub struct Queue {
+    pub node: Link,
+}
+
+pub type Link = Option<Box<Person>>;
+
+#[derive(Debug)]
+pub struct Person {
+    pub discount: i32,
+    pub name: String,
+    pub next_person: Link,
+}
+
+impl Queue {
+    pub fn new() -> Queue {
+        todo!()
+    }
+
+    pub fn add(&mut self, name: String, discount: i32) {
+        todo!()
+    }
+
+    pub fn invert_queue(&mut self) {
+        todo!()
+    }
+
+    pub fn rm(&mut self) -> Option<(String, i32)> {
+        todo!()
+    }
+
+    pub fn search(&self, name: &str) -> Option<(String, i32)> {
+        todo!()
+    }
+}`,
+    solution: '',
+    testCases: [{
+      id: 'tc_145_1',
+      description: 'Usage example',
+      code: `fn main() {
+    let mut list = Queue::new();
+    list.add(String::from("Marie"), 20);
+    list.add(String::from("Monica"), 15);
+    list.add(String::from("Ana"), 5);
+    list.add(String::from("Alice"), 35);
+    println!("{:?}", list);
+
+    println!("{:?}", list.search("Marie"));
+    println!("{:?}", list.search("Alice"));
+    println!("{:?}", list.search("someone"));
+
+    println!("removed {:?}", list.rm());
+    println!("list {:?}", list);
+    list.invert_queue();
+    println!("invert {:?}", list);
+}`,
+      expectedOutput: `Queue { node: Some(Person { name: "Alice", discount: 35, next_person: Some(Person { name: "Ana", discount: 5, next_person: Some(Person { name: "Monica", discount: 15, next_person: Some(Person { name: "Marie", discount: 20, next_person: None }) }) }) }) }
+Some(("Marie", 20))
+Some(("Alice", 35))
+None
+removed Some(("Marie", 20))
+list Queue { node: Some(Person { name: "Alice", discount: 35, next_person: Some(Person { name: "Ana", discount: 5, next_person: Some(Person { name: "Monica", discount: 15, next_person: None }) }) }) }
+invert Queue { node: Some(Person { name: "Monica", discount: 15, next_person: Some(Person { name: "Ana", discount: 5, next_person: Some(Person { name: "Alice", discount: 35, next_person: None }) }) }) }`,
+      hidden: false,
+    }],
+    hints: [`enum — https://doc.rust-lang.org/rust-by-example/custom_types/enum.html`, `Box — https://doc.rust-lang.org/book/ch15-01-box.html`, `std::option — https://doc.rust-lang.org/std/option/`],
   },
 ];
