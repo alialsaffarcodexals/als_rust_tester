@@ -270,7 +270,78 @@ This function should create a pyramid structure. Each element of the vector must
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_69_1',
+        description: 'Edge case: i = 0 returns empty vec',
+        code: `fn main() {
+    let result = inv_pyramid("hello".to_string(), 0);
+    assert_eq!(result, Vec::<String>::new());
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_69_2',
+        description: 'Edge case: i = 1 returns single element with no indentation',
+        code: `fn main() {
+    let result = inv_pyramid("hello".to_string(), 1);
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "hello");
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_69_3',
+        description: 'Normal case: i = 5, correct number of lines and indentation per line',
+        code: `fn main() {
+    let result = inv_pyramid("hello".to_string(), 5);
+    assert_eq!(result.len(), 5);
+    assert_eq!(result[0], "hello");
+    assert_eq!(result[1], " hello");
+    assert_eq!(result[2], "  hello");
+    assert_eq!(result[3], "   hello");
+    assert_eq!(result[4], "    hello");
+    // each element has exactly j leading spaces
+    for (j, s) in result.iter().enumerate() {
+        assert_eq!(&s[..j], " ".repeat(j));
+    }
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_69_4',
+        description: 'Full vec comparison: i = 5 and alternate string',
+        code: `fn main() {
+    assert_eq!(
+        inv_pyramid("hello".to_string(), 5),
+        vec![
+            "hello".to_string(),
+            " hello".to_string(),
+            "  hello".to_string(),
+            "   hello".to_string(),
+            "    hello".to_string(),
+        ]
+    );
+    assert_eq!(
+        inv_pyramid("abc".to_string(), 3),
+        vec![
+            "abc".to_string(),
+            " abc".to_string(),
+            "  abc".to_string(),
+        ]
+    );
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+    ],
     hints: [],
   },
   {
