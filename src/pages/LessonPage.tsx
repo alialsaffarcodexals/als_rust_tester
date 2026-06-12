@@ -4,6 +4,7 @@ import CodeEditor from '../components/editor/CodeEditor';
 import Console from '../components/editor/Console';
 import type { Exercise, ExecutionResult, TestResult, UserProgress } from '../types';
 import { useRustExecution } from '../hooks/useRustExecution';
+import { zone01Guides } from '../data/zone01_guides';
 
 interface LessonPageProps {
   exercises: Exercise[];
@@ -20,26 +21,45 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
   const exercise = exercises.find((e) => e.id === exerciseId);
 
   const [activeTab, setActiveTab] = useState<TabId>('concept');
+  const [activeEditorTab, setActiveEditorTab] = useState<'solution' | 'main'>('solution');
   const [code, setCode] = useState('');
+  const [mainCode, setMainCode] = useState('');
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
   const [hintsShown, setHintsShown] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showSolutionModal, setShowSolutionModal] = useState(false);
+
+  const isZone01 = exercise?.checkpoint?.startsWith('zone01') ?? false;
 
   const { runCode, runTests, isRunning, isTesting } = useRustExecution();
   const lessonProgress = progress.lessons[exerciseId];
 
-  // Initialize code from progress or starter
+  // Initialize code from draft save > submitted code > starter
   useEffect(() => {
     if (exercise) {
-      const savedCode = progress.lessons[exerciseId]?.lastCode;
-      setCode(savedCode || exercise.starterCode);
+      const isZ01 = exercise.checkpoint.startsWith('zone01');
+      const draft = localStorage.getItem(`rustpath_lesson_draft_${exerciseId}`);
+      const submitted = progress.lessons[exerciseId]?.lastCode;
+      setCode(draft || submitted || exercise.starterCode);
+      if (isZ01) {
+        const savedMain = localStorage.getItem(`rustpath_lesson_main_${exerciseId}`);
+        setMainCode(savedMain || exercise.testCases[0]?.code || '');
+      } else {
+        setMainCode('');
+      }
+      setActiveEditorTab('solution');
       setRunResult(null);
       setTestResults(null);
       setHintsShown(0);
       setShowSolution(false);
       setSubmitClicked(false);
+      setSaved(false);
+      setShowGuideModal(false);
+      setShowSolutionModal(false);
       setActiveTab('concept');
     }
   }, [exerciseId, exercise]);
@@ -47,9 +67,10 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
   const handleRun = useCallback(async () => {
     if (!code.trim()) return;
     setTestResults(null);
-    const result = await runCode(code);
+    const codeToRun = isZone01 ? `${code}\n\n${mainCode}` : code;
+    const result = await runCode(codeToRun);
     setRunResult(result);
-  }, [code, runCode]);
+  }, [code, mainCode, runCode, isZone01]);
 
   const handleSubmit = useCallback(async () => {
     if (!exercise || !code.trim()) return;
@@ -61,6 +82,24 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
     const passed = results.filter((r) => r.passed).length;
     onComplete(exerciseId, code, passed, results.length);
   }, [exercise, code, runTests, exerciseId, onComplete]);
+
+  const handleSave = useCallback(() => {
+    localStorage.setItem(`rustpath_lesson_draft_${exerciseId}`, code);
+    if (isZone01) {
+      localStorage.setItem(`rustpath_lesson_main_${exerciseId}`, mainCode);
+    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }, [exerciseId, code, mainCode, isZone01]);
+
+  const handleReset = useCallback(() => {
+    if (!exercise) return;
+    if (isZone01 && activeEditorTab === 'main') {
+      setMainCode(exercise.testCases[0]?.code ?? '');
+    } else {
+      setCode(exercise.starterCode);
+    }
+  }, [isZone01, activeEditorTab, exercise]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -145,6 +184,23 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
             ))}
           </div>
 
+          {isZone01 && (
+            <div className="zone01-guide-bar">
+              <button
+                className="btn btn-sm zone01-guide-btn"
+                onClick={() => setShowGuideModal(true)}
+              >
+                📖 Guide
+              </button>
+              <button
+                className="btn btn-sm zone01-solution-btn"
+                onClick={() => setShowSolutionModal(true)}
+              >
+                🔑 Show Solution
+              </button>
+            </div>
+          )}
+
           <div className="lesson-tab-content">
             {activeTab === 'concept' && (
               <ConceptTab exercise={exercise} />
@@ -180,10 +236,33 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
             <div className="editor-toolbar-actions">
               <button
                 className="btn btn-ghost btn-sm"
-                onClick={() => setCode(exercise.starterCode)}
-                title="Reset to starter code"
+                onClick={handleReset}
+                title={isZone01 && activeEditorTab === 'main' ? 'Reset main.rs to default' : 'Reset to starter code'}
               >
                 ↺ Reset
+              </button>
+              <button
+                className={`btn btn-sm${saved ? ' btn-save-done' : ' btn-ghost'}`}
+                onClick={handleSave}
+                title="Save your code (persists after closing)"
+              >
+                {saved ? (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:3}}>
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Saved
+                  </>
+                ) : (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:3}}>
+                      <path d="M2 2h6l2 2v6H2V2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                      <path d="M4 2v2.5h4V2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                      <rect x="3.5" y="7" width="5" height="2.5" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+                    </svg>
+                    Save
+                  </>
+                )}
               </button>
               <button
                 className="btn btn-secondary btn-sm"
@@ -203,11 +282,39 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
             </div>
           </div>
 
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            height="360px"
-          />
+          {isZone01 && (
+            <div className="lesson-editor-tabs">
+              <button
+                className={`lesson-editor-tab ${activeEditorTab === 'solution' ? 'active' : ''}`}
+                onClick={() => setActiveEditorTab('solution')}
+              >
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 1h5l3 3v7H2V1z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+                  <path d="M7 1v3h3" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+                </svg>
+                solution.rs
+              </button>
+              <button
+                className={`lesson-editor-tab ${activeEditorTab === 'main' ? 'active' : ''}`}
+                onClick={() => setActiveEditorTab('main')}
+              >
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 1h5l3 3v7H2V1z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+                  <path d="M7 1v3h3" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+                </svg>
+                main.rs
+                <span className="lesson-editor-tab-hint">caller</span>
+              </button>
+            </div>
+          )}
+          <div style={{ display: !isZone01 || activeEditorTab === 'solution' ? 'block' : 'none' }}>
+            <CodeEditor value={code} onChange={setCode} height="360px" />
+          </div>
+          {isZone01 && (
+            <div style={{ display: activeEditorTab === 'main' ? 'block' : 'none' }}>
+              <CodeEditor value={mainCode} onChange={setMainCode} height="360px" />
+            </div>
+          )}
 
           <div className="console-section">
             <Console
@@ -244,6 +351,21 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           )}
         </div>
       </div>
+
+      {showGuideModal && (
+        <GuideModal
+          slug={exercise.slug}
+          title={exercise.title}
+          onClose={() => setShowGuideModal(false)}
+        />
+      )}
+      {showSolutionModal && (
+        <SolutionModal
+          slug={exercise.slug}
+          title={exercise.title}
+          onClose={() => setShowSolutionModal(false)}
+        />
+      )}
 
       <style>{`
         .lesson-page { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
@@ -283,6 +405,7 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           font-family: var(--font-mono);
         }
         .editor-toolbar-actions { display: flex; align-items: center; gap: 6px; }
+        .btn-save-done { background: none; color: var(--success, #4ade80); border-color: rgba(74,222,128,0.35); }
         .console-section { flex-shrink: 0; }
         .lesson-submit-summary {
           display: flex; align-items: center; gap: 12px;
@@ -293,6 +416,119 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         }
         .lesson-submit-summary.pass { background: var(--success-bg); color: var(--success); }
         .lesson-submit-summary.fail { background: var(--warning-bg); color: var(--warning); }
+        .lesson-editor-tabs {
+          display: flex;
+          gap: 2px;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-subtle);
+          border-bottom: none;
+          border-radius: var(--radius-md) var(--radius-md) 0 0;
+          padding: 4px 8px 0;
+        }
+        .lesson-editor-tab {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 12px;
+          border: none;
+          border-bottom: 2px solid transparent;
+          background: none;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all var(--transition);
+          font-family: var(--font-mono);
+          margin-bottom: -1px;
+        }
+        .lesson-editor-tab:hover { color: var(--text-secondary); }
+        .lesson-editor-tab.active { color: var(--rust-light); border-bottom-color: var(--rust); }
+        .lesson-editor-tab-hint {
+          font-size: 0.62rem;
+          padding: 1px 4px;
+          background: var(--bg-elevated);
+          border-radius: 3px;
+          color: var(--text-muted);
+          font-family: var(--font-sans);
+          font-weight: 500;
+        }
+        .zone01-guide-bar {
+          display: flex; gap: 8px; padding: 8px 16px;
+          background: var(--bg-elevated);
+          border-bottom: 1px solid var(--border-subtle);
+          flex-shrink: 0;
+        }
+        .zone01-guide-btn {
+          background: var(--rust-dim); color: var(--rust-light);
+          border: 1px solid var(--rust); border-radius: 6px;
+          font-weight: 600;
+        }
+        .zone01-guide-btn:hover { background: var(--rust); color: #fff; }
+        .zone01-solution-btn {
+          background: none; color: var(--text-secondary);
+          border: 1px solid var(--border-normal); border-radius: 6px;
+        }
+        .zone01-solution-btn:hover { border-color: var(--rust-light); color: var(--rust-light); }
+        .zone01-modal-overlay {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.65); z-index: 2000;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .zone01-modal {
+          background: var(--bg-surface);
+          border: 1px solid var(--border-normal);
+          border-radius: var(--radius-lg);
+          width: min(820px, 92vw); max-height: 88vh;
+          display: flex; flex-direction: column; overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .zone01-modal-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 20px;
+          border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
+        }
+        .zone01-modal-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .zone01-modal-body {
+          flex: 1; overflow-y: auto; padding: 20px;
+          display: flex; flex-direction: column; gap: 24px;
+        }
+        .guide-section-title {
+          font-size: 0.78rem; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.08em;
+          color: var(--rust-light); margin-bottom: 12px;
+        }
+        .guide-card {
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-normal);
+          border-left: 3px solid var(--rust);
+          border-radius: var(--radius-md);
+          padding: 12px 16px; margin-bottom: 8px;
+        }
+        .guide-card-name {
+          font-size: 0.875rem; font-weight: 600;
+          color: var(--text-primary); font-family: var(--font-mono);
+          margin-bottom: 4px;
+        }
+        .guide-card-sig {
+          font-size: 0.78rem; color: var(--syn-fn);
+          font-family: var(--font-mono);
+          background: var(--bg-base); padding: 4px 8px;
+          border-radius: var(--radius-sm); margin-bottom: 6px;
+        }
+        .guide-card-desc {
+          font-size: 0.875rem; color: var(--text-secondary); line-height: 1.65;
+          white-space: pre-wrap;
+        }
+        .guide-card-example {
+          margin-top: 8px; background: var(--bg-base);
+          border-radius: var(--radius-sm); padding: 6px 10px;
+          font-size: 0.8rem; color: var(--text-primary);
+          font-family: var(--font-mono); white-space: pre-wrap;
+        }
+        .guide-empty {
+          color: var(--text-muted); font-size: 0.875rem;
+          text-align: center; padding: 24px;
+        }
       `}</style>
     </div>
   );
@@ -640,4 +876,104 @@ function checkpointLabel(cp: string) {
     checkpoint3: 'CP3',
     final: 'Final',
   }[cp] ?? cp;
+}
+
+function GuideModal({ slug, title, onClose }: { slug: string; title: string; onClose: () => void }) {
+  const guide = zone01Guides[slug];
+  return (
+    <div className="zone01-modal-overlay" onClick={onClose}>
+      <div className="zone01-modal animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div className="zone01-modal-header">
+          <span className="zone01-modal-title">📖 Guide — {title}</span>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕ Close</button>
+        </div>
+        <div className="zone01-modal-body">
+          {!guide ? (
+            <div className="guide-empty">No guide available for this exercise yet.</div>
+          ) : (
+            <>
+              {guide.builtinFunctions.length > 0 && (
+                <div>
+                  <div className="guide-section-title">🔧 Built-in Functions You Need</div>
+                  {guide.builtinFunctions.map((fn, i) => (
+                    <div key={i} className="guide-card">
+                      <div className="guide-card-name">{fn.name}</div>
+                      {fn.signature && <div className="guide-card-sig">{fn.signature}</div>}
+                      <div className="guide-card-desc">{fn.description}</div>
+                      {fn.example && (
+                        <div className="guide-card-example">{fn.example}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {guide.concepts.length > 0 && (
+                <div>
+                  <div className="guide-section-title">💡 Concepts to Know</div>
+                  {guide.concepts.map((c, i) => (
+                    <div key={i} className="guide-card" style={{ borderLeftColor: 'var(--accent-yellow)' }}>
+                      <div className="guide-card-name">{c.name}</div>
+                      <div className="guide-card-desc">{c.description}</div>
+                      {c.example && (
+                        <div className="guide-card-example">{c.example}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {guide.dataStructures.length > 0 && (
+                <div>
+                  <div className="guide-section-title">🗂️ Data Structures</div>
+                  {guide.dataStructures.map((ds, i) => (
+                    <div key={i} className="guide-card" style={{ borderLeftColor: 'var(--accent-blue, #60a5fa)' }}>
+                      <div className="guide-card-name">{ds.name}</div>
+                      <div className="guide-card-desc">{ds.description}</div>
+                      {ds.example && (
+                        <div className="guide-card-example">{ds.example}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {guide.builtinFunctions.length === 0 &&
+               guide.concepts.length === 0 &&
+               guide.dataStructures.length === 0 && (
+                <div className="guide-empty">No guide content available for this exercise yet.</div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SolutionModal({ slug, title, onClose }: { slug: string; title: string; onClose: () => void }) {
+  const guide = zone01Guides[slug];
+  const solution = guide?.annotatedSolution ?? '';
+  return (
+    <div className="zone01-modal-overlay" onClick={onClose}>
+      <div className="zone01-modal animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div className="zone01-modal-header">
+          <span className="zone01-modal-title">🔑 Solution — {title}</span>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕ Close</button>
+        </div>
+        <div className="zone01-modal-body">
+          {!solution ? (
+            <div className="guide-empty">Solution not available for this exercise yet.</div>
+          ) : (
+            <>
+              <div className="alert alert-info" style={{ marginBottom: 0, flexShrink: 0 }}>
+                The solution below has comments explaining each step. Read through it carefully rather than just copying it!
+              </div>
+              <CodeEditor value={solution} onChange={() => {}} readOnly height="480px" />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -4,6 +4,8 @@ import Console from '../components/editor/Console';
 import { useRustExecution } from '../hooks/useRustExecution';
 import type { ExecutionResult } from '../types';
 
+const PLAYGROUND_STORAGE_KEY = 'rustpath_playground';
+
 // Default file contents shown when the playground first opens
 const DEFAULT_MAIN = `fn main() {
     let msg = helpers::greet("World");
@@ -28,6 +30,14 @@ pub fn double(n: i32) -> i32 {
 
 type FileKey = 'main' | 'helpers';
 
+function loadPlaygroundFiles(): Record<FileKey, string> {
+  try {
+    const saved = localStorage.getItem(PLAYGROUND_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { main: DEFAULT_MAIN, helpers: DEFAULT_HELPERS };
+}
+
 interface FileTab {
   key: FileKey;
   label: string;
@@ -41,11 +51,9 @@ const FILE_TABS: FileTab[] = [
 
 export default function Playground() {
   const [activeFile, setActiveFile] = useState<FileKey>('main');
-  const [files, setFiles] = useState<Record<FileKey, string>>({
-    main: DEFAULT_MAIN,
-    helpers: DEFAULT_HELPERS,
-  });
+  const [files, setFiles] = useState<Record<FileKey, string>>(loadPlaygroundFiles);
   const [output, setOutput] = useState<ExecutionResult | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const { runCode, isRunning } = useRustExecution();
 
@@ -85,6 +93,12 @@ export default function Playground() {
     setFiles({ main: DEFAULT_MAIN, helpers: DEFAULT_HELPERS });
     setOutput(null);
   }, []);
+
+  const handleSave = useCallback(() => {
+    localStorage.setItem(PLAYGROUND_STORAGE_KEY, JSON.stringify(files));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }, [files]);
 
   return (
     <div className="playground">
@@ -126,6 +140,29 @@ export default function Playground() {
             title="Clear console output"
           >
             Clear Output
+          </button>
+          <button
+            className={`pg-btn pg-btn-ghost${saved ? ' pg-btn-saved' : ''}`}
+            onClick={handleSave}
+            title="Save both files to browser storage (persists after closing)"
+          >
+            {saved ? (
+              <>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Saved
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 2h6l2 2v6H2V2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                  <path d="M4 2v2.5h4V2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                  <rect x="3.5" y="7" width="5" height="2.5" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+                </svg>
+                Save
+              </>
+            )}
           </button>
           <button
             className="pg-btn pg-btn-run"
@@ -270,6 +307,10 @@ export default function Playground() {
           background: var(--bg-elevated);
           color: var(--text-primary);
           border-color: var(--border-normal);
+        }
+        .pg-btn-saved {
+          color: var(--success, #4ade80) !important;
+          border-color: rgba(74,222,128,0.3) !important;
         }
         .pg-btn-run {
           background: var(--rust);

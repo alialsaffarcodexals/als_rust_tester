@@ -28,6 +28,32 @@ export interface VideoResource {
   description: string;
 }
 
+export interface GuideFunction {
+  name: string;
+  signature: string;
+  description: string;
+  example?: string;
+}
+
+export interface GuideConcept {
+  name: string;
+  description: string;
+  example?: string;
+}
+
+export interface GuideDataStructure {
+  name: string;
+  description: string;
+  example?: string;
+}
+
+export interface Zone01Guide {
+  builtinFunctions: GuideFunction[];
+  concepts: GuideConcept[];
+  dataStructures: GuideDataStructure[];
+  annotatedSolution: string;
+}
+
 export interface Exercise {
   id: number;
   slug: string;

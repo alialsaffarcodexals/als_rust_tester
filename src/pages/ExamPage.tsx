@@ -55,7 +55,10 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
   const [testResults, setTestResults] = useState<Record<number, TestResult[]>>({});
   const [timeLeft, setTimeLeft] = useState(config?.time ?? 45 * 60);
   const [startTime, setStartTime] = useState(0);
+  const [saved, setSaved] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const examDraftKey = `rustpath_exam_draft_${checkpoint}`;
 
   const currentExercise = examExercises[currentIndex];
 
@@ -77,12 +80,23 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
   }, [examState]);
 
   const startExam = () => {
+    let drafts: Record<number, string> = {};
+    try {
+      const raw = localStorage.getItem(examDraftKey);
+      if (raw) drafts = JSON.parse(raw);
+    } catch {}
     const initCodes: Record<number, string> = {};
-    examExercises.forEach((e) => { initCodes[e.id] = e.starterCode; });
+    examExercises.forEach((e) => { initCodes[e.id] = drafts[e.id] || e.starterCode; });
     setCodes(initCodes);
     setStartTime(Date.now());
     setExamState('running');
   };
+
+  const handleSave = useCallback(() => {
+    localStorage.setItem(examDraftKey, JSON.stringify(codes));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }, [examDraftKey, codes]);
 
   const handleSubmitQuestion = useCallback(async () => {
     if (!currentExercise) return;
@@ -348,13 +362,40 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
           <div className="exam-editor-panel">
             <div className="exam-editor-toolbar">
               <span className="text-xs text-muted font-mono">solution.rs</span>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={handleSubmitQuestion}
-                disabled={isTesting || examState === 'reviewing'}
-              >
-                {isTesting ? 'Testing...' : 'Submit Answer'}
-              </button>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                {examState === 'running' && (
+                  <button
+                    className={`btn btn-sm${saved ? ' btn-save-done' : ' btn-ghost'}`}
+                    onClick={handleSave}
+                    title="Save all answers to browser storage"
+                  >
+                    {saved ? (
+                      <>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:3}}>
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Saved
+                      </>
+                    ) : (
+                      <>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:3}}>
+                          <path d="M2 2h6l2 2v6H2V2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                          <path d="M4 2v2.5h4V2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                          <rect x="3.5" y="7" width="5" height="2.5" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+                        </svg>
+                        Save
+                      </>
+                    )}
+                  </button>
+                )}
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleSubmitQuestion}
+                  disabled={isTesting || examState === 'reviewing'}
+                >
+                  {isTesting ? 'Testing...' : 'Submit Answer'}
+                </button>
+              </div>
             </div>
             <CodeEditor
               value={codes[currentExercise.id] ?? currentExercise.starterCode}
@@ -428,6 +469,7 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
           display: flex; align-items: center; justify-content: space-between;
           padding: 4px 0;
         }
+        .btn-save-done { background: none; color: var(--success, #4ade80); border-color: rgba(74,222,128,0.35); }
       `}</style>
     </div>
   );
