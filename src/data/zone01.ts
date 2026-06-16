@@ -3318,6 +3318,23 @@ impl<T: Add<Output = T> + Copy> Garage<T> {
 Garage { left: None, right: Some(7) }
 Garage { left: Some(7), right: None }`,
       hidden: false,
+    },
+    {
+      id: 'tc_103_2',
+      description: 'Moving into an empty side, and summing into an occupied side',
+      code: `fn main() {
+    let mut g = Garage { left: Some(3), right: None };
+    g.move_to_right();
+    assert_eq!(g, Garage { left: None, right: Some(3) });
+    g.move_to_left();
+    assert_eq!(g, Garage { left: Some(3), right: None });
+    let mut h = Garage { left: Some(10), right: Some(20) };
+    h.move_to_right();
+    assert_eq!(h, Garage { left: None, right: Some(30) });
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -3438,30 +3455,33 @@ impl BloodType {
     solution: '',
     testCases: [{
       id: 'tc_104_1',
-      description: 'Usage example',
+      description: 'O+ can receive only from O+/O-; recipient and donor counts',
       code: `fn main() {
-    let blood_type = BloodType {
-        antigen: Antigen::O,
-        rh_factor: RhFactor::Positive,
-    };
-
-    println!("recipients of O+ {:?}", blood_type.recipients());
-    println!("donors of O+ {:?}", blood_type.donors());
-
-    let another_blood_type = BloodType {
-        antigen: Antigen::O,
-        rh_factor: RhFactor::Positive,
-    };
-
-    println!(
-        "donors of O+ can receive from {:?} {}",
-        another_blood_type,
-        blood_type.can_receive_from(another_blood_type)
-    );
+    let o_pos = BloodType { antigen: Antigen::O, rh_factor: RhFactor::Positive };
+    assert!(o_pos.can_receive_from(BloodType { antigen: Antigen::O, rh_factor: RhFactor::Positive }));
+    assert!(o_pos.can_receive_from(BloodType { antigen: Antigen::O, rh_factor: RhFactor::Negative }));
+    assert!(!o_pos.can_receive_from(BloodType { antigen: Antigen::A, rh_factor: RhFactor::Positive }));
+    assert_eq!(o_pos.recipients().len(), 4);
+    assert_eq!(o_pos.donors().len(), 2);
+    println!("ok");
 }`,
-      expectedOutput: `recipients of O+ [BloodType { rh_factor: Positive, antigen: A }, BloodType { rh_factor: Positive, antigen: AB }, BloodType { rh_factor: Positive, antigen: B }, BloodType { rh_factor: Positive, antigen: O }]
-donors of O+ [BloodType { rh_factor: Positive, antigen: O }, BloodType { rh_factor: Negative, antigen: O }]
-donors of O+ can receive from BloodType { rh_factor: Positive, antigen: O } true`,
+      expectedOutput: `ok`,
+      hidden: false,
+    },
+    {
+      id: 'tc_104_2',
+      description: 'O- is the universal donor and AB+ the universal recipient',
+      code: `fn main() {
+    let o_neg = BloodType { antigen: Antigen::O, rh_factor: RhFactor::Negative };
+    let ab_pos = BloodType { antigen: Antigen::AB, rh_factor: RhFactor::Positive };
+    assert_eq!(o_neg.recipients().len(), 8);
+    assert_eq!(ab_pos.donors().len(), 8);
+    assert_eq!(o_neg.donors(), vec![o_neg]);
+    assert!(ab_pos.can_receive_from(o_neg));
+    assert!(!o_neg.can_receive_from(ab_pos));
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
       hidden: false,
     }],
     hints: [],
@@ -3515,9 +3535,19 @@ On implementing the \`Display\` trait for \`Park\`, you should display the park'
 On implementing the \`Display\` trait for \`ParkType\`, you should display the park type as a string, in all lowercase.`,
     functionSignatures: [`use std::fmt;
 
-pub struct Park {}
+pub struct Park {
+    pub name: Option<String>,
+    pub park_type: ParkType,
+    pub address: Option<String>,
+    pub cap: Option<String>,
+    pub state: Option<String>,
+}
 
-pub enum ParkType {}
+pub enum ParkType {
+    Garden,
+    Forest,
+    Playground,
+}
 
 impl fmt::Display for Park {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -3533,9 +3563,19 @@ impl fmt::Display for ParkType {
     constraints: [],
     starterCode: `use std::fmt;
 
-pub struct Park {}
+pub struct Park {
+    pub name: Option<String>,
+    pub park_type: ParkType,
+    pub address: Option<String>,
+    pub cap: Option<String>,
+    pub state: Option<String>,
+}
 
-pub enum ParkType {}
+pub enum ParkType {
+    Garden,
+    Forest,
+    Playground,
+}
 
 impl fmt::Display for Park {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -3577,6 +3617,24 @@ impl fmt::Display for ParkType {
       expectedOutput: `garden - Les Tuileries, Pl. de la Concorde, 75001 - France
 playground - No name, No address, No cap - No state`,
       hidden: false,
+    },
+    {
+      id: 'tc_105_2',
+      description: 'Forest park with missing address and state, plus a bare ParkType',
+      code: `fn main() {
+    let p = Park {
+        name: Some("Hyde".to_owned()),
+        park_type: ParkType::Forest,
+        address: None,
+        cap: Some("W2".to_owned()),
+        state: None,
+    };
+    assert_eq!(format!("{}", p), "forest - Hyde, No address, W2 - No state");
+    assert_eq!(format!("{}", ParkType::Playground), "playground");
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -3711,6 +3769,26 @@ Target { size: 12, xp: 2 }
 Some(Target { size: 24, xp: 4 })
 Some(Target { size: 2, xp: 0 })`,
       hidden: false,
+    },
+    {
+      id: 'tc_106_2',
+      description: 'LIFO order, peek does not remove, peek_mut edits in place',
+      code: `fn main() {
+    let mut f = Field::new();
+    assert_eq!(f.peek(), None);
+    f.push(Target { size: 1, xp: 1 });
+    f.push(Target { size: 2, xp: 2 });
+    f.push(Target { size: 3, xp: 3 });
+    assert_eq!(f.peek(), Some(&Target { size: 3, xp: 3 }));
+    assert_eq!(f.pop(), Some(Target { size: 3, xp: 3 }));
+    assert_eq!(f.pop(), Some(Target { size: 2, xp: 2 }));
+    if let Some(t) = f.peek_mut() { t.xp = 99; }
+    assert_eq!(f.pop(), Some(Target { size: 1, xp: 99 }));
+    assert_eq!(f.pop(), None);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [`Box\\<T\\> — https://doc.rust-lang.org/book/ch15-01-box.html`, `Linked lists in Rust — https://rust-unofficial.github.io/too-many-lists/index.html`],
   },
@@ -3835,6 +3913,24 @@ Car { color: "pink", plate: "WWW" }
 Car { color: "pink", plate: "WWW" }
 Car { color: "", plate: "" }`,
       hidden: false,
+    },
+    {
+      id: 'tc_107_2',
+      description: 'Interior mutability: repair mutates, change replaces, sell leaves the default',
+      code: `fn main() {
+    let biz = RentalBusiness { car: RefCell::new(Car { color: "green".to_string(), plate: "ZZZ".to_string() }) };
+    assert_eq!(biz.rent_car().plate, "ZZZ");
+    biz.repair_car().color = "black".to_string();
+    assert_eq!(biz.rent_car().color, "black");
+    biz.change_car(Car { color: "white".to_string(), plate: "111".to_string() });
+    assert_eq!(*biz.rent_car(), Car { color: "white".to_string(), plate: "111".to_string() });
+    let sold = biz.sell_car();
+    assert_eq!(sold, Car { color: "white".to_string(), plate: "111".to_string() });
+    assert_eq!(*biz.rent_car(), Car::default());
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [`std::cell::RefCell — https://doc.rust-lang.org/std/cell/struct.RefCell.html`, `Struct std::rc::Rc — https://doc.rust-lang.org/std/rc/struct.Rc.html`],
   },
@@ -4024,6 +4120,29 @@ impl<'a> Article<'a> {
 (true, 1, Cell { value: 2 })
 (false, 2, Cell { value: 2 }, 1)`,
       hidden: false,
+    },
+    {
+      id: 'tc_108_2',
+      description: 'discard records the drop state and increments the counter (no Rc needed)',
+      code: `fn main() {
+    let blog = Blog::new();
+    assert_eq!(blog.new_id(), 0);
+    let (i0, a0) = blog.new_article(String::from("first"));
+    let (i1, a1) = blog.new_article(String::from("second"));
+    assert_eq!((i0, i1), (0, 1));
+    assert_eq!(blog.new_id(), 2);
+    assert!(!blog.is_dropped(0));
+    a1.discard();
+    assert!(blog.is_dropped(1));
+    assert!(!blog.is_dropped(0));
+    assert_eq!(blog.drops.get(), 1);
+    a0.discard();
+    assert_eq!(blog.drops.get(), 2);
+    assert!(blog.is_dropped(0));
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [`Trait std::ops::Drop — https://doc.bccnsoft.com/docs/rust-1.36.0-docs-html/std/ops/trait.Drop.html`, `Struct std::cell::RefCell — https://doc.rust-lang.org/std/cell/struct.RefCell.html`, `Interior Mutability — https://doc.rust-lang.org/book/ch15-05-interior-mutability.html`],
   },
@@ -4160,6 +4279,27 @@ removed Some(("Marie", 20))
 list Queue { node: Some(Person { name: "Alice", discount: 35, next_person: Some(Person { name: "Ana", discount: 5, next_person: Some(Person { name: "Monica", discount: 15, next_person: None }) }) }) }
 invert Queue { node: Some(Person { name: "Monica", discount: 15, next_person: Some(Person { name: "Ana", discount: 5, next_person: Some(Person { name: "Alice", discount: 35, next_person: None }) }) }) }`,
       hidden: false,
+    },
+    {
+      id: 'tc_109_2',
+      description: 'FIFO removal order, search hits and misses, invert on a single element',
+      code: `fn main() {
+    let mut q = Queue::new();
+    assert_eq!(q.rm(), None);
+    q.add("A".to_string(), 1);
+    q.add("B".to_string(), 2);
+    q.add("C".to_string(), 3);
+    assert_eq!(q.search("B"), Some((&"B".to_string(), &2)));
+    assert_eq!(q.search("nope"), None);
+    assert_eq!(q.rm(), Some(("A".to_string(), 1)));
+    assert_eq!(q.rm(), Some(("B".to_string(), 2)));
+    q.invert_queue();
+    assert_eq!(q.rm(), Some(("C".to_string(), 3)));
+    assert_eq!(q.rm(), None);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [`enum — https://doc.rust-lang.org/rust-by-example/custom_types/enum.html`, `Box — https://doc.rust-lang.org/book/ch15-01-box.html`, `std::option — https://doc.rust-lang.org/std/option/`],
   },
