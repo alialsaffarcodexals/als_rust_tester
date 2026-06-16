@@ -252,8 +252,8 @@ export default function Sidebar({ progress }: SidebarProps) {
       label: 'Zone01 — CP3',
       sublabel: 'Traits & Lifetimes',
       icon: '🔮',
-      examPath: null as string | null,
-      examUnlocked: false,
+      examPath: '/quiz' as string | null,
+      examUnlocked: true,
       stats: z01cp3Stats,
       zoneExercises: z01cp3Exercises,
       items: [],
@@ -498,13 +498,15 @@ export default function Sidebar({ progress }: SidebarProps) {
                     ))
                   )}
 
-                  {/* Exam button — only shown for original checkpoints */}
+                  {/* Exam / quiz button */}
                   {section.examPath !== null && <button
                     className={`sidebar-exam-btn ${section.examUnlocked ? '' : 'locked'}`}
                     onClick={() => section.examUnlocked && section.examPath && navigate(section.examPath)}
                     disabled={!section.examUnlocked}
                   >
-                    {section.examUnlocked ? '🎯' : '🔒'} {section.label} Exam
+                    {section.examPath === '/quiz'
+                      ? `🧩 ${section.label} Quiz`
+                      : `${section.examUnlocked ? '🎯' : '🔒'} ${section.label} Exam`}
                   </button>}
                 </div>
               )}
