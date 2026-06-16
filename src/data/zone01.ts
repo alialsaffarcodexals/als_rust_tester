@@ -1854,7 +1854,77 @@ This function should create a pyramid structure. Each element of the vector must
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_89_1',
+        description: 'Edge case: i = 0 returns empty vec',
+        code: `fn main() {
+    let result = inv_pyramid("hello".to_string(), 0);
+    assert_eq!(result, Vec::<String>::new());
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_89_2',
+        description: 'Edge case: i = 1 returns single element with no indentation',
+        code: `fn main() {
+    let result = inv_pyramid("hello".to_string(), 1);
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "hello");
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_89_3',
+        description: 'Normal case: i = 5, correct number of lines and indentation per line',
+        code: `fn main() {
+    let result = inv_pyramid("hello".to_string(), 5);
+    assert_eq!(result.len(), 5);
+    assert_eq!(result[0], "hello");
+    assert_eq!(result[1], " hello");
+    assert_eq!(result[2], "  hello");
+    assert_eq!(result[3], "   hello");
+    assert_eq!(result[4], "    hello");
+    for (j, s) in result.iter().enumerate() {
+        assert_eq!(&s[..j], " ".repeat(j));
+    }
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_89_4',
+        description: 'Full vec comparison: i = 5 and alternate string',
+        code: `fn main() {
+    assert_eq!(
+        inv_pyramid("hello".to_string(), 5),
+        vec![
+            "hello".to_string(),
+            " hello".to_string(),
+            "  hello".to_string(),
+            "   hello".to_string(),
+            "    hello".to_string(),
+        ]
+    );
+    assert_eq!(
+        inv_pyramid("abc".to_string(), 3),
+        vec![
+            "abc".to_string(),
+            " abc".to_string(),
+            "  abc".to_string(),
+        ]
+    );
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+    ],
     hints: [],
   },
   {
@@ -1978,15 +2048,72 @@ This is how partial sums work:
 \`\`\`rs
 parts_sums(&[1, 2, 3, 4, 5]) // == [15, 10, 6, 3 ,1, 0]
 \`\`\``,
-    functionSignatures: [`pub fn partial_sums() {
+    functionSignatures: [`pub fn parts_sums(v: &[u64]) -> Vec<u64> {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn partial_sums() {
+    starterCode: `pub fn parts_sums(v: &[u64]) -> Vec<u64> {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_91_1',
+        description: 'Normal case: [1,2,3,4,5] produces shrinking prefix sums ending with 0',
+        code: `fn main() {
+    assert_eq!(
+        parts_sums(&[1, 2, 3, 4, 5]),
+        vec![15, 10, 6, 3, 1, 0]
+    );
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_91_2',
+        description: 'Empty slice returns [0]',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[]), vec![0u64]);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_91_3',
+        description: 'Single element returns [element, 0]',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[42]), vec![42, 0]);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_91_4',
+        description: 'Two elements',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[1, 2]), vec![3, 1, 0]);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_91_5',
+        description: 'All zeros: result is all zeros with length n+1',
+        code: `fn main() {
+    assert_eq!(parts_sums(&[0, 0, 0]), vec![0, 0, 0, 0]);
+    let r = parts_sums(&[1, 2, 3]);
+    assert_eq!(r.len(), 4);
+    assert_eq!(*r.last().unwrap(), 0u64);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+    ],
     hints: [],
   },
   {
@@ -2664,15 +2791,58 @@ Or:
 \`\`\`
 
 > Use \`std::env::args()\` to get the program's arguments.`,
-    functionSignatures: [`pub fn rpn() {
+    functionSignatures: [`pub fn rpn(expr: &str) -> f64 {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn rpn() {
+    starterCode: `// In this trainer, implement RPN as a function that evaluates the
+// expression and returns the numeric result (operands fit in f64).
+pub fn rpn(expr: &str) -> f64 {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_99_1',
+        description: 'Simple addition: 3 4 + = 7',
+        code: `fn main() {
+    assert_eq!(rpn("3 4 +"), 7.0);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_99_2',
+        description: 'Nested expression: 5 1 2 + 4 * + 3 - = 14',
+        code: `fn main() {
+    assert_eq!(rpn("5 1 2 + 4 * + 3 -"), 14.0);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_99_3',
+        description: 'Multiplication then addition: 2 3 4 * + = 14',
+        code: `fn main() {
+    assert_eq!(rpn("2 3 4 * +"), 14.0);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: true,
+      },
+      {
+        id: 'tc_99_4',
+        description: 'Division: 10 2 / = 5',
+        code: `fn main() {
+    assert_eq!(rpn("10 2 /"), 5.0);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: true,
+      },
+    ],
     hints: [],
   },
   {
@@ -2704,7 +2874,54 @@ Your function will receive a \`String\` representing the ciphered message, and a
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_100_1',
+        description: 'Decode with 2 letters per turn (6 chars, 3 rows)',
+        code: `fn main() {
+    assert_eq!(
+        scytale_decoder("abcdef".to_string(), 2),
+        Some("acebdf".to_string())
+    );
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_100_2',
+        description: 'Decode with 3 letters per turn (6 chars, 2 rows)',
+        code: `fn main() {
+    assert_eq!(
+        scytale_decoder("abcdef".to_string(), 3),
+        Some("adbecf".to_string())
+    );
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: false,
+      },
+      {
+        id: 'tc_100_3',
+        description: 'Empty message returns None',
+        code: `fn main() {
+    assert_eq!(scytale_decoder("".to_string(), 3), None);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: true,
+      },
+      {
+        id: 'tc_100_4',
+        description: 'Zero letters per turn returns None',
+        code: `fn main() {
+    assert_eq!(scytale_decoder("abc".to_string(), 0), None);
+    println!("ok");
+}`,
+        expectedOutput: `ok`,
+        hidden: true,
+      },
+    ],
     hints: [],
   },
   {
