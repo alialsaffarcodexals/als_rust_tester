@@ -656,51 +656,85 @@ pub fn prev_prime(nbr: u64) -> u64 {
   },
 
   own_and_return: {
-    builtinFunctions: [],
+    builtinFunctions: [
+      {
+        name: '.clone()',
+        signature: 'fn clone(&self) -> Self',
+        description:
+          'Makes an owned, independent copy of a value. Use it to return an owned `String` out of a borrowed struct without taking ownership of the struct.',
+        example: 'let owned: String = film.name.clone();',
+      },
+      {
+        name: '.to_owned() / .to_string()',
+        signature: 'fn to_owned(&self) -> String',
+        description:
+          'Turns a borrowed `&str` into an owned, heap-allocated `String`. Handy when building a struct from a string literal.',
+        example: 'let f = Film { name: "Terminator".to_owned() };',
+      },
+    ],
     concepts: [
       {
-        name: 'Ownership — Taking and Returning',
+        name: 'Ownership & Move Semantics',
         description:
-          'When a function takes a value by ownership (not reference), it can return ownership back by returning the value. This lets the caller use it again.',
-        example: 'fn add_director(mut f: Film, dir: String) -> Film { f.director = dir; f }',
+          'A `String` has a single owner. Passing it (or a struct that contains it) *by value* moves ownership into the function — the original binding can no longer be used afterwards. This is exactly what `take_film_name` does: it consumes the `Film`.',
+        example: 'pub fn take_film_name(film: Film) -> String { film.name } // film is moved in and dropped',
       },
       {
-        name: 'Struct Definition',
+        name: 'Borrowing with `&`',
         description:
-          'Define a struct with `pub struct Name { pub field: Type, ... }`. Use `impl Name { ... }` for methods.',
-        example: 'pub struct Film { pub name: String, pub director: String }',
+          'Taking `&Film` (a shared reference) *borrows* the value instead of owning it. The caller keeps the `Film` and can keep using it. You can take as many shared borrows as you like.',
+        example: 'pub fn read_film_name(film: &Film) -> String { film.name.clone() }',
       },
       {
-        name: 'impl Block Methods',
+        name: 'You cannot move out of a borrow',
         description:
-          '`&self` = borrow (read-only), `&mut self` = mutable borrow, `self` = takes ownership.',
-        example:
-          'impl Film { pub fn new(name: &str) -> Self { Film { name: name.to_string(), director: String::new() } } }',
+          'From `&Film` you only have read access, so `film.name` (a move) is rejected by the compiler. Return `film.name.clone()` to hand back an owned copy while leaving the borrowed `Film` intact.',
+        example: 'film.name.clone() // OK — clone instead of move',
+      },
+      {
+        name: 'Moving a field out of an owned value',
+        description:
+          'When you *own* the struct (took it by value), you may move a field straight out: `film.name`. This consumes `film`, which is why the value cannot be reused after `take_film_name`.',
+        example: 'pub fn take_film_name(film: Film) -> String { film.name }',
       },
     ],
     dataStructures: [
       {
         name: 'Struct',
-        description: 'A named collection of typed fields. Defined with `pub struct`.',
-        example: 'struct Film { name: String, director: String }',
+        description: 'A named collection of typed fields. Here `Film` holds a single owned `String`.',
+        example: 'pub struct Film { pub name: String }',
+      },
+      {
+        name: 'String',
+        description:
+          'An owned, growable, heap-allocated UTF-8 string. It is moved (not copied) by default, so you must clone it to keep the original usable.',
+        example: 'let s: String = "hi".to_owned();',
+      },
+      {
+        name: 'Shared reference `&T`',
+        description: 'A read-only borrow of a value. Lets a function look at data without taking ownership of it.',
+        example: 'fn read(film: &Film) { /* film is borrowed, not owned */ }',
       },
     ],
-    annotatedSolution: `pub struct Film {
+    annotatedSolution: `// A struct with a single owned String field.
+pub struct Film {
     pub name: String,
-    pub director: String,
 }
 
-impl Film {
-    // Constructor — creates a Film with no director yet
-    pub fn new(name: &str) -> Film {
-        Film { name: name.to_string(), director: String::new() }
-    }
+// Borrow the Film through a shared reference: \`&Film\`.
+// Because we don't own the Film, we can't move its name out —
+// so we hand back an owned *copy* with \`.clone()\`.
+// The caller's Film stays valid, so this can be called repeatedly.
+pub fn read_film_name(film: &Film) -> String {
+    film.name.clone()
+}
 
-    // Takes ownership of self, sets the director, returns ownership back
-    pub fn add_director(mut self, director: &str) -> Film {
-        self.director = director.to_string();
-        self  // return the modified Film
-    }
+// Take the Film *by value*: ownership moves into this function.
+// We move the \`name\` String straight out of the struct and return it.
+// The Film is consumed (dropped) here, so the caller can no longer
+// use it — any later use is a compile-time error.
+pub fn take_film_name(film: Film) -> String {
+    film.name
 }`,
   },
 

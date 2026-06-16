@@ -980,7 +980,78 @@ To calculate a 3x3 matrix determinant you have to take 'a' and multiply it by th
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [
+      {
+        id: 'tc_78_1',
+        description: 'Usage example',
+        code: `fn main() {
+    let matrix = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+    ];
+    println!("{}", matrix_determinant(matrix));
+}`,
+        expectedOutput: `0`,
+        hidden: false,
+      },
+      {
+        id: 'tc_78_2',
+        description: 'Matrix with negative values',
+        code: `fn main() {
+    let matrix = [
+        [6, 1, 1],
+        [4, -2, 5],
+        [2, 8, 7],
+    ];
+    println!("{}", matrix_determinant(matrix));
+}`,
+        expectedOutput: `-306`,
+        hidden: false,
+      },
+      {
+        id: 'tc_78_3',
+        description: 'Mixed sign matrix',
+        code: `fn main() {
+    let matrix = [
+        [2, 5, 3],
+        [1, -2, -1],
+        [1, 3, 4],
+    ];
+    println!("{}", matrix_determinant(matrix));
+}`,
+        expectedOutput: `-20`,
+        hidden: true,
+      },
+      {
+        id: 'tc_78_4',
+        description: 'Identity matrix',
+        code: `fn main() {
+    let matrix = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+    ];
+    println!("{}", matrix_determinant(matrix));
+}`,
+        expectedOutput: `1`,
+        hidden: true,
+      },
+      {
+        id: 'tc_78_5',
+        description: 'Diagonal matrix',
+        code: `fn main() {
+    let matrix = [
+        [3, 0, 0],
+        [0, 4, 0],
+        [0, 0, 5],
+    ];
+    println!("{}", matrix_determinant(matrix));
+}`,
+        expectedOutput: `60`,
+        hidden: true,
+      },
+    ],
     hints: [],
   },
   {
@@ -1038,10 +1109,10 @@ pub fn take_film_name(/* to be implemented */) -> String {
         name: "Terminator".to_owned(),
     };
 
-    // println!("{}", take_film_name(/* to be implemented */));
+    // println!("{}", take_film_name(my_film));
 
-    println!("{}", read_film_name(/* to be implemented */));
-    println!("{}", take_film_name(/* to be implemented */));
+    println!("{}", read_film_name(&my_film));
+    println!("{}", take_film_name(my_film));
 
     // the order of the print statements is intentional.
     // you can test this exercise properly by uncommenting out the first print statement,
