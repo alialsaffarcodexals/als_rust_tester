@@ -2365,3 +2365,700 @@ impl Queue {
 }`,
   },
 };
+
+// ---------------------------------------------------------------------------
+// Verified reference solutions for the Zone01 CP3 exercises (ids 88-109).
+// Every solution below was compiled and run against its exercise's test cases
+// on play.rust-lang.org. Guides are keyed by slug, so assigning here updates
+// the "Show Solution" content for every checkpoint that shares the slug.
+// ---------------------------------------------------------------------------
+const cp3VerifiedSolutions: Record<string, string> = {
+  counting_words: `use std::collections::HashMap;
+
+// Returns how many times each word appears, lower-cased.
+fn counting_words(words: &str) -> HashMap<String, u32> {
+    let mut counts: HashMap<String, u32> = HashMap::new();
+
+    // Split on every character that is not a letter or digit, but keep
+    // apostrophes so words like "I'm" are not broken apart.
+    for word in words.split(|c: char| !c.is_alphanumeric() && c != '\\'') {
+        if word.is_empty() {
+            continue; // skip the empty pieces produced between separators
+        }
+        // entry(...).or_insert(0) gives a &mut to the counter, creating it at
+        // 0 the first time we see the word; then we increment it.
+        *counts.entry(word.to_lowercase()).or_insert(0) += 1;
+    }
+
+    counts
+}`,
+  inv_pyramid: `// Build i lines; line number j (0-based) is the string with j spaces in front.
+pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
+    (0..i)
+        .map(|j| format!("{}{}", " ".repeat(j), v))
+        .collect()
+}`,
+  nextprime: `// The smallest prime that is >= nbr (returns nbr itself when it is prime).
+pub fn next_prime(nbr: usize) -> usize {
+    fn is_prime(n: usize) -> bool {
+        if n < 2 {
+            return false;
+        }
+        let mut i = 2;
+        while i * i <= n {
+            if n % i == 0 {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
+    let mut n = nbr;
+    while !is_prime(n) {
+        n += 1;
+    }
+    n
+}`,
+  partial_sums: `// Suffix sums: result[k] is the sum of the first (len - k) elements, ending
+// with 0. parts_sums(&[1, 2, 3, 4, 5]) == [15, 10, 6, 3, 1, 0].
+pub fn parts_sums(v: &[u64]) -> Vec<u64> {
+    let mut sums = Vec::with_capacity(v.len() + 1);
+    // k counts down from the full length to 0, summing a shrinking prefix.
+    for k in (0..=v.len()).rev() {
+        sums.push(v[..k].iter().sum());
+    }
+    sums
+}`,
+  previousprime: `// The largest prime that is <= nbr.
+pub fn prev_prime(nbr: u64) -> u64 {
+    fn is_prime(n: u64) -> bool {
+        if n < 2 {
+            return false;
+        }
+        let mut i = 2;
+        while i * i <= n {
+            if n % i == 0 {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
+    let mut n = nbr;
+    loop {
+        if is_prime(n) {
+            return n;
+        }
+        if n == 0 {
+            return 0; // no prime below 2
+        }
+        n -= 1;
+    }
+}`,
+  reverse_it: `// Reverse the digits, then append the original number. Keep a leading '-'
+// for negatives. reverse_it(-123) == "-321123".
+pub fn reverse_it(v: i32) -> String {
+    let abs = (v as i64).abs();
+    let reversed: String = abs.to_string().chars().rev().collect();
+    let sign = if v < 0 { "-" } else { "" };
+    format!("{}{}{}", sign, reversed, abs)
+}`,
+  check_user_name: `pub enum AccessLevel {
+    Guest,
+    Normal,
+    Admin,
+}
+
+pub struct User {
+    pub name: String,
+    pub access_level: AccessLevel,
+}
+
+impl User {
+    pub fn new(name: String, level: AccessLevel) -> Self {
+        User { name, access_level: level }
+    }
+
+    // Guests stay anonymous; everyone else exposes their name.
+    pub fn send_name(&self) -> Option<&str> {
+        match self.access_level {
+            AccessLevel::Guest => None,
+            _ => Some(&self.name),
+        }
+    }
+}
+
+pub fn check_user_name(user: &User) -> (bool, &str) {
+    match user.send_name() {
+        Some(name) => (true, name),
+        None => (false, "ERROR: User is guest"),
+    }
+}`,
+  dress_code: `#[derive(Debug, PartialEq, Eq)]
+pub enum Jacket {
+    Black,
+    White,
+    Flowers,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Hat {
+    Snapback,
+    Baseball,
+    Fedora,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Outfit {
+    pub jacket: Jacket,
+    pub hat: Hat,
+}
+
+pub fn choose_outfit(formality_level: Option<u32>, invitation_message: Result<&str, &str>) -> Outfit {
+    // Special case: no formality level AND no valid invitation.
+    if formality_level.is_none() && invitation_message.is_err() {
+        return Outfit { jacket: Jacket::Flowers, hat: Hat::Baseball };
+    }
+
+    let jacket = match formality_level {
+        None => Jacket::Flowers,
+        Some(level) if level > 0 => Jacket::White,
+        _ => Jacket::Black, // Some(0)
+    };
+
+    let hat = if invitation_message.is_ok() {
+        Hat::Fedora
+    } else {
+        Hat::Snapback
+    };
+
+    Outfit { jacket, hat }
+}`,
+  get_document_id: `#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ErrorOffice {
+    OfficeClose(u32),
+    OfficeNotFound(u32),
+    OfficeFull(u32),
+}
+
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct OfficeOne { pub next_office: Result<OfficeTwo, ErrorOffice> }
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct OfficeTwo { pub next_office: Result<OfficeThree, ErrorOffice> }
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct OfficeThree { pub next_office: Result<OfficeFour, ErrorOffice> }
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct OfficeFour { pub document_id: Result<u32, ErrorOffice> }
+
+impl OfficeOne {
+    // The ? operator walks the chain, returning early on the first Err.
+    pub fn get_document_id(&self) -> Result<u32, ErrorOffice> {
+        self.next_office?.next_office?.next_office?.document_id
+    }
+}`,
+  negative_spelling: `// Spell a NEGATIVE integer in English, prefixed with "minus".
+// Positive numbers (including 0) are rejected.
+pub fn negative_spell(n: i64) -> String {
+    if n >= 0 {
+        return "error: positive number".to_string();
+    }
+    format!("minus {}", spell((-n) as u64))
+}
+
+// Spell a non-negative number (helper).
+fn spell(n: u64) -> String {
+    let ones = [
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+        "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+        "sixteen", "seventeen", "eighteen", "nineteen",
+    ];
+    let tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+    if n < 20 {
+        return ones[n as usize].to_string();
+    }
+    if n < 100 {
+        let t = tens[(n / 10) as usize];
+        return if n % 10 == 0 {
+            t.to_string()
+        } else {
+            format!("{}-{}", t, ones[(n % 10) as usize])
+        };
+    }
+    if n < 1_000 {
+        let h = format!("{} hundred", ones[(n / 100) as usize]);
+        return if n % 100 == 0 { h } else { format!("{} {}", h, spell(n % 100)) };
+    }
+    if n < 1_000_000 {
+        let th = format!("{} thousand", spell(n / 1_000));
+        return if n % 1_000 == 0 { th } else { format!("{} {}", th, spell(n % 1_000)) };
+    }
+    let m = format!("{} million", spell(n / 1_000_000));
+    if n % 1_000_000 == 0 { m } else { format!("{} {}", m, spell(n % 1_000_000)) }
+}`,
+  queens: `#[derive(Debug, Clone, Copy)]
+pub struct ChessPosition {
+    pub rank: usize,
+    pub file: usize,
+}
+
+impl ChessPosition {
+    // Only positions on the 8x8 board are valid.
+    pub fn new(rank: usize, file: usize) -> Option<Self> {
+        if rank < 8 && file < 8 {
+            Some(ChessPosition { rank, file })
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Queen {
+    pub position: ChessPosition,
+}
+
+impl Queen {
+    pub fn new(position: ChessPosition) -> Self {
+        Queen { position }
+    }
+
+    // Two queens attack along a shared row, column, or diagonal.
+    pub fn can_attack(self, other: Self) -> bool {
+        let (r1, f1) = (self.position.rank as i64, self.position.file as i64);
+        let (r2, f2) = (other.position.rank as i64, other.position.file as i64);
+        r1 == r2 || f1 == f2 || (r1 - r2).abs() == (f1 - f2).abs()
+    }
+}`,
+  rpn: `// Evaluate a Reverse Polish Notation expression. Numbers are pushed; each
+// operator pops the top two values and pushes the result.
+pub fn rpn(expr: &str) -> f64 {
+    let mut stack: Vec<f64> = Vec::new();
+    for token in expr.split_whitespace() {
+        match token {
+            "+" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a + b); }
+            "-" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a - b); }
+            "*" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a * b); }
+            "/" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a / b); }
+            num => stack.push(num.parse::<f64>().unwrap()),
+        }
+    }
+    stack.pop().unwrap()
+}`,
+  scytale_decoder: `// Undo a scytale (Spartan) cipher. The cipher text was written row by row
+// across letters_per_turn columns; decoding reads it back column by column.
+pub fn scytale_decoder(s: String, letters_per_turn: usize) -> Option<String> {
+    if s.is_empty() || letters_per_turn == 0 {
+        return None;
+    }
+    let len = s.chars().count();
+    if len % letters_per_turn != 0 {
+        return None; // not a clean rectangle
+    }
+    let rows = len / letters_per_turn;
+    let chars: Vec<char> = s.chars().collect();
+    let mut result = String::with_capacity(len);
+    for col in 0..letters_per_turn {
+        for row in 0..rows {
+            result.push(chars[row * letters_per_turn + col]);
+        }
+    }
+    Some(result)
+}`,
+  matrix_display: `use std::fmt;
+
+#[derive(Debug, Clone)]
+pub struct Matrix(pub Vec<Vec<i32>>);
+
+impl Matrix {
+    // Copy the borrowed rows into owned Vecs.
+    pub fn new(slice: &[&[i32]]) -> Self {
+        Matrix(slice.iter().map(|row| row.to_vec()).collect())
+    }
+}
+
+impl fmt::Display for Matrix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Each row becomes "(a b c)"; rows are joined by newlines.
+        let lines: Vec<String> = self
+            .0
+            .iter()
+            .map(|row| {
+                let cells: Vec<String> = row.iter().map(|n| n.to_string()).collect();
+                format!("({})", cells.join(" "))
+            })
+            .collect();
+        write!(f, "{}", lines.join("\\n"))
+    }
+}`,
+  office_worker: `#[derive(Debug, PartialEq, Eq)]
+pub struct OfficeWorker {
+    pub name: String,
+    pub age: u32,
+    pub role: WorkerRole,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum WorkerRole {
+    Admin,
+    User,
+    Guest,
+}
+
+impl From<&str> for WorkerRole {
+    fn from(s: &str) -> Self {
+        match s {
+            "admin" => WorkerRole::Admin,
+            "user" => WorkerRole::User,
+            _ => WorkerRole::Guest,
+        }
+    }
+}
+
+impl From<&str> for OfficeWorker {
+    // Parse the "{name},{age},{role}" format.
+    fn from(s: &str) -> Self {
+        let parts: Vec<&str> = s.split(',').collect();
+        OfficeWorker {
+            name: parts[0].to_string(),
+            age: parts[1].parse().unwrap(),
+            role: WorkerRole::from(parts[2]),
+        }
+    }
+}`,
+  organize_garage: `use std::ops::Add;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Garage<T> {
+    pub left: Option<T>,
+    pub right: Option<T>,
+}
+
+impl<T: Add<Output = T> + Copy> Garage<T> {
+    // Move the left value over, summing it into whatever is already on the right.
+    pub fn move_to_right(&mut self) {
+        if let Some(l) = self.left {
+            self.right = Some(match self.right {
+                Some(r) => r + l,
+                None => l,
+            });
+            self.left = None;
+        }
+    }
+
+    // Mirror image: move the right value into the left.
+    pub fn move_to_left(&mut self) {
+        if let Some(r) = self.right {
+            self.left = Some(match self.left {
+                Some(l) => l + r,
+                None => r,
+            });
+            self.right = None;
+        }
+    }
+}`,
+  blood_types_s: `#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum Antigen { A, AB, B, O }
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum RhFactor { Positive, Negative }
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub struct BloodType {
+    pub antigen: Antigen,
+    pub rh_factor: RhFactor,
+}
+
+impl BloodType {
+    // Can self receive blood from other?
+    pub fn can_receive_from(self, other: Self) -> bool {
+        // O has no A/B antigen, so it is accepted by everyone; A and B are
+        // accepted by themselves and by AB; AB is only accepted by AB.
+        let antigen_ok = match other.antigen {
+            Antigen::O => true,
+            Antigen::A => matches!(self.antigen, Antigen::A | Antigen::AB),
+            Antigen::B => matches!(self.antigen, Antigen::B | Antigen::AB),
+            Antigen::AB => self.antigen == Antigen::AB,
+        };
+        // Rh- can give to anyone; Rh+ can only give to an Rh+ recipient.
+        let rh_ok = self.rh_factor == RhFactor::Positive || other.rh_factor == RhFactor::Negative;
+        antigen_ok && rh_ok
+    }
+
+    // Everyone who can give blood to self.
+    pub fn donors(self) -> Vec<Self> {
+        Self::all().into_iter().filter(|&other| self.can_receive_from(other)).collect()
+    }
+
+    // Everyone who can receive blood from self.
+    pub fn recipients(self) -> Vec<Self> {
+        Self::all().into_iter().filter(|&other| other.can_receive_from(self)).collect()
+    }
+
+    // Helper: each of the 8 blood types.
+    fn all() -> Vec<Self> {
+        let mut types = Vec::new();
+        for antigen in [Antigen::A, Antigen::AB, Antigen::B, Antigen::O] {
+            for rh_factor in [RhFactor::Positive, RhFactor::Negative] {
+                types.push(BloodType { antigen, rh_factor });
+            }
+        }
+        types
+    }
+}`,
+  format_me: `use std::fmt;
+
+pub struct Park {
+    pub name: Option<String>,
+    pub park_type: ParkType,
+    pub address: Option<String>,
+    pub cap: Option<String>,
+    pub state: Option<String>,
+}
+
+pub enum ParkType {
+    Garden,
+    Forest,
+    Playground,
+}
+
+impl fmt::Display for ParkType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let text = match self {
+            ParkType::Garden => "garden",
+            ParkType::Forest => "forest",
+            ParkType::Playground => "playground",
+        };
+        write!(f, "{}", text)
+    }
+}
+
+impl fmt::Display for Park {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Missing optional fields fall back to "No <field>".
+        write!(
+            f,
+            "{} - {}, {}, {} - {}",
+            self.park_type,
+            self.name.as_deref().unwrap_or("No name"),
+            self.address.as_deref().unwrap_or("No address"),
+            self.cap.as_deref().unwrap_or("No cap"),
+            self.state.as_deref().unwrap_or("No state"),
+        )
+    }
+}`,
+  moving_targets: `#[derive(Debug, PartialEq, Eq)]
+pub struct Target {
+    pub size: u32,
+    pub xp: u32,
+}
+
+// A singly linked stack of Targets.
+pub struct Field {
+    head: Link,
+}
+
+type Link = Option<Box<Node>>;
+
+struct Node {
+    elem: Target,
+    next: Link,
+}
+
+impl Field {
+    pub fn new() -> Self {
+        Field { head: None }
+    }
+
+    // Push onto the front so the most recent Target is the head.
+    pub fn push(&mut self, target: Target) {
+        let node = Box::new(Node { elem: target, next: self.head.take() });
+        self.head = Some(node);
+    }
+
+    // Remove and return the head Target.
+    pub fn pop(&mut self) -> Option<Target> {
+        self.head.take().map(|node| {
+            self.head = node.next;
+            node.elem
+        })
+    }
+
+    pub fn peek(&self) -> Option<&Target> {
+        self.head.as_ref().map(|node| &node.elem)
+    }
+
+    pub fn peek_mut(&mut self) -> Option<&mut Target> {
+        self.head.as_mut().map(|node| &mut node.elem)
+    }
+}`,
+  car_rental: `use std::cell::{Ref, RefCell, RefMut};
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct Car {
+    pub color: String,
+    pub plate: String,
+}
+
+#[derive(Debug)]
+pub struct RentalBusiness {
+    pub car: RefCell<Car>,
+}
+
+impl RentalBusiness {
+    // Borrow the car immutably (shared read).
+    pub fn rent_car(&self) -> Ref<'_, Car> {
+        self.car.borrow()
+    }
+
+    // Take the car out, leaving a default Car behind.
+    pub fn sell_car(&self) -> Car {
+        self.car.take()
+    }
+
+    // Borrow the car mutably so it can change through a shared &self.
+    pub fn repair_car(&self) -> RefMut<'_, Car> {
+        self.car.borrow_mut()
+    }
+
+    // Replace the whole car.
+    pub fn change_car(&self, new_car: Car) {
+        *self.car.borrow_mut() = new_car;
+    }
+}`,
+  drop_the_blog: `use std::cell::{Cell, RefCell};
+use std::rc::Rc;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Blog {
+    pub drops: Cell<usize>,
+    pub states: RefCell<Vec<bool>>,
+}
+
+impl Blog {
+    pub fn new() -> Self {
+        Blog { drops: Cell::new(0), states: RefCell::new(Vec::new()) }
+    }
+
+    // Reserve a slot (state = not dropped) and hand back a new Article.
+    pub fn new_article(&self, body: String) -> (usize, Article<'_>) {
+        let id = self.new_id();
+        self.states.borrow_mut().push(false);
+        (id, Article::new(id, body, self))
+    }
+
+    // The next free id is just the current number of articles.
+    pub fn new_id(&self) -> usize {
+        self.states.borrow().len()
+    }
+
+    pub fn is_dropped(&self, id: usize) -> bool {
+        self.states.borrow()[id]
+    }
+
+    // Called from Article's Drop impl: mark the article dropped and count it.
+    pub fn add_drop(&self, id: usize) {
+        if self.states.borrow()[id] {
+            panic!("{} is already dropped", id);
+        }
+        self.states.borrow_mut()[id] = true;
+        self.drops.set(self.drops.get() + 1);
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Article<'a> {
+    pub id: usize,
+    pub body: String,
+    pub parent: &'a Blog,
+}
+
+impl<'a> Article<'a> {
+    pub fn new(id: usize, body: String, parent: &'a Blog) -> Self {
+        Article { id, body, parent }
+    }
+
+    // Consuming the article drops it, which fires the Drop impl below.
+    pub fn discard(self) {}
+}
+
+impl<'a> Drop for Article<'a> {
+    fn drop(&mut self) {
+        self.parent.add_drop(self.id);
+    }
+}`,
+  lunch_queue: `#[derive(Debug, Clone)]
+pub struct Queue {
+    pub node: Link,
+}
+
+pub type Link = Option<Box<Person>>;
+
+#[derive(Debug, Clone)]
+pub struct Person {
+    pub name: String,
+    pub discount: i32,
+    pub next_person: Link,
+}
+
+impl Queue {
+    pub fn new() -> Queue {
+        Queue { node: None }
+    }
+
+    // New people go on the front of the list.
+    pub fn add(&mut self, name: String, discount: i32) {
+        let person = Box::new(Person { name, discount, next_person: self.node.take() });
+        self.node = Some(person);
+    }
+
+    // Reverse the whole list in place.
+    pub fn invert_queue(&mut self) {
+        let mut prev: Link = None;
+        let mut current = self.node.take();
+        while let Some(mut boxed) = current {
+            current = boxed.next_person.take();
+            boxed.next_person = prev;
+            prev = Some(boxed);
+        }
+        self.node = prev;
+    }
+
+    // FIFO: the first person added sits at the tail, so remove the tail.
+    pub fn rm(&mut self) -> Option<(String, i32)> {
+        if self.node.is_none() {
+            return None;
+        }
+        if self.node.as_ref().unwrap().next_person.is_none() {
+            let person = self.node.take().unwrap();
+            return Some((person.name, person.discount));
+        }
+        let mut current = self.node.as_mut().unwrap();
+        while current.next_person.as_ref().unwrap().next_person.is_some() {
+            current = current.next_person.as_mut().unwrap();
+        }
+        let last = current.next_person.take().unwrap();
+        Some((last.name, last.discount))
+    }
+
+    // Find a person by name and return (name, discount) by reference.
+    pub fn search(&self, name: &str) -> Option<(&String, &i32)> {
+        let mut current = self.node.as_ref();
+        while let Some(person) = current {
+            if person.name == name {
+                return Some((&person.name, &person.discount));
+            }
+            current = person.next_person.as_ref();
+        }
+        None
+    }
+}`,
+};
+
+for (const [slug, solution] of Object.entries(cp3VerifiedSolutions)) {
+  if (zone01Guides[slug]) {
+    zone01Guides[slug].annotatedSolution = solution;
+  }
+}
