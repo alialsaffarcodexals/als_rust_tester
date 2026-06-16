@@ -311,6 +311,17 @@ export default function Sidebar({ progress }: SidebarProps) {
           </span>
           Playground
         </button>
+        <button
+          className={`sidebar-nav-item ${isActive('/quiz') ? 'active' : ''}`}
+          onClick={() => navigate('/quiz')}
+        >
+          <span className="sidebar-nav-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1l2 4 4 .5-3 3 .8 4L8 14.5 4.2 16.5l.8-4-3-3 4-.5L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+            </svg>
+          </span>
+          CP3 Quiz
+        </button>
       </nav>
 
       <div className="sidebar-divider" />
