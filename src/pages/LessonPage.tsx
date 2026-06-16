@@ -210,6 +210,17 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
                   🪜 Step-by-Step
                 </button>
               )}
+              {exercise.checkpoint === 'zone01_cp3' && (
+                <a
+                  className="btn btn-sm zone01-subject-link"
+                  href={`https://github.com/01-edu/public/tree/master/subjects/${exercise.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open the official 01-edu subject description on GitHub"
+                >
+                  📄 Description
+                </a>
+              )}
             </div>
           )}
 
@@ -494,6 +505,12 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           border: 1px solid var(--border-normal); border-radius: 6px;
         }
         .zone01-walkthrough-btn:hover { border-color: var(--rust); color: var(--rust-light); background: var(--rust-dim); }
+        .zone01-subject-link {
+          background: none; color: var(--text-secondary);
+          border: 1px solid var(--border-normal); border-radius: 6px;
+          text-decoration: none; display: inline-flex; align-items: center;
+        }
+        .zone01-subject-link:hover { border-color: var(--rust); color: var(--rust-light); }
         .zone01-modal-overlay {
           position: fixed; inset: 0;
           background: rgba(0,0,0,0.65); z-index: 2000;
