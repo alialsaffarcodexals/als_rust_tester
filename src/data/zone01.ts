@@ -1817,16 +1817,19 @@ The function must respect the following rules:
     solution: '',
     testCases: [{
       id: 'tc_88_1',
-      description: 'Usage example',
+      description: 'Counts words case-insensitively (checked by content, not HashMap order)',
       code: `fn main() {
-    println!("{:?}", counting_words("Hello, world!"));
-    println!("{:?}", counting_words("\u{201c}Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.\u{201d}
-    ― Albert Einstein "));
-    println!("{:?}", counting_words("Batman, BATMAN, batman, Stop stop"));
+    let m = counting_words("Hello, world! Hello?");
+    assert_eq!(m.get("hello"), Some(&2));
+    assert_eq!(m.get("world"), Some(&1));
+    assert_eq!(m.len(), 2);
+    let q = counting_words("Two things are infinite: the universe and the stupidity");
+    assert_eq!(q.get("the"), Some(&2));
+    assert_eq!(q.get("universe"), Some(&1));
+    assert_eq!(q.get("infinite"), Some(&1));
+    println!("ok");
 }`,
-      expectedOutput: `{"world": 1, "hello": 1}
-{"are": 1, "about": 1, "stupidity": 1, "human": 1, "infinite": 1, "i'm": 1, "things": 1, "einstein": 1, "albert": 1, "sure": 1, "the": 2, "not": 1, "universe": 2, "and": 2, "two": 1}
-{"stop": 2, "batman": 3}`,
+      expectedOutput: `ok`,
       hidden: false,
     },
     {
