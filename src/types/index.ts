@@ -54,6 +54,12 @@ export interface Zone01Guide {
   annotatedSolution: string;
 }
 
+// One step of a guided, line-by-line solution walkthrough.
+export interface SolutionStep {
+  code: string;     // the line(s) revealed at this step
+  explain: string;  // explanation for these lines
+}
+
 export interface Exercise {
   id: number;
   slug: string;
