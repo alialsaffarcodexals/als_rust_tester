@@ -1828,6 +1828,23 @@ The function must respect the following rules:
 {"are": 1, "about": 1, "stupidity": 1, "human": 1, "infinite": 1, "i'm": 1, "things": 1, "einstein": 1, "albert": 1, "sure": 1, "the": 2, "not": 1, "universe": 2, "and": 2, "two": 1}
 {"stop": 2, "batman": 3}`,
       hidden: false,
+    },
+    {
+      id: 'tc_88_2',
+      description: 'Counts are case-insensitive — checked by content (HashMap order is not guaranteed)',
+      code: `fn main() {
+    let m = counting_words("the cat the dog the bird");
+    assert_eq!(m.get("the"), Some(&3));
+    assert_eq!(m.get("cat"), Some(&1));
+    assert_eq!(m.len(), 4);
+    let b = counting_words("Batman, BATMAN, batman, Stop stop");
+    assert_eq!(b.get("batman"), Some(&3));
+    assert_eq!(b.get("stop"), Some(&2));
+    assert_eq!(b.len(), 2);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: false,
     }],
     hints: [],
   },
@@ -1965,6 +1982,18 @@ The function must be optimized, so as to avoid time-outs.
 }`,
       expectedOutput: `The next prime after 4 is: 5
 The next prime after 11 is: 11`,
+      hidden: false,
+    },
+    {
+      id: 'tc_90_2',
+      description: 'Returns the number itself when already prime; smallest prime is 2',
+      code: `fn main() {
+    assert_eq!(next_prime(14), 17);
+    assert_eq!(next_prime(1), 2);
+    assert_eq!(next_prime(0), 2);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
       hidden: false,
     }],
     hints: [],
@@ -2155,6 +2184,18 @@ If there are no smaller primes, the function should return \`0\`.
 }`,
       expectedOutput: `The previous prime number before 34 is: 31`,
       hidden: false,
+    },
+    {
+      id: 'tc_92_2',
+      description: 'Returns the number itself when already prime; smallest prime is 2',
+      code: `fn main() {
+    assert_eq!(prev_prime(20), 19);
+    assert_eq!(prev_prime(13), 13);
+    assert_eq!(prev_prime(2), 2);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: false,
     }],
     hints: [],
   },
@@ -2188,6 +2229,17 @@ If there are no smaller primes, the function should return \`0\`.
 }`,
       expectedOutput: `321123
 -321123`,
+      hidden: false,
+    },
+    {
+      id: 'tc_93_2',
+      description: 'Single digit and a negative number with a leading minus sign',
+      code: `fn main() {
+    assert_eq!(reverse_it(7), "77");
+    assert_eq!(reverse_it(-45), "-5445");
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
       hidden: false,
     }],
     hints: [],
@@ -2589,6 +2641,18 @@ Here are some examples of what your function should return:
 }`,
       expectedOutput: `minus one thousand two hundred thirty-four
 error: positive number`,
+      hidden: false,
+    },
+    {
+      id: 'tc_97_2',
+      description: 'Hyphenated tens, round hundreds, and the positive-number error',
+      code: `fn main() {
+    assert_eq!(negative_spell(-45), "minus forty-five");
+    assert_eq!(negative_spell(-100), "minus one hundred");
+    assert_eq!(negative_spell(5), "error: positive number");
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
       hidden: false,
     }],
     hints: [`patterns — https://doc.rust-lang.org/book/ch18-00-patterns.html`],
