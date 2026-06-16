@@ -2344,6 +2344,21 @@ pub fn check_user_name(user: &User) -> (bool, &str) {
 (true, "Mary")
 (false, "ERROR: User is guest")`,
       hidden: false,
+    },
+    {
+      id: 'tc_94_2',
+      description: 'send_name returns None only for Guest; check_user_name reports the error string',
+      code: `fn main() {
+    let g = User::new("Zoe".to_owned(), AccessLevel::Guest);
+    assert_eq!(g.send_name(), None);
+    assert_eq!(check_user_name(&g), (false, "ERROR: User is guest"));
+    let a = User::new("Sam".to_owned(), AccessLevel::Admin);
+    assert_eq!(a.send_name(), Some("Sam"));
+    assert_eq!(check_user_name(&a), (true, "Sam"));
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -2445,6 +2460,18 @@ pub struct Outfit {
 }`,
       expectedOutput: `My outfit will be: Outfit { jacket: Black, hat: Fedora }`,
       hidden: false,
+    },
+    {
+      id: 'tc_95_2',
+      description: 'Covers White jacket, the None+Err special case, and Snapback hat',
+      code: `fn main() {
+    assert_eq!(choose_outfit(Some(5), Ok("hi")), Outfit { jacket: Jacket::White, hat: Hat::Fedora });
+    assert_eq!(choose_outfit(None, Err("no")), Outfit { jacket: Jacket::Flowers, hat: Hat::Baseball });
+    assert_eq!(choose_outfit(Some(0), Err("no")), Outfit { jacket: Jacket::Black, hat: Hat::Snapback });
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [`patterns — https://doc.rust-lang.org/book/ch18-00-patterns.html`],
   },
@@ -2588,6 +2615,21 @@ impl OfficeOne {
       expectedOutput: `Found a document with id 13
 Error: OfficeClose(23)`,
       hidden: false,
+    },
+    {
+      id: 'tc_96_2',
+      description: 'Returns the deepest id, or the first error encountered in the chain',
+      code: `fn main() {
+    let ok = OfficeOne { next_office: Ok(OfficeTwo { next_office: Ok(OfficeThree { next_office: Ok(OfficeFour { document_id: Ok(999) }) }) }) };
+    assert_eq!(ok.get_document_id(), Ok(999));
+    let e3 = OfficeOne { next_office: Ok(OfficeTwo { next_office: Ok(OfficeThree { next_office: Err(ErrorOffice::OfficeNotFound(7)) }) }) };
+    assert_eq!(e3.get_document_id(), Err(ErrorOffice::OfficeNotFound(7)));
+    let e4 = OfficeOne { next_office: Ok(OfficeTwo { next_office: Ok(OfficeThree { next_office: Ok(OfficeFour { document_id: Err(ErrorOffice::OfficeFull(99)) }) }) }) };
+    assert_eq!(e4.get_document_id(), Err(ErrorOffice::OfficeFull(99)));
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -2763,6 +2805,21 @@ impl Queen {
       expectedOutput: `Is it possible for the queens to attack each other? true
 Is it possible for the queens to attack each other? false`,
       hidden: false,
+    },
+    {
+      id: 'tc_98_2',
+      description: 'Attacks along rank, file and diagonal; off-board positions are None',
+      code: `fn main() {
+    let a = Queen::new(ChessPosition::new(3, 3).unwrap());
+    assert!(a.can_attack(Queen::new(ChessPosition::new(3, 7).unwrap())));
+    assert!(a.can_attack(Queen::new(ChessPosition::new(0, 3).unwrap())));
+    assert!(a.can_attack(Queen::new(ChessPosition::new(5, 5).unwrap())));
+    assert!(!a.can_attack(Queen::new(ChessPosition::new(4, 6).unwrap())));
+    assert!(ChessPosition::new(8, 0).is_none());
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -3054,6 +3111,17 @@ impl fmt::Display for Matrix {
 (4 5 6)
 (7 8 9)`,
       hidden: false,
+    },
+    {
+      id: 'tc_101_2',
+      description: 'Non-square matrix with negative numbers, checked via Display',
+      code: `fn main() {
+    let m = Matrix::new(&[&[10, -2], &[0, 7]]);
+    assert_eq!(format!("{}", m), "(10 -2)\n(0 7)");
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -3147,6 +3215,18 @@ impl From<&str> for WorkerRole {
       expectedOutput: `New worker: OfficeWorker { name: "Manuel", age: 23, role: Admin }
 New worker: OfficeWorker { name: "Jean Jacques", age: 44, role: Guest }`,
       hidden: false,
+    },
+    {
+      id: 'tc_102_2',
+      description: 'From<&str> parses fields and the role for OfficeWorker and WorkerRole',
+      code: `fn main() {
+    assert_eq!(OfficeWorker::from("Alice,30,user"), OfficeWorker { name: "Alice".to_string(), age: 30, role: WorkerRole::User });
+    assert_eq!(WorkerRole::from("admin"), WorkerRole::Admin);
+    assert_eq!(WorkerRole::from("guest"), WorkerRole::Guest);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
     }],
     hints: [],
   },
@@ -3183,12 +3263,40 @@ It will implement the following public methods:
 - \`move_to_left\`: Moves the values from right to left.
 
 > The generic type will need to have \`Add\` and \`Copy\` traits implemented.`,
-    functionSignatures: [`pub fn organize_garage() {
-    todo!()
+    functionSignatures: [`use std::ops::Add;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Garage<T> {
+    pub left: Option<T>,
+    pub right: Option<T>,
+}
+
+impl<T: Add<Output = T> + Copy> Garage<T> {
+    pub fn move_to_right(&mut self) {
+        todo!()
+    }
+
+    pub fn move_to_left(&mut self) {
+        todo!()
+    }
 }`],
     constraints: [],
-    starterCode: `pub fn organize_garage() {
-    todo!()
+    starterCode: `use std::ops::Add;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Garage<T> {
+    pub left: Option<T>,
+    pub right: Option<T>,
+}
+
+impl<T: Add<Output = T> + Copy> Garage<T> {
+    pub fn move_to_right(&mut self) {
+        todo!()
+    }
+
+    pub fn move_to_left(&mut self) {
+        todo!()
+    }
 }`,
     solution: '',
     testCases: [{
