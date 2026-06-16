@@ -1,5 +1,92 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Editor, { type OnMount, type Monaco } from '@monaco-editor/react';
+import {
+  RUST_REFERENCE_ENTRIES,
+  lookupRustToken,
+  renderHoverMarkdown,
+  type RustTokenKind,
+} from '../../data/rustReference';
+
+// Language providers are global to the Monaco 'rust' language, so they must be
+// registered exactly once — not on every editor mount (which would stack
+// duplicate hovers/completions).
+let rustIntelliSenseRegistered = false;
+
+function completionKind(monaco: Monaco, kind: RustTokenKind) {
+  const K = monaco.languages.CompletionItemKind;
+  switch (kind) {
+    case 'keyword': return K.Keyword;
+    case 'primitive': return K.Struct;
+    case 'type': return K.Class;
+    case 'variant': return K.EnumMember;
+    case 'macro': return K.Function;
+    case 'method': return K.Method;
+    case 'function': return K.Function;
+    case 'trait': return K.Interface;
+    case 'concept': return K.Interface;
+    default: return K.Text;
+  }
+}
+
+function registerRustIntelliSense(monaco: Monaco) {
+  // Hover: explanation + usage example + documentation link for built-ins.
+  monaco.languages.registerHoverProvider('rust', {
+    provideHover(model, position) {
+      const word = model.getWordAtPosition(position);
+      if (!word) return null;
+      const line = model.getLineContent(position.lineNumber);
+      const followedByBang = line.charAt(word.endColumn - 1) === '!';
+      const entry = lookupRustToken(word.word, followedByBang);
+      if (!entry) return null;
+      const endColumn = followedByBang ? word.endColumn + 1 : word.endColumn;
+      return {
+        range: new monaco.Range(position.lineNumber, word.startColumn, position.lineNumber, endColumn),
+        contents: [{ value: renderHoverMarkdown(entry), isTrusted: true }],
+      };
+    },
+  });
+
+  // Autocompletion: curated snippets + every reference entry.
+  monaco.languages.registerCompletionItemProvider('rust', {
+    triggerCharacters: ['.', ':', '!'],
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      const snippetRule = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+      const snippets = [
+        { label: 'fn', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}', insertTextRules: snippetRule, documentation: 'Define a function', range },
+        { label: 'pub fn', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'pub fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}', insertTextRules: snippetRule, documentation: 'Define a public function', range },
+        { label: 'println!', kind: monaco.languages.CompletionItemKind.Function, insertText: 'println!("${1:}")${0}', insertTextRules: snippetRule, documentation: 'Print to stdout with newline', range },
+        { label: 'vec!', kind: monaco.languages.CompletionItemKind.Function, insertText: 'vec![${1}]', insertTextRules: snippetRule, documentation: 'Create a Vec', range },
+        { label: 'match', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'match ${1:value} {\n\t${2:pattern} => ${3:result},\n\t_ => ${4:default},\n}', insertTextRules: snippetRule, documentation: 'Pattern matching', range },
+        { label: 'impl', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'impl ${1:TypeName} {\n\t${0}\n}', insertTextRules: snippetRule, documentation: 'Implement methods for a type', range },
+        { label: 'struct', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'struct ${1:Name} {\n\t${2:field}: ${3:Type},\n}', insertTextRules: snippetRule, documentation: 'Define a struct', range },
+        { label: 'enum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'enum ${1:Name} {\n\t${2:Variant},\n}', insertTextRules: snippetRule, documentation: 'Define an enum', range },
+        { label: 'if let', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if let ${1:Some(val)} = ${2:expr} {\n\t${0}\n}', insertTextRules: snippetRule, documentation: 'Pattern match with if let', range },
+        { label: 'HashMap::new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'use std::collections::HashMap;\nlet mut ${1:map}: HashMap<${2:K}, ${3:V}> = HashMap::new();', insertTextRules: snippetRule, documentation: 'Create a new HashMap', range },
+      ];
+      const snippetLabels = new Set(snippets.map((s) => s.label));
+      const fromReference = RUST_REFERENCE_ENTRIES
+        .filter((e) => !snippetLabels.has(e.name))
+        .map((e) => ({
+          label: e.name,
+          kind: completionKind(monaco, e.kind),
+          insertText: e.name,
+          detail: e.signature ?? e.kind,
+          documentation: {
+            value: `${e.summary}${e.example ? '\n\n```rust\n' + e.example + '\n```' : ''}\n\n[📖 docs](${e.docUrl})`,
+          },
+          range,
+        }));
+      return { suggestions: [...snippets, ...fromReference] };
+    },
+  });
+}
 
 interface CodeEditorProps {
   value: string;
@@ -83,29 +170,27 @@ export default function CodeEditor({
     });
     monaco.editor.setTheme('rustpath-dark');
 
-    monaco.languages.registerCompletionItemProvider('rust', {
-      provideCompletionItems: (model, position) => {
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn,
-        };
-        const suggestions = [
-          { label: 'fn', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define a function', range },
-          { label: 'pub fn', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'pub fn ${1:function_name}(${2:params}) -> ${3:ReturnType} {\n\t${4:todo!()}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define a public function', range },
-          { label: 'println!', kind: monaco.languages.CompletionItemKind.Function, insertText: 'println!("${1:}")${0}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Print to stdout with newline', range },
-          { label: 'vec!', kind: monaco.languages.CompletionItemKind.Function, insertText: 'vec![${1}]', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create a Vec', range },
-          { label: 'match', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'match ${1:value} {\n\t${2:pattern} => ${3:result},\n\t_ => ${4:default},\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Pattern matching', range },
-          { label: 'impl', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'impl ${1:TypeName} {\n\t${0}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Implement methods for a type', range },
-          { label: 'struct', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'struct ${1:Name} {\n\t${2:field}: ${3:Type},\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define a struct', range },
-          { label: 'enum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'enum ${1:Name} {\n\t${2:Variant},\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Define an enum', range },
-          { label: 'if let', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if let ${1:Some(val)} = ${2:expr} {\n\t${0}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Pattern match with if let', range },
-          { label: 'HashMap::new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'use std::collections::HashMap;\nlet mut ${1:map}: HashMap<${2:K}, ${3:V}> = HashMap::new();', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create a new HashMap', range },
-        ];
-        return { suggestions };
-      },
+    if (!rustIntelliSenseRegistered) {
+      rustIntelliSenseRegistered = true;
+      registerRustIntelliSense(monaco);
+    }
+
+    // Ctrl/Cmd + click a built-in token to open its official documentation.
+    editor.onMouseDown((e) => {
+      const ev = e.event;
+      if (!(ev.ctrlKey || ev.metaKey)) return;
+      const position = e.target.position;
+      const model = editor.getModel();
+      if (!position || !model) return;
+      const w = model.getWordAtPosition(position);
+      if (!w) return;
+      const followedByBang = model.getLineContent(position.lineNumber).charAt(w.endColumn - 1) === '!';
+      const entry = lookupRustToken(w.word, followedByBang);
+      if (entry) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        window.open(entry.docUrl, '_blank', 'noopener,noreferrer');
+      }
     });
 
     editor.focus();
