@@ -19,10 +19,11 @@ export const zone01Walkthroughs: Record<string, SolutionStep[]> = {
   ],
 
   inv_pyramid: [
-    { code: `pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {`, explain: `Signature: take a string and a count i, return a Vec of i lines.` },
-    { code: `    (0..i)`, explain: `Make a range of line indices 0, 1, ... i-1.` },
-    { code: `        .map(|j| format!("{}{}", " ".repeat(j), v))`, explain: `For each index j, build a line of j spaces followed by the string v.` },
-    { code: `        .collect()\n}`, explain: `Collect all the lines into a Vec<String> and return it.` },
+    { code: `pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {`, explain: `Signature: take the string v and the size i, and return a Vec holding each line of the pyramid.` },
+    { code: `    let mut result = Vec::new();`, explain: `Start with an empty vector to collect the lines.` },
+    { code: `    for k in 1..=i {\n        result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));\n    }`, explain: `Ascending side: for each level k from 1 to i, push a line of k spaces followed by v repeated k times.` },
+    { code: `    for k in (1..i).rev() {\n        result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));\n    }`, explain: `Descending side: do the same for levels i-1 down to 1, mirroring the top half to complete the pyramid.` },
+    { code: `    result\n}`, explain: `Return the finished pyramid — it has 2*i-1 lines.` },
   ],
 
   nextprime: [

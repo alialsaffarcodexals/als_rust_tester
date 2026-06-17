@@ -254,14 +254,44 @@ fn main() {
     checkpoint: 'zone01_cp1',
     difficulty: 'medium',
     order: 3,
-    concept: `Create a function named \`inv_pyramid\` that takes a string and an integer as input and returns a vector of strings.
-This function should create a pyramid structure. Each element of the vector must be the given string after indentation represented as spaces.`,
+    concept: `Create a function named \`inv_pyramid\` that takes a string and an integer \`i\`, and returns a vector of strings forming a pyramid.
+
+The pyramid grows from level 1 up to level \`i\`, then shrinks back down to level 1. At level \`k\` the line is \`k\` spaces followed by the string repeated \`k\` times, so the result has \`2 * i - 1\` lines.
+
+Example — \`inv_pyramid(">".to_string(), 5)\`:
+
+[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
     whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
     comparisons: [],
     guidedExamples: [],
     videos: [],
-    question: `Create a function named \`inv_pyramid\` that takes a string and an integer as input and returns a vector of strings.
-This function should create a pyramid structure. Each element of the vector must be the given string after indentation represented as spaces.`,
+    question: `Create a function named \`inv_pyramid\` that takes a string and an integer \`i\`, and returns a vector of strings forming a pyramid.
+
+The pyramid grows from level 1 up to level \`i\`, then shrinks back down to level 1. At level \`k\` the line is \`k\` spaces followed by the string repeated \`k\` times, so the result has \`2 * i - 1\` lines.
+
+Example — \`inv_pyramid(">".to_string(), 5)\`:
+
+[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
     functionSignatures: [`pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
     todo!()
 }`],
@@ -273,73 +303,80 @@ This function should create a pyramid structure. Each element of the vector must
     testCases: [
       {
         id: 'tc_69_1',
-        description: 'Edge case: i = 0 returns empty vec',
+        description: 'Single level: "#" with i = 1',
         code: `fn main() {
-    let result = inv_pyramid("hello".to_string(), 0);
-    assert_eq!(result, Vec::<String>::new());
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from("#"), 1));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " #",
+]`,
         hidden: false,
       },
       {
         id: 'tc_69_2',
-        description: 'Edge case: i = 1 returns single element with no indentation',
+        description: 'Up then down: "a" with i = 2 gives 3 lines',
         code: `fn main() {
-    let result = inv_pyramid("hello".to_string(), 1);
-    assert_eq!(result.len(), 1);
-    assert_eq!(result[0], "hello");
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from("a"), 2));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " a",
+    "  aa",
+    " a",
+]`,
         hidden: false,
       },
       {
         id: 'tc_69_3',
-        description: 'Normal case: i = 5, correct number of lines and indentation per line',
+        description: 'Main example: ">" with i = 5 (9 lines)',
         code: `fn main() {
-    let result = inv_pyramid("hello".to_string(), 5);
-    assert_eq!(result.len(), 5);
-    assert_eq!(result[0], "hello");
-    assert_eq!(result[1], " hello");
-    assert_eq!(result[2], "  hello");
-    assert_eq!(result[3], "   hello");
-    assert_eq!(result[4], "    hello");
-    // each element has exactly j leading spaces
-    for (j, s) in result.iter().enumerate() {
-        assert_eq!(&s[..j], " ".repeat(j));
-    }
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from(">"), 5));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
         hidden: false,
       },
       {
         id: 'tc_69_4',
-        description: 'Full vec comparison: i = 5 and alternate string',
+        description: 'Larger pyramid: "&" with i = 8 (15 lines)',
         code: `fn main() {
-    assert_eq!(
-        inv_pyramid("hello".to_string(), 5),
-        vec![
-            "hello".to_string(),
-            " hello".to_string(),
-            "  hello".to_string(),
-            "   hello".to_string(),
-            "    hello".to_string(),
-        ]
-    );
-    assert_eq!(
-        inv_pyramid("abc".to_string(), 3),
-        vec![
-            "abc".to_string(),
-            " abc".to_string(),
-            "  abc".to_string(),
-        ]
-    );
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from("&"), 8));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " &",
+    "  &&",
+    "   &&&",
+    "    &&&&",
+    "     &&&&&",
+    "      &&&&&&",
+    "       &&&&&&&",
+    "        &&&&&&&&",
+    "       &&&&&&&",
+    "      &&&&&&",
+    "     &&&&&",
+    "    &&&&",
+    "   &&&",
+    "  &&",
+    " &",
+]`,
         hidden: false,
+      },
+      {
+        id: 'tc_69_5',
+        description: 'Edge case: i = 0 returns an empty vector',
+        code: `fn main() {
+    println!("{:#?}", inv_pyramid(String::from("x"), 0));
+}`,
+        expectedOutput: `[]`,
+        hidden: true,
       },
     ],
     hints: [],
@@ -1858,14 +1895,44 @@ The function must respect the following rules:
     checkpoint: 'zone01_cp3',
     difficulty: 'easiest',
     order: 1,
-    concept: `Create a function named \`inv_pyramid\` that takes a string and an integer as input and returns a vector of strings.
-This function should create a pyramid structure. Each element of the vector must be the given string after indentation represented as spaces.`,
+    concept: `Create a function named \`inv_pyramid\` that takes a string and an integer \`i\`, and returns a vector of strings forming a pyramid.
+
+The pyramid grows from level 1 up to level \`i\`, then shrinks back down to level 1. At level \`k\` the line is \`k\` spaces followed by the string repeated \`k\` times, so the result has \`2 * i - 1\` lines.
+
+Example — \`inv_pyramid(">".to_string(), 5)\`:
+
+[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
     whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
     comparisons: [],
     guidedExamples: [],
     videos: [],
-    question: `Create a function named \`inv_pyramid\` that takes a string and an integer as input and returns a vector of strings.
-This function should create a pyramid structure. Each element of the vector must be the given string after indentation represented as spaces.`,
+    question: `Create a function named \`inv_pyramid\` that takes a string and an integer \`i\`, and returns a vector of strings forming a pyramid.
+
+The pyramid grows from level 1 up to level \`i\`, then shrinks back down to level 1. At level \`k\` the line is \`k\` spaces followed by the string repeated \`k\` times, so the result has \`2 * i - 1\` lines.
+
+Example — \`inv_pyramid(">".to_string(), 5)\`:
+
+[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
     functionSignatures: [`pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
     todo!()
 }`],
@@ -1877,72 +1944,80 @@ This function should create a pyramid structure. Each element of the vector must
     testCases: [
       {
         id: 'tc_89_1',
-        description: 'Edge case: i = 0 returns empty vec',
+        description: 'Single level: "#" with i = 1',
         code: `fn main() {
-    let result = inv_pyramid("hello".to_string(), 0);
-    assert_eq!(result, Vec::<String>::new());
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from("#"), 1));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " #",
+]`,
         hidden: false,
       },
       {
         id: 'tc_89_2',
-        description: 'Edge case: i = 1 returns single element with no indentation',
+        description: 'Up then down: "a" with i = 2 gives 3 lines',
         code: `fn main() {
-    let result = inv_pyramid("hello".to_string(), 1);
-    assert_eq!(result.len(), 1);
-    assert_eq!(result[0], "hello");
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from("a"), 2));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " a",
+    "  aa",
+    " a",
+]`,
         hidden: false,
       },
       {
         id: 'tc_89_3',
-        description: 'Normal case: i = 5, correct number of lines and indentation per line',
+        description: 'Main example: ">" with i = 5 (9 lines)',
         code: `fn main() {
-    let result = inv_pyramid("hello".to_string(), 5);
-    assert_eq!(result.len(), 5);
-    assert_eq!(result[0], "hello");
-    assert_eq!(result[1], " hello");
-    assert_eq!(result[2], "  hello");
-    assert_eq!(result[3], "   hello");
-    assert_eq!(result[4], "    hello");
-    for (j, s) in result.iter().enumerate() {
-        assert_eq!(&s[..j], " ".repeat(j));
-    }
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from(">"), 5));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
         hidden: false,
       },
       {
         id: 'tc_89_4',
-        description: 'Full vec comparison: i = 5 and alternate string',
+        description: 'Larger pyramid: "&" with i = 8 (15 lines)',
         code: `fn main() {
-    assert_eq!(
-        inv_pyramid("hello".to_string(), 5),
-        vec![
-            "hello".to_string(),
-            " hello".to_string(),
-            "  hello".to_string(),
-            "   hello".to_string(),
-            "    hello".to_string(),
-        ]
-    );
-    assert_eq!(
-        inv_pyramid("abc".to_string(), 3),
-        vec![
-            "abc".to_string(),
-            " abc".to_string(),
-            "  abc".to_string(),
-        ]
-    );
-    println!("ok");
+    println!("{:#?}", inv_pyramid(String::from("&"), 8));
 }`,
-        expectedOutput: `ok`,
+        expectedOutput: `[
+    " &",
+    "  &&",
+    "   &&&",
+    "    &&&&",
+    "     &&&&&",
+    "      &&&&&&",
+    "       &&&&&&&",
+    "        &&&&&&&&",
+    "       &&&&&&&",
+    "      &&&&&&",
+    "     &&&&&",
+    "    &&&&",
+    "   &&&",
+    "  &&",
+    " &",
+]`,
         hidden: false,
+      },
+      {
+        id: 'tc_89_5',
+        description: 'Edge case: i = 0 returns an empty vector',
+        code: `fn main() {
+    println!("{:#?}", inv_pyramid(String::from("x"), 0));
+}`,
+        expectedOutput: `[]`,
+        hidden: true,
       },
     ],
     hints: [],
@@ -4685,14 +4760,44 @@ If the \`HashMap\` is empty, return the maximum \`i32\`.`,
     checkpoint: 'zone01_final',
     difficulty: 'medium',
     order: 3,
-    concept: `Create a function named \`inv_pyramid\` that takes a string and an integer as input and returns a vector of strings.
-This function should create a pyramid structure. Each element of the vector must be the given string after indentation represented as spaces.`,
+    concept: `Create a function named \`inv_pyramid\` that takes a string and an integer \`i\`, and returns a vector of strings forming a pyramid.
+
+The pyramid grows from level 1 up to level \`i\`, then shrinks back down to level 1. At level \`k\` the line is \`k\` spaces followed by the string repeated \`k\` times, so the result has \`2 * i - 1\` lines.
+
+Example — \`inv_pyramid(">".to_string(), 5)\`:
+
+[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
     whyItExists: 'Zone01 / Reboot01 checkpoint exercise.',
     comparisons: [],
     guidedExamples: [],
     videos: [],
-    question: `Create a function named \`inv_pyramid\` that takes a string and an integer as input and returns a vector of strings.
-This function should create a pyramid structure. Each element of the vector must be the given string after indentation represented as spaces.`,
+    question: `Create a function named \`inv_pyramid\` that takes a string and an integer \`i\`, and returns a vector of strings forming a pyramid.
+
+The pyramid grows from level 1 up to level \`i\`, then shrinks back down to level 1. At level \`k\` the line is \`k\` spaces followed by the string repeated \`k\` times, so the result has \`2 * i - 1\` lines.
+
+Example — \`inv_pyramid(">".to_string(), 5)\`:
+
+[
+    " >",
+    "  >>",
+    "   >>>",
+    "    >>>>",
+    "     >>>>>",
+    "    >>>>",
+    "   >>>",
+    "  >>",
+    " >",
+]`,
     functionSignatures: [`pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
     todo!()
 }`],

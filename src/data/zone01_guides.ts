@@ -253,10 +253,16 @@ pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
     ],
     concepts: [
       {
-        name: 'Inverted Pyramid = Counting Down',
+        name: 'Pyramid up then down',
         description:
-          'Start at level `i` (widest row) and count down to 1 (narrowest row). Each row repeats the string `level` times.',
-        example: 'for level in (1..=i).rev() { result.push(v.repeat(level)); }',
+          'Go from level 1 up to `i`, then back down to 1 — so there are `2 * i - 1` rows. At level `k`, the row is `k` spaces followed by the string repeated `k` times.',
+        example: 'for k in 1..=i { rows.push(format!("{}{}", " ".repeat(k), v.repeat(k))); }',
+      },
+      {
+        name: 'String::repeat',
+        description:
+          'Repeat a string (or " " for the indentation) a given number of times to build each row.',
+        example: '" ".repeat(3) + &"ab".repeat(2) // "   abab"',
       },
     ],
     dataStructures: [
@@ -269,10 +275,13 @@ pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
     ],
     annotatedSolution: `pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
     let mut result = Vec::new();
-    // Count down from i to 1: widest row first, then narrowing
-    for level in (1..=i).rev() {
-        // Each row is the string repeated 'level' times
-        result.push(v.repeat(level));
+    // Ascending side: levels 1..=i
+    for k in 1..=i {
+        result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));
+    }
+    // Descending side: levels (i-1)..=1
+    for k in (1..i).rev() {
+        result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));
     }
     result
 }`,
@@ -2392,11 +2401,19 @@ fn counting_words(words: &str) -> HashMap<String, u32> {
 
     counts
 }`,
-  inv_pyramid: `// Build i lines; line number j (0-based) is the string with j spaces in front.
+  inv_pyramid: `// Build a pyramid that grows to level i then shrinks back to 1.
+// At level k: k spaces, then the string repeated k times.
 pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
-    (0..i)
-        .map(|j| format!("{}{}", " ".repeat(j), v))
-        .collect()
+    let mut result = Vec::new();
+    // Ascending side: levels 1..=i
+    for k in 1..=i {
+        result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));
+    }
+    // Descending side: levels (i-1)..=1
+    for k in (1..i).rev() {
+        result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));
+    }
+    result
 }`,
   nextprime: `// The smallest prime that is >= nbr (returns nbr itself when it is prime).
 pub fn next_prime(nbr: usize) -> usize {
