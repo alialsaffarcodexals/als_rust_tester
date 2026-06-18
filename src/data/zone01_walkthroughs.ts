@@ -108,13 +108,14 @@ export const zone01Walkthroughs: Record<string, SolutionStep[]> = {
   ],
 
   rpn: [
-    { code: `pub fn rpn(expr: &str) -> f64 {`, explain: `Signature: evaluate a Reverse Polish Notation expression and return the numeric result.` },
-    { code: `    let mut stack: Vec<f64> = Vec::new();`, explain: `Use a Vec as a stack to hold operands.` },
-    { code: `    for token in expr.split_whitespace() {`, explain: `Process the expression one whitespace-separated token at a time.` },
-    { code: `        match token {`, explain: `Decide what to do based on the token.` },
-    { code: `            "+" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a + b); }\n            "-" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a - b); }\n            "*" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a * b); }\n            "/" => { let b = stack.pop().unwrap(); let a = stack.pop().unwrap(); stack.push(a / b); }`, explain: `For an operator, pop the top two numbers (b first, then a, to keep the order right) and push the result.` },
-    { code: `            num => stack.push(num.parse::<f64>().unwrap()),\n        }\n    }`, explain: `Anything else is a number — parse it and push it onto the stack.` },
-    { code: `    stack.pop().unwrap()\n}`, explain: `When the tokens run out, the single value left on the stack is the answer.` },
+    { code: `pub fn rpn(expr: &str) -> f64 {`, explain: `Function signature. In the real 01-edu exercise, main() reads exactly one argument via std::env::args() and either prints the numeric result or "Error". Here we wrap that logic as a function for testing.` },
+    { code: `    let mut stack: Vec<f64> = Vec::new();`, explain: `The core data structure: a stack of numbers. As we scan the expression left to right, operands are pushed onto the stack; operators pop two values, compute, and push the result.` },
+    { code: `    for token in expr.split_whitespace() {`, explain: `split_whitespace() handles any amount of spaces between tokens — this satisfies the spec requirement that "extra spaces must be ignored".` },
+    { code: `        match token {\n            "+" | "-" | "*" | "/" | "%" => {`, explain: `All five required operators (+, -, *, /, %) are recognised in one arm. The % is modulo — required by the spec but often forgotten.` },
+    { code: `                if stack.len() < 2 { panic!("Error"); }\n                let b = stack.pop().unwrap();\n                let a = stack.pop().unwrap();`, explain: `Guard: there must be at least two operands on the stack before we can apply an operator — otherwise the expression is invalid. Pop b first (top of stack), then a. Order matters for - and /.` },
+    { code: `                let result = match token {\n                    "+" => a + b,\n                    "-" => a - b,\n                    "*" => a * b,\n                    "/" => a / b,\n                    "%" => a % b,\n                    _ => unreachable!(),\n                };\n                stack.push(result);\n            }`, explain: `Apply the operator to a and b and push the result back onto the stack. The _ arm is unreachable because the outer match already guarantees only these five operators reach here.` },
+    { code: `            num => {\n                match num.parse::<f64>() {\n                    Ok(n) => stack.push(n),\n                    Err(_) => panic!("Error"),\n                }\n            }\n        }\n    }`, explain: `Any token that is not an operator must be a number. If parse fails (e.g. "ksd"), the expression is invalid. In the real exercise this prints "Error"; here we panic with the same message.` },
+    { code: `    if stack.len() == 1 {\n        stack.pop().unwrap()\n    } else {\n        panic!("Error")\n    }\n}`, explain: `After processing all tokens, a valid RPN expression leaves exactly one value on the stack — that is the result. Zero values (empty expression) or more than one value (e.g. "1 2 3 4 +") both mean the input was invalid.` },
   ],
 
   scytale_decoder: [
