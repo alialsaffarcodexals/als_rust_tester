@@ -16,6 +16,8 @@ interface NavItem {
 
 interface SidebarProps {
   progress: UserProgress;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const CheckIcon = () => (
@@ -85,9 +87,14 @@ function searchExercises(query: string): Exercise[] {
   }).slice(0, 9);
 }
 
-export default function Sidebar({ progress }: SidebarProps) {
+export default function Sidebar({ progress, isOpen = false, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const nav = useCallback((path: string) => {
+    navigate(path);
+    onClose?.();
+  }, [navigate, onClose]);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   // Search state
@@ -104,7 +111,7 @@ export default function Sidebar({ progress }: SidebarProps) {
   }, []);
 
   const selectSuggestion = useCallback((ex: Exercise) => {
-    navigate(`/lesson/${ex.id}`);
+    nav(`/lesson/${ex.id}`);
     clearSearch();
     searchRef.current?.blur();
   }, [navigate, clearSearch]);
@@ -272,9 +279,20 @@ export default function Sidebar({ progress }: SidebarProps) {
   ];
 
   return (
-    <aside className="sidebar">
+    <>
+      {/* Mobile overlay — closes sidebar when tapped */}
+      <div
+        className={`sidebar-overlay${isOpen ? ' sidebar-open' : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <aside className={`sidebar${isOpen ? ' sidebar-open' : ''}`}>
+      {/* Mobile close button */}
+      <button className="sidebar-close-btn" onClick={onClose} aria-label="Close navigation">×</button>
+
       {/* Logo */}
-      <div className="sidebar-logo" onClick={() => navigate('/')}>
+      <div className="sidebar-logo" onClick={() => nav('/')}>
         <div className="sidebar-logo-icon">R</div>
         <div className="sidebar-logo-text">
           <span className="sidebar-logo-title">RustPath</span>
@@ -286,7 +304,7 @@ export default function Sidebar({ progress }: SidebarProps) {
       <nav className="sidebar-nav">
         <button
           className={`sidebar-nav-item ${isActive('/') ? 'active' : ''}`}
-          onClick={() => navigate('/')}
+          onClick={() => nav('/')}
         >
           <span className="sidebar-nav-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -300,7 +318,7 @@ export default function Sidebar({ progress }: SidebarProps) {
         </button>
         <button
           className={`sidebar-nav-item ${isActive('/playground') ? 'active' : ''}`}
-          onClick={() => navigate('/playground')}
+          onClick={() => nav('/playground')}
         >
           <span className="sidebar-nav-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -313,7 +331,7 @@ export default function Sidebar({ progress }: SidebarProps) {
         </button>
         <button
           className={`sidebar-nav-item ${isActive('/quiz') ? 'active' : ''}`}
-          onClick={() => navigate('/quiz')}
+          onClick={() => nav('/quiz')}
         >
           <span className="sidebar-nav-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -397,7 +415,7 @@ export default function Sidebar({ progress }: SidebarProps) {
               <div key={section.key} className="sidebar-section">
                 <button
                   className={`sidebar-section-item ${isActive(section.path ?? '') ? 'active' : ''}`}
-                  onClick={() => section.path && navigate(section.path)}
+                  onClick={() => section.path && nav(section.path)}
                 >
                   <span>{section.icon}</span>
                   <span className="flex-1 truncate">{section.label}</span>
@@ -457,7 +475,7 @@ export default function Sidebar({ progress }: SidebarProps) {
                             <button
                               key={ex.id}
                               className={`sidebar-item ${isActive(path) ? 'active' : ''} ${status}`}
-                              onClick={() => status !== 'locked' && navigate(path)}
+                              onClick={() => status !== 'locked' && nav(path)}
                               disabled={status === 'locked'}
                             >
                               <span className="sidebar-item-dot">
@@ -481,7 +499,7 @@ export default function Sidebar({ progress }: SidebarProps) {
                       <button
                         key={item.id}
                         className={`sidebar-item ${isActive(item.path) ? 'active' : ''} ${item.status}`}
-                        onClick={() => item.status !== 'locked' && navigate(item.path)}
+                        onClick={() => item.status !== 'locked' && nav(item.path)}
                         disabled={item.status === 'locked'}
                       >
                         <span className="sidebar-item-dot">
@@ -501,7 +519,7 @@ export default function Sidebar({ progress }: SidebarProps) {
                   {/* Exam / quiz button */}
                   {section.examPath !== null && <button
                     className={`sidebar-exam-btn ${section.examUnlocked ? '' : 'locked'}`}
-                    onClick={() => section.examUnlocked && section.examPath && navigate(section.examPath)}
+                    onClick={() => section.examUnlocked && section.examPath && nav(section.examPath)}
                     disabled={!section.examUnlocked}
                   >
                     {section.examPath === '/quiz'
@@ -766,6 +784,7 @@ export default function Sidebar({ progress }: SidebarProps) {
         }
       `}</style>
     </aside>
+    </>
   );
 }
 

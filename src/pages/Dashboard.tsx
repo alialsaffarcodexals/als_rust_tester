@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserProgress } from '../types';
 import { getCheckpointStats, getOverallStats } from '../store/progress';
@@ -509,6 +509,27 @@ export default function Dashboard({ progress, totalExercises }: DashboardProps) 
         .exam-result-name { font-size: 0.875rem; font-weight: 500; }
         .exam-result-score { display: flex; align-items: center; gap: 8px; }
         .exam-score-num { font-size: 1.1rem; font-weight: 700; }
+        @media (max-width: 900px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr); }
+          .checkpoints-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+          .dashboard-hero { flex-direction: column; align-items: flex-start; gap: 14px; padding: 20px; }
+          .hero-greeting h1 { font-size: 1.4rem; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .checkpoints-grid { grid-template-columns: 1fr; gap: 12px; }
+          .playground-card { padding: 12px 14px; gap: 12px; }
+          .sites-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+          .yt-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+        @media (max-width: 480px) {
+          .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+          .stat-value { font-size: 1.4rem; }
+          .dashboard-hero { padding: 16px; }
+          .hero-greeting h1 { font-size: 1.2rem; }
+          .sites-grid { grid-template-columns: 1fr; }
+          .yt-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
     </div>
   );

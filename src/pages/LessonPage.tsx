@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CodeEditor from '../components/editor/CodeEditor';
 import Console from '../components/editor/Console';
@@ -570,6 +570,32 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         .guide-empty {
           color: var(--text-muted); font-size: 0.875rem;
           text-align: center; padding: 24px;
+        }
+        @media (max-width: 900px) {
+          .lesson-layout { grid-template-columns: 1fr; overflow: visible; }
+          .lesson-left { border-right: none; border-bottom: 1px solid var(--border-subtle); max-height: 55vh; }
+          .lesson-right { overflow: visible; }
+        }
+        @media (max-width: 768px) {
+          .lesson-top-bar { padding: 10px 16px; gap: 8px; flex-wrap: wrap; }
+          .lesson-meta { flex-wrap: wrap; gap: 4px; }
+          .lesson-title { font-size: 0.9375rem; }
+          .lesson-actions-top { gap: 4px; }
+          .lesson-actions-top .btn-ghost { padding: 6px 8px; font-size: 0.8125rem; }
+          .lesson-tabs { padding: 0 10px; }
+          .tab { padding: 8px 10px; font-size: 0.8rem; }
+          .lesson-tab-content { padding: 14px; }
+          .editor-toolbar { flex-wrap: wrap; gap: 6px; }
+          .editor-toolbar-actions { flex-wrap: wrap; gap: 4px; }
+          .zone01-guide-bar { flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+          .zone01-modal { width: 95vw; max-height: 92vh; }
+          .zone01-modal-body { padding: 14px; }
+        }
+        @media (max-width: 480px) {
+          .lesson-top-bar { padding: 8px 12px; }
+          .lesson-tab-content { padding: 10px; }
+          .lesson-right { padding: 8px; }
+          .editor-toolbar-actions .btn-sm { padding: 5px 8px; font-size: 0.75rem; }
         }
       `}</style>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CodeEditor from '../components/editor/CodeEditor';
 import Console from '../components/editor/Console';
@@ -511,8 +511,25 @@ function QuizStyles() {
       .quiz-answer-title { flex: 1; color: var(--text-secondary); font-size: 0.9rem; }
 
       @media (max-width: 900px) {
-        .quiz-layout { grid-template-columns: 1fr; }
-        .quiz-question-panel { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+        .quiz-layout { grid-template-columns: 1fr; overflow: visible; }
+        .quiz-question-panel { border-right: none; border-bottom: 1px solid var(--border-subtle); max-height: 50vh; }
+        .quiz-running { overflow: auto; }
+      }
+      @media (max-width: 768px) {
+        .quiz-intro-card { padding: 24px 20px; }
+        .quiz-header { flex-wrap: wrap; gap: 8px; padding: 8px 14px; }
+        .quiz-header-left { flex-wrap: wrap; gap: 8px; }
+        .quiz-stepper { flex-wrap: wrap; gap: 4px; }
+        .quiz-step { width: 28px; height: 28px; font-size: 0.75rem; }
+        .quiz-editor-toolbar { flex-direction: column; align-items: flex-start; gap: 6px; }
+        .quiz-editor-actions { flex-wrap: wrap; gap: 4px; }
+        .quiz-editor-panel { padding: 8px; }
+        .quiz-question-panel { padding: 14px; }
+        .quiz-result-hero { padding: 24px 18px; }
+      }
+      @media (max-width: 480px) {
+        .quiz-name { font-size: 0.8125rem; }
+        .quiz-editor-actions .btn-sm { padding: 5px 8px; font-size: 0.75rem; }
       }
     `}</style>
   );

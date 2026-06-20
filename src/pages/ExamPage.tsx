@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CodeEditor from '../components/editor/CodeEditor';
 import Console from '../components/editor/Console';
@@ -215,6 +215,11 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
           .exam-meta-icon { font-size: 1.25rem; margin-bottom: 4px; }
           .exam-meta-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
           .exam-meta-label { font-size: 0.75rem; color: var(--text-muted); }
+          @media (max-width: 768px) {
+            .exam-intro-card { padding: 24px 18px; }
+            .exam-meta-grid { grid-template-columns: repeat(3,1fr); gap: 10px; }
+            .exam-meta-value { font-size: 1.2rem; }
+          }
         `}</style>
       </div>
     );
@@ -295,6 +300,12 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
           .exam-answer-header span:first-child { font-weight: 700; }
           .exam-answer-header span:nth-child(2) { flex: 1; color: var(--text-secondary); }
           .exam-answer-details { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+          @media (max-width: 768px) {
+            .exam-finished { padding: 0 4px; }
+            .exam-result-hero { padding: 24px 18px; }
+            .exam-final-score { font-size: 3rem; }
+            .exam-result-btns { flex-wrap: wrap; justify-content: center; }
+          }
         `}</style>
       </div>
     );
@@ -470,6 +481,24 @@ export default function ExamPage({ exercises, progress, onSaveResult }: ExamPage
           padding: 4px 0;
         }
         .btn-save-done { background: none; color: var(--success, #4ade80); border-color: rgba(74,222,128,0.35); }
+        @media (max-width: 900px) {
+          .exam-layout { grid-template-columns: 1fr; overflow: visible; }
+          .exam-question-panel { border-right: none; border-bottom: 1px solid var(--border-subtle); max-height: 50vh; }
+          .exam-running { overflow: auto; }
+        }
+        @media (max-width: 768px) {
+          .exam-header { flex-wrap: wrap; gap: 8px; padding: 8px 14px; }
+          .exam-header-left { flex-wrap: wrap; gap: 6px; min-width: 0; }
+          .exam-name { font-size: 0.8125rem; }
+          .exam-question-nav { flex-wrap: wrap; gap: 3px; overflow-x: auto; }
+          .exam-editor-toolbar { flex-wrap: wrap; gap: 6px; }
+          .exam-question-panel { padding: 14px; }
+          .exam-editor-panel { padding: 8px; }
+        }
+        @media (max-width: 480px) {
+          .exam-timer { font-size: 0.9375rem; }
+          .exam-q-btn { width: 24px; height: 24px; font-size: 0.7rem; }
+        }
       `}</style>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -29,12 +29,21 @@ export default function App() {
 function AppContent() {
   const { progress, completeLesson, saveExam, markIntroComplete } = useProgress();
   const totalExercises = exercises.length;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="app-layout">
-      <Sidebar progress={progress} />
+      <Sidebar
+        progress={progress}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
       <div className="main-content">
-        <Header progress={progress} totalExercises={totalExercises} />
+        <Header
+          progress={progress}
+          totalExercises={totalExercises}
+          onMenuToggle={() => setSidebarOpen((o) => !o)}
+        />
         <div className="page-body">
           <Routes>
             <Route

@@ -6,9 +6,10 @@ import { getOverallStats } from '../../store/progress';
 interface HeaderProps {
   progress: UserProgress;
   totalExercises: number;
+  onMenuToggle?: () => void;
 }
 
-export default function Header({ progress, totalExercises }: HeaderProps) {
+export default function Header({ progress, totalExercises, onMenuToggle }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const stats = getOverallStats(progress, totalExercises);
@@ -55,6 +56,15 @@ export default function Header({ progress, totalExercises }: HeaderProps) {
 
   return (
     <header className="app-header">
+      {/* Hamburger (mobile only) */}
+      {onMenuToggle && (
+        <button className="header-menu-btn" onClick={onMenuToggle} aria-label="Toggle navigation">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+          </svg>
+        </button>
+      )}
+
       {/* Left: breadcrumbs / title */}
       <div className="header-left">
         {breadcrumbs.length > 0 ? (
@@ -150,6 +160,17 @@ export default function Header({ progress, totalExercises }: HeaderProps) {
           border-radius: 3px; transition: width 0.4s ease;
         }
         .header-progress-pct { font-size: 0.75rem; font-weight: 600; color: var(--rust-light); }
+        @media (max-width: 768px) {
+          .app-header { padding: 0 12px; gap: 8px; }
+          .header-stat-label { display: none; }
+          .header-progress-wrap { display: none; }
+          .header-left { flex: 1; min-width: 0; }
+        }
+        @media (max-width: 480px) {
+          .header-stat:not(:first-child) { display: none; }
+          .header-title { font-size: 0.9375rem; }
+          .breadcrumb-item { font-size: 0.75rem; }
+        }
       `}</style>
     </header>
   );
