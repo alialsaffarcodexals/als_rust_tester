@@ -966,4 +966,388 @@ n -= 1;`,
       },
     ],
   },
+
+  // -------------------------------------------------------------------------
+  // 94 — check_user_name
+  // -------------------------------------------------------------------------
+  check_user_name: {
+    overview: {
+      whatYouBuild:
+        'A small access-control model: a User has a name and an AccessLevel. A guest may not reveal their name. send_name returns the name as an Option, and check_user_name turns that into a (bool, &str) tuple.',
+      inputOutput:
+        'Input: a &User. Output: (true, name) for non-guests, or (false, "ERROR: User is guest") for a guest.',
+      constraints: [
+        'AccessLevel has Guest, Normal, and Admin variants.',
+        'send_name returns None for a Guest and Some(&name) otherwise.',
+        'check_user_name converts the Option into a (bool, &str) tuple.',
+      ],
+      commonMistakes: [
+        'Returning an owned String where a borrowed &str is expected.',
+        'Forgetting that only Guest is restricted (Normal and Admin both reveal the name).',
+        'Mismatching the exact error message text.',
+      ],
+    },
+    officialDescription: `## check_user_name
+
+Model a user with an access level. A guest is not allowed to share their name.
+
+Implement send_name on User, returning an Option: None for a guest, otherwise the name. Then implement check_user_name that returns a tuple: (true, name) when a name is available, or (false, error message) when the user is a guest.
+
+### Expected items
+
+~~~
+pub enum AccessLevel { Guest, Normal, Admin }
+pub struct User { pub name: String, pub access_level: AccessLevel }
+pub fn check_user_name(user: &User) -> (bool, &str)
+~~~`,
+    objectives: {
+      learn: [
+        'Model choices with an enum and data with a struct.',
+        'Return optional data with Option.',
+        'Convert an Option into another shape with match.',
+      ],
+      whyExists:
+        'It ties together the three core type tools — enum, struct, Option — in a tiny realistic permission check.',
+      rustSkills: ['enums', 'structs', 'Option', 'match'],
+    },
+    conceptIds: ['enums', 'structs', 'option', 'pattern_matching'],
+    conceptNotes: {
+      option: 'send_name returns Option<&str>: None encodes "not allowed", Some(name) the value.',
+      pattern_matching: 'check_user_name matches that Option to build the (bool, &str) tuple.',
+    },
+    similar: {
+      title: 'Maybe greet',
+      prompt:
+        'Given an Option<&str> name, write a function that returns "Hello, X" when a name is present and "Hello, stranger" when it is None. Same match-on-Option pattern.',
+      starter: `pub fn greet(name: Option<&str>) -> String {
+    match name {
+        // Some -> personalized, None -> stranger
+        todo!()
+    }
+}`,
+      hint: 'Two arms: Some(n) => format!("Hello, {}", n), None => "Hello, stranger".to_string().',
+      concepts: ['option', 'pattern_matching'],
+      solution: `pub fn greet(name: Option<&str>) -> String {
+    match name {
+        Some(n) => format!("Hello, {}", n),
+        None => "Hello, stranger".to_string(),
+    }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'A guest hides their name. Fill the value send_name returns for a Guest.',
+        template: `pub fn send_name(&self) -> Option<&str> {
+    match self.access_level {
+        AccessLevel::Guest => _____,
+        _ => Some(&self.name),
+    }
+}`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: ['Option has a variant meaning "nothing".', 'Return None for a guest.'],
+        explanation: 'A guest has no shareable name, so send_name returns None; everyone else returns Some(&self.name).',
+        whatYouLearned: 'None models the absence of a value.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Turn the Option from send_name into the result tuple. Fill the None arm.',
+        template: `match user.send_name() {
+    Some(name) => (true, name),
+    None => _____,
+}`,
+        accepted: ['(false, "ERROR: User is guest")'],
+        acceptedPatterns: ['^\\(false,\\s*"ERROR: User is guest"\\)$'],
+        hints: ['The tuple is (bool, &str).', 'A guest gives (false, "ERROR: User is guest").'],
+        explanation: 'When send_name is None the user is a guest, so we report (false, error message); a present name gives (true, name).',
+        whatYouLearned: 'match converts an Option into whatever shape you need.',
+        conceptId: 'pattern_matching',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 95 — dress_code
+  // -------------------------------------------------------------------------
+  dress_code: {
+    overview: {
+      whatYouBuild:
+        'A function that decides an Outfit (a Jacket and a Hat) from an optional formality level and a Result invitation. Different combinations of present/absent inputs map to different clothing choices.',
+      inputOutput:
+        'Input: formality_level: Option<u32> and invitation_message: Result<&str, &str>. Output: an Outfit { jacket, hat }.',
+      constraints: [
+        'No formality AND an Err invitation -> Flowers jacket + Baseball hat.',
+        'Jacket: None -> Flowers, Some(level > 0) -> White, Some(0) -> Black.',
+        'Hat: Ok invitation -> Fedora, Err -> Snapback.',
+      ],
+      commonMistakes: [
+        'Missing the special-case combination that yields Flowers + Baseball.',
+        'Treating Some(0) the same as a positive level.',
+        'Swapping the Ok/Err hat mapping.',
+      ],
+    },
+    officialDescription: `## dress_code
+
+Choose an outfit based on two inputs: an optional formality level and an invitation that is either Ok or Err.
+
+Rules:
+
+- If there is no formality level and the invitation is an error, wear the Flowers jacket and the Baseball hat.
+- Jacket: no formality level -> Flowers; a level greater than 0 -> White; a level of 0 -> Black.
+- Hat: a valid (Ok) invitation -> Fedora; otherwise -> Snapback.
+
+### Expected function
+
+~~~
+pub fn choose_outfit(formality_level: Option<u32>, invitation_message: Result<&str, &str>) -> Outfit
+~~~`,
+    objectives: {
+      learn: [
+        'Branch on Option with match guards (Some(x) if cond).',
+        'Branch on Result with is_ok / is_err.',
+        'Combine independent decisions into one returned struct.',
+      ],
+      whyExists:
+        'It exercises decision-making across Option and Result together — the two pillars of Rust control flow.',
+      rustSkills: ['Option', 'Result', 'match guards', 'enums', 'structs'],
+    },
+    conceptIds: ['option', 'result', 'enums', 'pattern_matching'],
+    conceptNotes: {
+      pattern_matching: 'A match with a guard (Some(level) if level > 0) distinguishes a positive level from zero.',
+      result: 'invitation_message.is_ok() decides the hat without inspecting the inner text.',
+    },
+    similar: {
+      title: 'Ticket price',
+      prompt:
+        'Given age: Option<u32>, return a price: None -> 0 (unknown), Some(a) if a < 18 -> 5, otherwise 10. Same match-with-guard pattern as the jacket choice.',
+      starter: `pub fn price(age: Option<u32>) -> u32 {
+    match age {
+        // None -> 0, child -> 5, else 10
+        todo!()
+    }
+}`,
+      hint: 'Use Some(a) if a < 18 => 5 as a guarded arm.',
+      concepts: ['option', 'pattern_matching'],
+      solution: `pub fn price(age: Option<u32>) -> u32 {
+    match age {
+        None => 0,
+        Some(a) if a < 18 => 5,
+        _ => 10,
+    }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Pick the jacket for a positive formality level. Fill the guard so it only matches levels above 0.',
+        template: `let jacket = match formality_level {
+    None => Jacket::Flowers,
+    Some(level) _____ => Jacket::White,
+    _ => Jacket::Black,
+};`,
+        accepted: ['if level > 0'],
+        acceptedPatterns: ['^if\\s+level\\s*>\\s*0$'],
+        hints: ['A match arm can carry a condition.', 'Add a guard: if level > 0.'],
+        explanation: 'The guard if level > 0 makes this arm fire only for positive levels; Some(0) falls through to the _ arm (Black).',
+        whatYouLearned: 'Match guards add a boolean condition to a pattern.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Choose the hat from the invitation. Fill the check for a valid invitation.',
+        template: `let hat = if invitation_message._____ {
+    Hat::Fedora
+} else {
+    Hat::Snapback
+};`,
+        accepted: ['is_ok()'],
+        acceptedPatterns: ['^is_ok\\(\\)$'],
+        hints: ['Result has predicate methods.', 'is_ok() is true for Ok(_).'],
+        explanation: 'is_ok() tells us the invitation was valid without unwrapping it, so we choose Fedora; otherwise Snapback.',
+        whatYouLearned: 'is_ok()/is_err() inspect a Result without consuming it.',
+        conceptId: 'result',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 96 — get_document_id
+  // -------------------------------------------------------------------------
+  get_document_id: {
+    overview: {
+      whatYouBuild:
+        'A chain of offices, each holding a Result pointing to the next office (or an error). get_document_id walks the whole chain and returns the final document id, short-circuiting on the first error with the ? operator.',
+      inputOutput:
+        'Input: &self on OfficeOne. Output: Result<u32, ErrorOffice> — Ok(document_id) if every office succeeds, or the first error encountered.',
+      constraints: [
+        'Each office stores next_office: Result<NextOffice, ErrorOffice>.',
+        'Use the ? operator to unwrap each step and propagate errors.',
+        'The final office holds the document_id as a Result.',
+      ],
+      commonMistakes: [
+        'Manually matching each Result instead of using ? to chain them.',
+        'Returning the wrong error type (the chain must propagate ErrorOffice).',
+        'Forgetting the last field is already the Result to return.',
+      ],
+    },
+    officialDescription: `## get_document_id
+
+A document request passes through a chain of offices. Each office holds a Result that is either the next office or an ErrorOffice. The final office holds the document id (also a Result).
+
+Implement get_document_id on the first office so it walks the chain and returns the document id, or the first error encountered.
+
+### Expected method
+
+~~~
+impl OfficeOne {
+    pub fn get_document_id(&self) -> Result<u32, ErrorOffice>
+}
+~~~`,
+    objectives: {
+      learn: [
+        'Propagate errors concisely with the ? operator.',
+        'Chain several fallible steps into one expression.',
+        'Model a pipeline with nested Result-bearing structs.',
+      ],
+      whyExists:
+        'It is the canonical demonstration of ? — turning a tower of matches into a single readable line.',
+      rustSkills: ['Result', '? operator', 'structs', 'error handling'],
+    },
+    conceptIds: ['result', 'error_handling', 'structs'],
+    conceptNotes: {
+      error_handling: 'The ? operator unwraps an Ok or returns the Err from the whole function immediately.',
+      result: 'Every office field is a Result, so ? can be applied at each hop.',
+    },
+    similar: {
+      title: 'Chained parsing',
+      prompt:
+        'Write a function that parses two &str into i64 and returns their sum, using ? to bail out on the first parse failure. Same early-return-on-error idea as the office chain.',
+      starter: `pub fn add(a: &str, b: &str) -> Result<i64, std::num::ParseIntError> {
+    // parse both with ? then add
+    todo!()
+}`,
+      hint: 'let x = a.parse::<i64>()?; let y = b.parse::<i64>()?; Ok(x + y).',
+      concepts: ['result', 'error_handling'],
+      solution: `pub fn add(a: &str, b: &str) -> Result<i64, std::num::ParseIntError> {
+    let x = a.parse::<i64>()?;
+    let y = b.parse::<i64>()?;
+    Ok(x + y)
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Walk the whole chain in one expression. Fill the operator (after the first office) that unwraps each Ok and propagates any Err.',
+        template: `pub fn get_document_id(&self) -> Result<u32, ErrorOffice> {
+    self.next_office_____.next_office?.next_office?.document_id
+}`,
+        accepted: ['?'],
+        acceptedPatterns: ['^\\?$'],
+        hints: ['One punctuation mark unwraps a Result or returns early.', 'It is the ? operator.'],
+        explanation: 'The ? operator yields the inner value on Ok, or returns the Err from the function. Chaining ? walks office to office until the final document_id Result.',
+        whatYouLearned: 'The ? operator replaces a tower of matches with one line.',
+        conceptId: 'error_handling',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 97 — negative_spelling
+  // -------------------------------------------------------------------------
+  negative_spelling: {
+    overview: {
+      whatYouBuild:
+        'A function that spells a negative number in English words, prefixed with "minus". It rejects zero and positive numbers, then spells the magnitude using lookup tables and recursion for tens, hundreds, thousands, and millions.',
+      inputOutput:
+        'Input: an i64 n. Output: a String. For -45: "minus forty-five". For 0 or positives: an error string.',
+      constraints: [
+        'Only negative numbers are spelled; reject zero and positives.',
+        'Spell the absolute value, then prefix "minus ".',
+        'Use hyphenation for compound tens (e.g. forty-five).',
+      ],
+      commonMistakes: [
+        'Letting the minus sign interfere with the digit-to-word logic.',
+        'Forgetting the hyphen in numbers like twenty-one.',
+        'Not handling the recursive breakdown for hundreds/thousands.',
+      ],
+    },
+    officialDescription: `## negative_spelling
+
+Create a function negative_spell that spells out a negative number in English, prefixed with the word minus.
+
+If the number is not negative, return an error string.
+
+### Expected function
+
+~~~
+pub fn negative_spell(n: i64) -> String
+~~~
+
+### Usage
+
+negative_spell(-45) returns "minus forty-five".`,
+    objectives: {
+      learn: [
+        'Guard against invalid input early.',
+        'Use lookup tables (arrays) for fixed word lists.',
+        'Break a big problem into recursive sub-cases.',
+      ],
+      whyExists:
+        'Number-to-words is a rich exercise in branching, lookup tables, and recursion over ranges.',
+      rustSkills: ['arrays', 'recursion', 'match / if', 'format!'],
+    },
+    conceptIds: ['pattern_matching', 'error_handling', 'collections'],
+    conceptNotes: {
+      error_handling: 'The function returns an error string for non-negative input instead of panicking.',
+    },
+    similar: {
+      title: 'Spell 0–19',
+      prompt:
+        'Write a function that returns the English word for a number 0..=19 using an array lookup. This is the base case the full speller builds on.',
+      starter: `pub fn small_word(n: usize) -> &'static str {
+    let ones = [
+        "zero","one","two","three","four","five","six","seven","eight","nine",
+        "ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen",
+        "seventeen","eighteen","nineteen",
+    ];
+    // return the word for n (assume n < 20)
+    todo!()
+}`,
+      hint: 'Index the array directly: ones[n].',
+      concepts: ['collections'],
+      solution: `pub fn small_word(n: usize) -> &'static str {
+    let ones = [
+        "zero","one","two","three","four","five","six","seven","eight","nine",
+        "ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen",
+        "seventeen","eighteen","nineteen",
+    ];
+    ones[n]
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Reject non-negative input up front. Fill the condition.',
+        template: `pub fn negative_spell(n: i64) -> String {
+    if _____ {
+        return "error: positive number".to_string();
+    }
+    format!("minus {}", spell((-n) as u64))
+}`,
+        accepted: ['n >= 0'],
+        acceptedPatterns: ['^n\\s*>=\\s*0$'],
+        hints: ['This function only handles negatives.', 'Reject zero and anything positive: n >= 0.'],
+        explanation: 'Only negative numbers are valid, so we bail out for n >= 0 before doing any spelling work.',
+        whatYouLearned: 'Validate inputs before the main logic.',
+        conceptId: 'error_handling',
+      },
+      {
+        prompt: 'Spell the magnitude. Fill what we negate and convert so the helper gets a positive value.',
+        template: `// n is negative here
+format!("minus {}", spell((_____) as u64))`,
+        accepted: ['-n'],
+        acceptedPatterns: ['^-n$'],
+        hints: ['We need the positive magnitude of a negative n.', 'Negating a negative gives a positive: -n.'],
+        explanation: 'Since n is negative, -n is its positive magnitude, which the spell helper turns into words; "minus " is prefixed in front.',
+        whatYouLearned: 'Separate the sign from the magnitude, then recombine.',
+        conceptId: 'pattern_matching',
+      },
+    ],
+  },
 };
