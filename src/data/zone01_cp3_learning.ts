@@ -528,4 +528,442 @@ $ cargo run
       },
     ],
   },
+
+  // -------------------------------------------------------------------------
+  // 89 — inv_pyramid
+  // -------------------------------------------------------------------------
+  inv_pyramid: {
+    overview: {
+      whatYouBuild:
+        'A function that returns the lines of a pyramid built from a repeated string. At level k there are k spaces of indentation followed by the string repeated k times. The pyramid grows from level 1 up to i, then mirrors back down to 1.',
+      inputOutput:
+        'Input: a String v and a size i (usize). Output: a Vec<String>, one entry per line. The result has 2*i-1 lines: ascending 1..=i then descending i-1..=1.',
+      constraints: [
+        'At level k: k spaces, then v repeated k times.',
+        'Ascend from level 1 to i, then descend from i-1 back to 1.',
+        'The result is a Vec<String> — one String per line, no trailing newline characters.',
+      ],
+      commonMistakes: [
+        'Only building the ascending half and forgetting the descending mirror.',
+        'Indenting with the wrong number of spaces (it equals the level k).',
+        'Repeating the string the wrong number of times — it is also k.',
+      ],
+    },
+    officialDescription: `## inv_pyramid
+
+Write a function inv_pyramid that builds a pyramid from a string.
+
+For each level k, the line is made of k spaces followed by the string v repeated k times. The pyramid ascends from level 1 to level i and then descends from level i-1 back to level 1, producing 2*i-1 lines in total.
+
+### Expected function
+
+~~~
+pub fn inv_pyramid(v: String, i: usize) -> Vec<String>
+~~~
+
+### Usage
+
+Calling inv_pyramid with a string and a size returns the lines of the pyramid, which the test program prints one per line.`,
+    objectives: {
+      learn: [
+        'Build strings with " ".repeat(k) and v.repeat(k).',
+        'Use ranges and .rev() to ascend then descend.',
+        'Collect formatted lines into a Vec<String>.',
+      ],
+      whyExists:
+        'It is a focused drill in string building and range iteration — producing structured text output, a common real-world task.',
+      rustSkills: ['ranges', 'string repeat', 'format!', 'Vec'],
+    },
+    conceptIds: ['iterators', 'display_trait', 'collections'],
+    conceptNotes: {
+      iterators: 'The ranges 1..=i and (1..i).rev() drive the ascending and descending halves.',
+      display_trait: 'format!("{}{}", " ".repeat(k), v.repeat(k)) assembles each line.',
+    },
+    similar: {
+      title: 'Left-aligned triangle',
+      prompt:
+        'Write a function that returns a Vec<String> where line k (for k from 1 to n) contains the character "*" repeated k times. Same repeat-and-collect pattern, just the ascending half.',
+      starter: `pub fn triangle(n: usize) -> Vec<String> {
+    let mut rows = Vec::new();
+    for k in 1..=n {
+        // push a line of k stars
+        todo!()
+    }
+    rows
+}`,
+      hint: 'Use "*".repeat(k) and rows.push(...).',
+      concepts: ['iterators', 'display_trait'],
+      solution: `pub fn triangle(n: usize) -> Vec<String> {
+    let mut rows = Vec::new();
+    for k in 1..=n {
+        rows.push("*".repeat(k));
+    }
+    rows
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Build one pyramid line: k spaces, then the string v repeated k times.',
+        template: `result.push(format!("{}{}", " ".repeat(k), _____));`,
+        accepted: ['v.repeat(k)'],
+        acceptedPatterns: ['^v\\.repeat\\(k\\)$'],
+        hints: ['Strings have a method that repeats them n times.', 'v.repeat(k) gives k copies of v joined together.'],
+        explanation: 'At level k the content is the string repeated k times, right after k spaces of indentation.',
+        whatYouLearned: 'str::repeat builds repeated text without a manual loop.',
+        conceptId: 'display_trait',
+      },
+      {
+        prompt: 'Ascend through the levels 1, 2, ..., i. Fill the range.',
+        template: `for k in _____ {
+    result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));
+}`,
+        accepted: ['1..=i'],
+        acceptedPatterns: ['^1..=i$'],
+        hints: ['You need every level from 1 through i inclusive.', 'An inclusive range uses ..= .'],
+        explanation: '1..=i includes both ends, so levels run 1 through i. The exclusive 1..i would stop at i-1.',
+        whatYouLearned: 'Inclusive ranges (a..=b) include the upper bound.',
+        conceptId: 'iterators',
+      },
+      {
+        prompt: 'Descend the mirror half: levels i-1 down to 1. Fill the reversed range.',
+        template: `for k in (1..i)._____ {
+    result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));
+}`,
+        accepted: ['rev()'],
+        acceptedPatterns: ['^rev\\(\\)$'],
+        hints: ['You want to walk the range backwards.', 'Ranges have a .rev() adapter.'],
+        explanation: '(1..i).rev() yields i-1, i-2, ..., 1, mirroring the ascending half to complete the pyramid.',
+        whatYouLearned: '.rev() walks a range from high to low.',
+        conceptId: 'iterators',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 90 — nextprime
+  // -------------------------------------------------------------------------
+  nextprime: {
+    overview: {
+      whatYouBuild:
+        'A function that returns the smallest prime number greater than or equal to a given number, using a primality test that only checks divisors up to the square root.',
+      inputOutput:
+        'Input: a usize nbr. Output: the next prime >= nbr (e.g. next_prime(0) -> 2, next_prime(14) -> 17).',
+      constraints: [
+        'A prime has no divisors other than 1 and itself; numbers below 2 are not prime.',
+        'Only test divisors up to the square root of n (i * i <= n).',
+        'If nbr itself is prime, return nbr.',
+      ],
+      commonMistakes: [
+        'Checking divisors all the way to n instead of stopping at the square root.',
+        'Treating 0 or 1 as prime.',
+        'Off-by-one: starting the search above nbr instead of at nbr.',
+      ],
+    },
+    officialDescription: `## nextprime
+
+Create a function next_prime that returns the next prime number greater than or equal to the given number.
+
+A number is prime if it is at least 2 and has no divisors other than 1 and itself.
+
+### Expected function
+
+~~~
+pub fn next_prime(nbr: usize) -> usize
+~~~
+
+### Usage
+
+next_prime(0) returns 2, next_prime(7) returns 7, and next_prime(14) returns 17.`,
+    objectives: {
+      learn: [
+        'Write a primality test that stops at the square root.',
+        'Use a nested helper function.',
+        'Loop until a condition is met.',
+      ],
+      whyExists:
+        'Primality testing is a classic algorithm that teaches loop bounds and the square-root optimization.',
+      rustSkills: ['loops', 'helper functions', 'integer math'],
+    },
+    conceptIds: ['error_handling', 'pattern_matching'],
+    conceptNotes: {
+      error_handling: 'Here there is no Result — the "validation" is the boolean is_prime check that guards the search.',
+    },
+    similar: {
+      title: 'Count primes below n',
+      prompt:
+        'Write a function that returns how many prime numbers are strictly less than n. Reuse the same is_prime square-root test inside a counting loop.',
+      starter: `pub fn count_primes(n: usize) -> usize {
+    fn is_prime(x: usize) -> bool {
+        if x < 2 { return false; }
+        let mut i = 2;
+        while i * i <= x {
+            if x % i == 0 { return false; }
+            i += 1;
+        }
+        true
+    }
+    // count primes in 0..n
+    todo!()
+}`,
+      hint: 'Loop k from 0 to n-1 and increment a counter when is_prime(k).',
+      concepts: ['error_handling'],
+      solution: `pub fn count_primes(n: usize) -> usize {
+    fn is_prime(x: usize) -> bool {
+        if x < 2 { return false; }
+        let mut i = 2;
+        while i * i <= x {
+            if x % i == 0 { return false; }
+            i += 1;
+        }
+        true
+    }
+    (0..n).filter(|&k| is_prime(k)).count()
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Numbers below 2 are not prime. Fill the early-return condition.',
+        template: `fn is_prime(n: usize) -> bool {
+    if _____ {
+        return false;
+    }
+    // ... divisor checks ...
+    true
+}`,
+        accepted: ['n < 2'],
+        acceptedPatterns: ['^n\\s*<\\s*2$'],
+        hints: ['0 and 1 are not prime.', 'Reject anything less than 2.'],
+        explanation: 'The smallest prime is 2, so any n below 2 is immediately not prime.',
+        whatYouLearned: 'Handle edge cases before the main loop.',
+        conceptId: 'error_handling',
+      },
+      {
+        prompt: 'We only need divisors up to the square root. Fill the loop bound.',
+        template: `let mut i = 2;
+while _____ {
+    if n % i == 0 {
+        return false;
+    }
+    i += 1;
+}`,
+        accepted: ['i * i <= n'],
+        acceptedPatterns: ['^i\\s*\\*\\s*i\\s*<=\\s*n$'],
+        hints: ['If n has a divisor, one of them is <= sqrt(n).', 'Compare i*i with n instead of computing a square root.'],
+        explanation: 'Any factor larger than sqrt(n) pairs with one smaller than sqrt(n), so checking up to i*i <= n is enough — and much faster than going to n.',
+        whatYouLearned: 'The square-root bound makes primality testing efficient.',
+        conceptId: 'error_handling',
+      },
+      {
+        prompt: 'Search upward from nbr until is_prime holds. Fill the step that advances the candidate.',
+        template: `let mut n = nbr;
+while !is_prime(n) {
+    _____;
+}
+n`,
+        accepted: ['n += 1'],
+        acceptedPatterns: ['^n\\s*\\+=\\s*1$'],
+        hints: ['Try the next integer when the current one is not prime.', 'Increment n by one.'],
+        explanation: 'Starting at nbr, we step up by one until is_prime returns true, then return that number.',
+        whatYouLearned: 'A while-not loop searches for the first value satisfying a predicate.',
+        conceptId: 'pattern_matching',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 91 — partial_sums (parts_sums)
+  // -------------------------------------------------------------------------
+  partial_sums: {
+    overview: {
+      whatYouBuild:
+        'A function that returns the running totals of a slice as it is progressively shortened from the end: first the sum of all elements, then the sum without the last element, and so on, ending with 0.',
+      inputOutput:
+        'Input: a &[u64] slice. Output: a Vec<u64> of length len+1. For &[3, 5, 8]: [16, 8, 3, 0].',
+      constraints: [
+        'The result has exactly len+1 entries.',
+        'Entry k is the sum of the first (len-k) elements; the final entry is 0.',
+        'Take a slice (&[u64]), not an owned Vec.',
+      ],
+      commonMistakes: [
+        'Forgetting the trailing 0 (the empty-prefix sum).',
+        'Summing prefixes in the wrong direction.',
+        'Returning len entries instead of len+1.',
+      ],
+    },
+    officialDescription: `## parts_sums
+
+Create a function parts_sums that receives a slice of u64 and returns a vector with the sum of all the elements, then the sum with the last element removed, and so on, down to 0.
+
+### Expected function
+
+~~~
+pub fn parts_sums(v: &[u64]) -> Vec<u64>
+~~~
+
+### Usage
+
+parts_sums(&[3, 5, 8]) returns [16, 8, 3, 0].`,
+    objectives: {
+      learn: [
+        'Sum a slice with .iter().sum().',
+        'Take sub-slices with range indexing v[..k].',
+        'Build a result Vec of a known size.',
+      ],
+      whyExists:
+        'It practices slice ranges and iterator summation — the building blocks of many numeric routines.',
+      rustSkills: ['slices', 'iterators', 'Vec'],
+    },
+    conceptIds: ['references', 'iterators', 'collections'],
+    conceptNotes: {
+      references: 'The input is a slice &[u64], so the function works for any contiguous run of u64 without taking ownership.',
+      iterators: 'v[..k].iter().sum() adds up the first k elements.',
+    },
+    similar: {
+      title: 'Prefix sums',
+      prompt:
+        'Write a function that returns a Vec<u64> where entry k is the sum of the first k elements (growing from 0 up to the full total). Same slice + iter().sum() pattern, growing instead of shrinking.',
+      starter: `pub fn prefix_sums(v: &[u64]) -> Vec<u64> {
+    let mut out = Vec::new();
+    for k in 0..=v.len() {
+        // push the sum of the first k elements
+        todo!()
+    }
+    out
+}`,
+      hint: 'v[..k].iter().sum() gives the sum of the first k elements.',
+      concepts: ['references', 'iterators'],
+      solution: `pub fn prefix_sums(v: &[u64]) -> Vec<u64> {
+    let mut out = Vec::new();
+    for k in 0..=v.len() {
+        out.push(v[..k].iter().sum());
+    }
+    out
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Sum the first k elements of the slice.',
+        template: `let total: u64 = v[..k].iter()._____;`,
+        accepted: ['sum()'],
+        acceptedPatterns: ['^sum\\(\\)$'],
+        hints: ['Iterators can total their items.', 'Use the sum() consumer.'],
+        explanation: 'v[..k] is the sub-slice of the first k elements; .iter().sum() adds them up.',
+        whatYouLearned: '.sum() consumes an iterator into a total.',
+        conceptId: 'iterators',
+      },
+      {
+        prompt: 'Iterate prefix sizes from len down to 0. Fill the reversed inclusive range.',
+        template: `for k in _____.rev() {
+    sums.push(v[..k].iter().sum());
+}`,
+        accepted: ['(0..=v.len())', '0..=v.len()'],
+        acceptedPatterns: ['^\\(?0..=v\\.len\\(\\)\\)?$'],
+        hints: ['You need sizes 0 through len inclusive.', 'Build 0..=v.len() and reverse it.'],
+        explanation: '(0..=v.len()).rev() yields len, len-1, ..., 0, so the first push is the full sum and the last is the empty-slice sum (0).',
+        whatYouLearned: 'Inclusive ranges plus .rev() count down including both ends.',
+        conceptId: 'iterators',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 92 — previousprime
+  // -------------------------------------------------------------------------
+  previousprime: {
+    overview: {
+      whatYouBuild:
+        'A function that returns the largest prime number less than or equal to a given number, searching downward with the same square-root primality test.',
+      inputOutput:
+        'Input: a u64 nbr. Output: the largest prime <= nbr (e.g. prev_prime(10) -> 7, prev_prime(13) -> 13).',
+      constraints: [
+        'Numbers below 2 are not prime.',
+        'Search downward from nbr and stop at the first prime.',
+        'Guard against subtracting below 0 on u64.',
+      ],
+      commonMistakes: [
+        'Underflowing a u64 by subtracting below 0.',
+        'Starting the search below nbr when nbr itself is prime.',
+        'Reusing the square-root bound incorrectly.',
+      ],
+    },
+    officialDescription: `## prev_prime
+
+Create a function prev_prime that returns the largest prime number less than or equal to the given number. If there is no such prime, return 0.
+
+### Expected function
+
+~~~
+pub fn prev_prime(nbr: u64) -> u64
+~~~
+
+### Usage
+
+prev_prime(13) returns 13, prev_prime(10) returns 7, prev_prime(1) returns 0.`,
+    objectives: {
+      learn: [
+        'Reuse a primality helper while searching downward.',
+        'Avoid unsigned underflow with an explicit zero guard.',
+        'Return early from a loop.',
+      ],
+      whyExists:
+        'The mirror of nextprime — it reinforces the primality test and adds the subtlety of unsigned subtraction.',
+      rustSkills: ['loops', 'integer math', 'helper functions'],
+    },
+    conceptIds: ['error_handling', 'pattern_matching'],
+    conceptNotes: {
+      error_handling: 'The zero guard prevents a u64 underflow panic — an important defensive check with unsigned types.',
+    },
+    similar: {
+      title: 'Is it prime?',
+      prompt:
+        'Write a function is_prime(n: u64) -> bool using the square-root method. This is the helper the real exercise relies on — get it solid here.',
+      starter: `pub fn is_prime(n: u64) -> bool {
+    // numbers < 2 are not prime; check divisors up to sqrt(n)
+    todo!()
+}`,
+      hint: 'Reject n < 2, then loop while i * i <= n checking n % i == 0.',
+      concepts: ['error_handling'],
+      solution: `pub fn is_prime(n: u64) -> bool {
+    if n < 2 { return false; }
+    let mut i = 2;
+    while i * i <= n {
+        if n % i == 0 { return false; }
+        i += 1;
+    }
+    true
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Return immediately when the current candidate is prime.',
+        template: `let mut n = nbr;
+loop {
+    if is_prime(n) {
+        return _____;
+    }
+    if n == 0 { return 0; }
+    n -= 1;
+}`,
+        accepted: ['n'],
+        acceptedPatterns: ['^n$'],
+        hints: ['You want to return the prime you just found.', 'That value is the current candidate n.'],
+        explanation: 'As soon as is_prime(n) is true, n is the answer — the largest prime not exceeding nbr.',
+        whatYouLearned: 'Return early from a loop the moment the goal is reached.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Prevent a u64 underflow before stepping down. Fill the guard condition.',
+        template: `if _____ {
+    return 0;
+}
+n -= 1;`,
+        accepted: ['n == 0'],
+        acceptedPatterns: ['^n\\s*==\\s*0$'],
+        hints: ['Subtracting 1 from 0 on a u64 panics.', 'Stop when n has reached 0.'],
+        explanation: 'u64 cannot go below 0, so we must return before n -= 1 would underflow. Reaching 0 means no prime was found.',
+        whatYouLearned: 'Unsigned subtraction needs an explicit lower-bound guard.',
+        conceptId: 'error_handling',
+      },
+    ],
+  },
 };
