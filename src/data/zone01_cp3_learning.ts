@@ -2665,6 +2665,35 @@ pub fn is_universal_donor(a: Antigen) -> bool {
     },
     sideQuiz: [
       {
+        prompt: 'A blood type starts with an antigen. Fill the missing antigen variant.',
+        template: `pub enum Antigen { A, AB, B, _____ }`,
+        accepted: ['O'],
+        acceptedPatterns: ['^O,?$'],
+        hints: [
+          'The four ABO antigens are A, AB, B, and one more.',
+          'The fourth is O.',
+        ],
+        explanation: 'The ABO system has four antigens: A, AB, B, and O. O carries no antigen, which is why it is the universal donor.',
+        whatYouLearned: 'An enum enumerates the fixed set of antigens.',
+        conceptId: 'enums',
+      },
+      {
+        prompt: 'O has no antigen, so everyone accepts it. Fill the value of the O arm.',
+        template: `let antigen_ok = match other.antigen {
+    Antigen::O => _____,
+    // ... A, B, AB arms ...
+};`,
+        accepted: ['true'],
+        acceptedPatterns: ['^true$'],
+        hints: [
+          'O is the universal donor for the antigen rule.',
+          'Every recipient accepts O, so return true.',
+        ],
+        explanation: 'An O donor has no A or B antigen, so any recipient accepts it — the O arm is always true.',
+        whatYouLearned: 'O is the universal donor antigen.',
+        conceptId: 'pattern_matching',
+      },
+      {
         prompt: 'AB recipients accept A and B antigens. Fill the test that matches either A or AB on the recipient.',
         template: `// other.antigen == A is accepted by recipients whose antigen is A or AB
 Antigen::A => _____,`,
@@ -2674,6 +2703,46 @@ Antigen::A => _____,`,
         explanation: 'An A donor is accepted by recipients carrying the A antigen, i.e. A or AB. matches! with the | pattern checks both at once.',
         whatYouLearned: 'matches!(x, P | Q) tests membership in a set of variants.',
         conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'The Rh rule: an Rh- donor works for anyone. Fill the donor Rh factor that is always accepted.',
+        template: `let rh_ok = self.rh_factor == RhFactor::Positive
+    || other.rh_factor == RhFactor::_____;`,
+        accepted: ['Negative'],
+        acceptedPatterns: ['^Negative$'],
+        hints: [
+          'An Rh-negative donor is safe for any recipient.',
+          'The accepted donor factor is Negative.',
+        ],
+        explanation: 'A recipient accepts a donor when the recipient is Rh+ OR the donor is Rh-, since Rh- blood carries no Rh antigen.',
+        whatYouLearned: 'Rh- is the universal donor for the Rh factor.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Both rules must hold. Fill the combination returned by can_receive_from.',
+        template: `antigen_ok _____ rh_ok`,
+        accepted: ['&&'],
+        acceptedPatterns: ['^&&$'],
+        hints: [
+          'A transfusion is safe only if BOTH rules pass.',
+          'Combine with logical AND: && .',
+        ],
+        explanation: 'Compatibility requires the antigen rule AND the Rh rule, so the method returns antigen_ok && rh_ok.',
+        whatYouLearned: '&& requires both conditions to be true.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'donors() lists every type self can receive from. Fill the method used in the filter.',
+        template: `Self::all().into_iter().filter(|&other| self._____(other)).collect()`,
+        accepted: ['can_receive_from'],
+        acceptedPatterns: ['^can_receive_from$'],
+        hints: [
+          'A donor is someone self can receive from.',
+          'Call self.can_receive_from(other).',
+        ],
+        explanation: 'donors keeps every type where self.can_receive_from(other) holds — the mirror of recipients.',
+        whatYouLearned: 'Reuse the core rule to derive related queries.',
+        conceptId: 'iterators',
       },
       {
         prompt: 'recipients() keeps every type that can receive from self. Fill the filter predicate.',
@@ -2751,6 +2820,36 @@ impl std::fmt::Display for Park { ... }
     },
     sideQuiz: [
       {
+        prompt: 'Several park fields may be absent. Fill the type wrapping the optional name field.',
+        template: `pub struct Park {
+    pub name: _____<String>,
+    pub park_type: ParkType,
+    // address, cap, state are also optional
+}`,
+        accepted: ['Option'],
+        acceptedPatterns: ['^Option$'],
+        hints: [
+          'A field that might be missing.',
+          'Use Option<String>.',
+        ],
+        explanation: 'name, address, cap, and state are Option<String> — present (Some) or missing (None).',
+        whatYouLearned: 'Option<T> marks a field that may be absent.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Turn an &Option<String> into an Option<&str> so unwrap_or can supply a &str default. Fill the method.',
+        template: `let name = self.name._____().unwrap_or("No name");`,
+        accepted: ['as_deref'],
+        acceptedPatterns: ['^as_deref$'],
+        hints: [
+          'You need Option<&str>, not Option<String>.',
+          'as_deref() borrows the inner String as &str.',
+        ],
+        explanation: 'as_deref() converts &Option<String> to Option<&str>, so unwrap_or("No name") can return a &str either way.',
+        whatYouLearned: 'as_deref() turns Option<String> into Option<&str>.',
+        conceptId: 'option',
+      },
+      {
         prompt: 'Substitute a placeholder when the name field is None. Fill the default-providing call.',
         template: `// self.name: Option<String>
 let name = self.name.as_deref()._____("No name");`,
@@ -2778,6 +2877,44 @@ let name = self.name.as_deref()._____("No name");`,
         hints: ['Display writes into f.', 'Use the write! macro.'],
         explanation: 'write!(f, "{}", text) sends the lowercase name to the formatter, which is what printing the ParkType uses.',
         whatYouLearned: 'Display impls produce output via write!(f, ...).',
+        conceptId: 'display_trait',
+      },
+      {
+        prompt: 'A ParkType prints its name in lowercase. Fill the text for the Garden variant.',
+        template: `let text = match self {
+    ParkType::Garden => "_____",
+    ParkType::Forest => "forest",
+    ParkType::Playground => "playground",
+};`,
+        accepted: ['garden'],
+        acceptedPatterns: ['^garden$'],
+        hints: [
+          'Lowercase the variant name.',
+          'Garden prints as "garden".',
+        ],
+        explanation: 'Each ParkType variant maps to its lowercase word; Garden becomes "garden".',
+        whatYouLearned: 'A match can map enum variants to display strings.',
+        conceptId: 'display_trait',
+      },
+      {
+        prompt: 'Assemble the whole Park line. Fill the first value in the format — the park type.',
+        template: `write!(
+    f,
+    "{} - {}, {}, {} - {}",
+    self._____,
+    self.name.as_deref().unwrap_or("No name"),
+    self.address.as_deref().unwrap_or("No address"),
+    self.cap.as_deref().unwrap_or("No cap"),
+    self.state.as_deref().unwrap_or("No state"),
+)`,
+        accepted: ['park_type'],
+        acceptedPatterns: ['^park_type,?$'],
+        hints: [
+          'The line starts with the park type.',
+          'It is self.park_type.',
+        ],
+        explanation: 'The Park Display writes the type first, then each optional field with its "No <field>" fallback, in one write! call.',
+        whatYouLearned: 'One write! can format many fields at once.',
         conceptId: 'display_trait',
       },
     ],
@@ -2848,6 +2985,32 @@ let x = slot.take();
     },
     sideQuiz: [
       {
+        prompt: 'A node links to the next via an optional boxed node. Fill the pointer type that makes the recursive type sized.',
+        template: `type Link = Option<_____<Node>>;`,
+        accepted: ['Box'],
+        acceptedPatterns: ['^Box$'],
+        hints: [
+          'A struct cannot contain itself directly.',
+          'Put it behind a Box, which has a known size.',
+        ],
+        explanation: 'A Node contains another Node via Option<Box<Node>>; Box is a heap pointer of fixed size, so the recursive type compiles.',
+        whatYouLearned: 'Box gives a recursive type a known size.',
+        conceptId: 'references',
+      },
+      {
+        prompt: 'A new Field starts empty. Fill the head value.',
+        template: `Field { head: _____ }`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: [
+          'An empty stack has no first node.',
+          'Use None.',
+        ],
+        explanation: 'An empty Field has no head, so head is None until something is pushed.',
+        whatYouLearned: 'None represents the empty end of a list.',
+        conceptId: 'option',
+      },
+      {
         prompt: 'push links the new node to the old head. Fill the call that moves the old head out, leaving None.',
         template: `let node = Box::new(Node { elem: target, next: self.head._____ });
 self.head = Some(node);`,
@@ -2856,6 +3019,36 @@ self.head = Some(node);`,
         hints: ['You need to move the old head out without cloning.', 'Option::take() leaves None behind.'],
         explanation: 'self.head.take() hands the old head to the new node’s next and resets head to None, after which we set head to the new node.',
         whatYouLearned: 'Option::take() moves a value out and leaves None.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Finish push: make the new node the head. Fill the Option variant wrapping it.',
+        template: `let node = Box::new(Node { elem: target, next: self.head.take() });
+self.head = _____(node);`,
+        accepted: ['Some'],
+        acceptedPatterns: ['^Some$'],
+        hints: [
+          'The head now holds a node.',
+          'Wrap it in Some.',
+        ],
+        explanation: 'After linking the new node to the old head, the head is set to Some(node) so the stack points at the new top.',
+        whatYouLearned: 'Some(node) marks the head as occupied.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'pop takes the head out and, if present, returns its value. Fill the Option adapter that transforms the taken node.',
+        template: `self.head.take()._____(|node| {
+    self.head = node.next;
+    node.elem
+})`,
+        accepted: ['map'],
+        acceptedPatterns: ['^map$'],
+        hints: [
+          'You want to transform Some(node) into Some(value), leaving None as None.',
+          'Use map.',
+        ],
+        explanation: 'take() removes the head; map runs only when there was a node, advancing the head to node.next and yielding node.elem.',
+        whatYouLearned: 'Option::map transforms the inner value when present.',
         conceptId: 'option',
       },
       {
@@ -2868,6 +3061,21 @@ self.head = Some(node);`,
         hints: ['You must not move the head out for a peek.', 'as_ref() turns &Option<T> into Option<&T>.'],
         explanation: 'as_ref() borrows the head without moving it, so map can hand back a reference to the contained Target.',
         whatYouLearned: 'as_ref() lets you look inside an Option by reference.',
+        conceptId: 'references',
+      },
+      {
+        prompt: 'peek_mut returns a mutable reference to the top Target. Fill the method that borrows the head mutably.',
+        template: `pub fn peek_mut(&mut self) -> Option<&mut Target> {
+    self.head._____().map(|node| &mut node.elem)
+}`,
+        accepted: ['as_mut'],
+        acceptedPatterns: ['^as_mut$'],
+        hints: [
+          'You need a mutable borrow, not a move or a shared borrow.',
+          'as_mut() turns &mut Option<T> into Option<&mut T>.',
+        ],
+        explanation: 'as_mut() borrows the head mutably so map can hand back a &mut to the contained Target for in-place editing.',
+        whatYouLearned: 'as_mut() gives a mutable peek into an Option.',
         conceptId: 'references',
       },
     ],
@@ -2949,6 +3157,83 @@ impl Counter {
 }`,
     },
     sideQuiz: [
+      {
+        prompt: 'sell_car leaves an empty Car behind. Fill the derive that lets Car be created with default values.',
+        template: `#[derive(Debug, _____, PartialEq, Eq)]
+pub struct Car {
+    pub color: String,
+    pub plate: String,
+}`,
+        accepted: ['Default'],
+        acceptedPatterns: ['^Default$'],
+        hints: [
+          'take() replaces the value with its default.',
+          'Derive Default.',
+        ],
+        explanation: 'Deriving Default lets RefCell::take() leave a Default::default() Car behind when the real one is sold.',
+        whatYouLearned: 'Derive Default to get a zero-value constructor.',
+        conceptId: 'structs',
+      },
+      {
+        prompt: 'The business must mutate its Car through a shared &self. Fill the wrapper that provides interior mutability.',
+        template: `pub struct RentalBusiness {
+    pub car: _____<Car>,
+}`,
+        accepted: ['RefCell'],
+        acceptedPatterns: ['^RefCell$'],
+        hints: [
+          'Mutating through &self needs interior mutability.',
+          'Use RefCell<Car>.',
+        ],
+        explanation: 'RefCell<Car> moves borrow checking to runtime, so the Car can change even when the business is only shared (&self).',
+        whatYouLearned: 'RefCell enables mutation behind a shared reference.',
+        conceptId: 'references',
+      },
+      {
+        prompt: 'rent_car returns a read guard. Fill the guard type for a shared borrow of the Car.',
+        template: `pub fn rent_car(&self) -> _____<'_, Car> {
+    self.car.borrow()
+}`,
+        accepted: ['Ref'],
+        acceptedPatterns: ['^Ref$'],
+        hints: [
+          'borrow() yields a shared guard.',
+          'The guard type is Ref (with a lifetime and the Car type).',
+        ],
+        explanation: 'borrow() returns a Ref guard granting read-only access; the guard releases the borrow when dropped.',
+        whatYouLearned: 'RefCell::borrow() yields a Ref read guard.',
+        conceptId: 'borrowing',
+      },
+      {
+        prompt: 'rent_car gives read-only access. Fill the RefCell method it calls.',
+        template: `pub fn rent_car(&self) -> Ref<'_, Car> {
+    self.car._____()
+}`,
+        accepted: ['borrow'],
+        acceptedPatterns: ['^borrow$'],
+        hints: [
+          'A shared, read-only borrow.',
+          'Call borrow().',
+        ],
+        explanation: 'borrow() hands out a shared Ref; many readers may borrow at once, but not while a borrow_mut is active.',
+        whatYouLearned: 'borrow() is the shared/read side of RefCell.',
+        conceptId: 'borrowing',
+      },
+      {
+        prompt: 'sell_car removes the Car (leaving a default). Fill the RefCell method that takes the value out.',
+        template: `pub fn sell_car(&self) -> Car {
+    self.car._____()
+}`,
+        accepted: ['take'],
+        acceptedPatterns: ['^take$'],
+        hints: [
+          'Move the value out, leaving Default in place.',
+          'RefCell::take() does this.',
+        ],
+        explanation: 'take() returns the current Car and stores a default one in its place — possible only because Car derives Default.',
+        whatYouLearned: 'RefCell::take() removes the value, leaving its default.',
+        conceptId: 'borrowing',
+      },
       {
         prompt: 'repair_car hands out a mutable borrow of the Car. Fill the RefCell method.',
         template: `pub fn repair_car(&self) -> RefMut<'_, Car> {
@@ -3046,6 +3331,82 @@ impl Drop for Guard {
 }`,
     },
     sideQuiz: [
+      {
+        prompt: 'The Blog counts drops behind a shared &self. Fill the cell type holding the Copy counter.',
+        template: `pub struct Blog {
+    pub drops: _____<usize>,
+    pub states: RefCell<Vec<bool>>,
+}`,
+        accepted: ['Cell'],
+        acceptedPatterns: ['^Cell$'],
+        hints: [
+          'A simple Copy value mutated through &self.',
+          'Use Cell<usize>.',
+        ],
+        explanation: 'drops is a Cell<usize>: Cell gives cheap interior mutability for Copy values like a counter, without runtime borrow tracking.',
+        whatYouLearned: 'Cell provides interior mutability for Copy values.',
+        conceptId: 'references',
+      },
+      {
+        prompt: 'An Article borrows its parent Blog. Fill the type it holds a reference to.',
+        template: `pub struct Article<'a> {
+    pub id: usize,
+    pub body: String,
+    pub parent: &'a _____,
+}`,
+        accepted: ['Blog'],
+        acceptedPatterns: ['^Blog$'],
+        hints: [
+          'The article points back at the thing that owns it.',
+          "It is &'a Blog.",
+        ],
+        explanation: "Article<'a> holds &'a Blog, so the lifetime 'a ties the article to a Blog that must outlive it.",
+        whatYouLearned: 'A lifetime parameter ties a borrowed reference to its owner.',
+        conceptId: 'lifetimes',
+      },
+      {
+        prompt: 'Creating an article records its initial (not-dropped) state. Fill the Vec method that adds it.',
+        template: `self.states.borrow_mut()._____(false);`,
+        accepted: ['push'],
+        acceptedPatterns: ['^push$'],
+        hints: [
+          'A new article starts not dropped.',
+          'push(false) onto the states vector.',
+        ],
+        explanation: 'Each new article appends a false (not dropped) to the states vector through a mutable borrow of the RefCell.',
+        whatYouLearned: 'borrow_mut() then push appends through a RefCell<Vec<_>>.',
+        conceptId: 'references',
+      },
+      {
+        prompt: 'The next id equals how many articles already exist. Fill the method that reads that count.',
+        template: `pub fn new_id(&self) -> usize {
+    self.states.borrow()._____()
+}`,
+        accepted: ['len'],
+        acceptedPatterns: ['^len$'],
+        hints: [
+          'Ids are assigned sequentially from 0.',
+          'The next id is the current length: len().',
+        ],
+        explanation: 'With ids handed out in order, the next id is simply states.len() — read via a shared borrow.',
+        whatYouLearned: 'A running count can serve as the next sequential id.',
+        conceptId: 'references',
+      },
+      {
+        prompt: 'Cleanup runs automatically at end of scope. Fill the trait implemented for Article.',
+        template: `impl<'a> _____ for Article<'a> {
+    fn drop(&mut self) { /* ... */ }
+}`,
+        accepted: ['Drop'],
+        acceptedPatterns: ['^Drop$'],
+        hints: [
+          'The trait whose method runs when a value is dropped.',
+          'It is Drop.',
+        ],
+        explanation: 'Implementing Drop for Article means Rust runs drop(&mut self) automatically when an article goes out of scope.',
+        whatYouLearned: 'Implement Drop to run code at end of scope.',
+        conceptId: 'traits',
+      },
       {
         prompt: 'When an Article is dropped it should tell its parent. Fill the body of drop.',
         template: `impl<'a> Drop for Article<'a> {
@@ -3151,6 +3512,32 @@ pub fn count(mut current: &Link) -> usize {
     },
     sideQuiz: [
       {
+        prompt: 'A person links to the next one. Fill the pointer type that makes the recursive Person sized.',
+        template: `pub type Link = Option<_____<Person>>;`,
+        accepted: ['Box'],
+        acceptedPatterns: ['^Box$'],
+        hints: [
+          'A Person cannot directly contain a Person.',
+          'Put it behind a Box.',
+        ],
+        explanation: 'Link is Option<Box<Person>>; Box is a fixed-size heap pointer, which lets the self-referential Person type compile.',
+        whatYouLearned: 'Box gives a recursive type a known size.',
+        conceptId: 'vecdeque',
+      },
+      {
+        prompt: 'A fresh queue is empty. Fill the node value.',
+        template: `Queue { node: _____ }`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: [
+          'No people are waiting yet.',
+          'Use None.',
+        ],
+        explanation: 'An empty queue has no first node, so node is None until someone is added.',
+        whatYouLearned: 'None is the empty end of the queue.',
+        conceptId: 'option',
+      },
+      {
         prompt: 'add inserts at the front, linking the new person to the old head. Fill the call that detaches the old head.',
         template: `let person = Box::new(Person { name, discount, next_person: self.node._____ });
 self.node = Some(person);`,
@@ -3159,6 +3546,20 @@ self.node = Some(person);`,
         hints: ['Move the old front out without cloning.', 'Option::take() leaves None behind.'],
         explanation: 'self.node.take() hands the previous front to the new person’s next_person and resets node, after which the new person becomes the front.',
         whatYouLearned: 'take() is the key move for restructuring linked lists.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Finish add: make the new person the front. Fill the Option variant wrapping them.',
+        template: `let person = Box::new(Person { name, discount, next_person: self.node.take() });
+self.node = _____(person);`,
+        accepted: ['Some'],
+        acceptedPatterns: ['^Some$'],
+        hints: [
+          'The front now holds a person.',
+          'Wrap it in Some.',
+        ],
+        explanation: 'After linking the new person to the previous front, node is set to Some(person) so the queue points at the new front.',
+        whatYouLearned: 'Some(node) marks the queue front as occupied.',
         conceptId: 'option',
       },
       {
@@ -3173,6 +3574,38 @@ self.node = Some(person);`,
         hints: ['Grab the remainder before you overwrite next_person.', 'boxed.next_person.take() detaches and returns the rest.'],
         explanation: 'take() moves the rest of the list into current before we flip boxed.next_person to point at prev, so no nodes are lost.',
         whatYouLearned: 'Reversing a list means saving "next" before re-pointing it.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'search walks the list node by node. Fill the method that advances to the next person without consuming the list.',
+        template: `let mut current = self.node.as_ref();
+while let Some(person) = current {
+    if person.name == name { /* found */ }
+    current = person.next_person._____();
+}`,
+        accepted: ['as_ref'],
+        acceptedPatterns: ['^as_ref$'],
+        hints: [
+          'You are only reading, so borrow rather than move.',
+          'as_ref() gives Option<&Box<Person>>.',
+        ],
+        explanation: 'as_ref() borrows the next link so the walk reads each node without taking ownership of the list.',
+        whatYouLearned: 'as_ref() traverses a linked list by shared reference.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'When the name matches, return the person details. Fill the Option variant wrapping the found pair.',
+        template: `if person.name == name {
+    return _____((&person.name, &person.discount));
+}`,
+        accepted: ['Some'],
+        acceptedPatterns: ['^Some$'],
+        hints: [
+          'A found result is present.',
+          'Wrap the tuple in Some.',
+        ],
+        explanation: 'On a match, search returns Some((&name, &discount)); if the loop ends with no match it returns None.',
+        whatYouLearned: 'Return Some(...) on success, None when nothing matches.',
         conceptId: 'option',
       },
     ],
