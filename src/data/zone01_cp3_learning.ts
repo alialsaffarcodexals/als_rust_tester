@@ -1457,6 +1457,40 @@ pub fn choose_outfit(formality_level: Option<u32>, invitation_message: Result<&s
     },
     sideQuiz: [
       {
+        prompt: 'Handle the special case first: no formality and an invalid invitation. Fill the Result check for "is an error".',
+        template: `if formality_level.is_none() && invitation_message._____() {
+    return Outfit { jacket: Jacket::Flowers, hat: Hat::Baseball };
+}`,
+        accepted: ['is_err'],
+        acceptedPatterns: ['^is_err$'],
+        hints: [
+          'Result has predicate methods is_ok and is_err.',
+          'You want the error case: is_err().',
+        ],
+        explanation:
+          'When there is no formality level AND the invitation is an error, the outfit is Flowers + Baseball — handled before any other rule.',
+        whatYouLearned: 'is_err() tests a Result for the error case without unwrapping it.',
+        conceptId: 'result',
+      },
+      {
+        prompt: 'When there is no formality level, the jacket is Flowers. Fill the None arm.',
+        template: `let jacket = match formality_level {
+    None => _____,
+    Some(level) if level > 0 => Jacket::White,
+    _ => Jacket::Black,
+};`,
+        accepted: ['Jacket::Flowers'],
+        acceptedPatterns: ['^Jacket::Flowers$'],
+        hints: [
+          'No formality information means the casual choice.',
+          'Return Jacket::Flowers.',
+        ],
+        explanation:
+          'A missing formality level (None) maps to the Flowers jacket; the other arms handle the present cases.',
+        whatYouLearned: 'Each match arm maps one input case to one result.',
+        conceptId: 'pattern_matching',
+      },
+      {
         prompt: 'Pick the jacket for a positive formality level. Fill the guard so it only matches levels above 0.',
         template: `let jacket = match formality_level {
     None => Jacket::Flowers,
@@ -1468,6 +1502,21 @@ pub fn choose_outfit(formality_level: Option<u32>, invitation_message: Result<&s
         hints: ['A match arm can carry a condition.', 'Add a guard: if level > 0.'],
         explanation: 'The guard if level > 0 makes this arm fire only for positive levels; Some(0) falls through to the _ arm (Black).',
         whatYouLearned: 'Match guards add a boolean condition to a pattern.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'A formality level of 0 should give the Black jacket. Fill the catch-all pattern for the remaining case.',
+        template: `Some(level) if level > 0 => Jacket::White,
+_____ => Jacket::Black,`,
+        accepted: ['_'],
+        acceptedPatterns: ['^_$'],
+        hints: [
+          'Some(0) is the only case left after None and Some(level > 0).',
+          'Use the wildcard pattern _ .',
+        ],
+        explanation:
+          'After None and the positive-level guard, the only remaining case is Some(0); the _ wildcard catches it and yields Black, keeping the match exhaustive.',
+        whatYouLearned: '_ catches every remaining case so the match compiles.',
         conceptId: 'pattern_matching',
       },
       {
@@ -1483,6 +1532,20 @@ pub fn choose_outfit(formality_level: Option<u32>, invitation_message: Result<&s
         explanation: 'is_ok() tells us the invitation was valid without unwrapping it, so we choose Fedora; otherwise Snapback.',
         whatYouLearned: 'is_ok()/is_err() inspect a Result without consuming it.',
         conceptId: 'result',
+      },
+      {
+        prompt: 'Assemble the final result from the two decisions. Fill the struct being returned.',
+        template: `_____ { jacket, hat }`,
+        accepted: ['Outfit'],
+        acceptedPatterns: ['^Outfit$'],
+        hints: [
+          'The function returns an outfit.',
+          'Build an Outfit struct with the chosen jacket and hat.',
+        ],
+        explanation:
+          'With jacket and hat decided, the function returns Outfit { jacket, hat } using field-init shorthand.',
+        whatYouLearned: 'Combine independent decisions into one returned struct.',
+        conceptId: 'structs',
       },
     ],
   },
@@ -1553,16 +1616,72 @@ impl OfficeOne {
     },
     sideQuiz: [
       {
-        prompt: 'Walk the whole chain in one expression. Fill the operator (after the first office) that unwraps each Ok and propagates any Err.',
-        template: `pub fn get_document_id(&self) -> Result<u32, ErrorOffice> {
-    self.next_office_____.next_office?.next_office?.document_id
+        prompt: 'The error type lists the ways an office can fail. Fill the keyword that defines such a fixed set of variants.',
+        template: `pub _____ ErrorOffice {
+    OfficeClose(u32),
+    OfficeNotFound(u32),
+    OfficeFull(u32),
 }`,
+        accepted: ['enum'],
+        acceptedPatterns: ['^enum$'],
+        hints: ['It is one of several named cases.', 'Define it with the enum keyword.'],
+        explanation: 'ErrorOffice is an enum: each variant is one kind of failure, carrying the id of the office that produced it.',
+        whatYouLearned: 'An enum models a fixed set of alternatives.',
+        conceptId: 'enums',
+      },
+      {
+        prompt: 'Each office points to the next one or fails. Fill the type that expresses "value or error".',
+        template: `pub struct OfficeOne {
+    pub next_office: _____<OfficeTwo, ErrorOffice>,
+}`,
+        accepted: ['Result'],
+        acceptedPatterns: ['^Result$'],
+        hints: ['Success or failure is modeled by one std type.', 'It is Result<T, E>.'],
+        explanation: 'next_office is a Result<OfficeTwo, ErrorOffice>: Ok holds the next office, Err holds the failure.',
+        whatYouLearned: 'Result<T, E> expresses an operation that can fail.',
+        conceptId: 'result',
+      },
+      {
+        prompt: 'Fill the error type in the method signature so it matches the offices.',
+        template: `pub fn get_document_id(&self) -> Result<u32, _____> {`,
+        accepted: ['ErrorOffice'],
+        acceptedPatterns: ['^ErrorOffice$'],
+        hints: ['The whole chain propagates the same error type.', 'It is ErrorOffice.'],
+        explanation: 'The method returns Result<u32, ErrorOffice>: the document id on success, or the first office error encountered.',
+        whatYouLearned: 'The function error type must match what ? propagates.',
+        conceptId: 'result',
+      },
+      {
+        prompt: 'Walk the chain in one expression. Fill the operator (after the first office) that unwraps each Ok and propagates any Err.',
+        template: `self.next_office_____.next_office?.next_office?.document_id`,
         accepted: ['?'],
         acceptedPatterns: ['^\\?$'],
         hints: ['One punctuation mark unwraps a Result or returns early.', 'It is the ? operator.'],
-        explanation: 'The ? operator yields the inner value on Ok, or returns the Err from the function. Chaining ? walks office to office until the final document_id Result.',
+        explanation: 'The ? operator yields the inner value on Ok, or returns the Err from the whole function. Chaining ? walks office to office.',
         whatYouLearned: 'The ? operator replaces a tower of matches with one line.',
         conceptId: 'error_handling',
+      },
+      {
+        prompt: 'The chain ends at the document id. Fill the final field (already a Result).',
+        template: `self.next_office?.next_office?.next_office?._____`,
+        accepted: ['document_id'],
+        acceptedPatterns: ['^document_id$'],
+        hints: ['The last office holds the answer.', 'Its field is document_id.'],
+        explanation: 'The fourth office document_id is itself a Result<u32, ErrorOffice>, so it is returned directly as the method result.',
+        whatYouLearned: 'A trailing Result field can be returned without another ?.',
+        conceptId: 'result',
+      },
+      {
+        prompt: 'To hand back a success value explicitly, you wrap it. Fill the Result variant.',
+        template: `fn ready(id: u32) -> Result<u32, ErrorOffice> {
+    _____(id)
+}`,
+        accepted: ['Ok'],
+        acceptedPatterns: ['^Ok$'],
+        hints: ['Success in a Result is the Ok variant.', 'Wrap the value: Ok(id).'],
+        explanation: 'A successful Result is built with Ok(value); the ? operator is the inverse — it unwraps an Ok.',
+        whatYouLearned: 'Ok(x) constructs the success side of a Result.',
+        conceptId: 'result',
       },
     ],
   },
@@ -1667,6 +1786,61 @@ format!("minus {}", spell((_____) as u64))`,
         whatYouLearned: 'Separate the sign from the magnitude, then recombine.',
         conceptId: 'pattern_matching',
       },
+      {
+        prompt: 'Numbers under 20 are a direct table lookup. Fill the method that turns the looked-up word into an owned String.',
+        template: `if n < 20 {
+    return ones[n as usize]._____();
+}`,
+        accepted: ['to_string'],
+        acceptedPatterns: ['^to_string$'],
+        hints: [
+          'ones[..] is a &str; the function returns a String.',
+          'Convert with to_string().',
+        ],
+        explanation: 'For 0..20 the word is a direct array lookup; to_string() converts the &str into the owned String the function returns.',
+        whatYouLearned: 'to_string() turns a &str into an owned String.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'For 20..100, pick the tens word. Fill the divisor that selects the tens digit.',
+        template: `let t = tens[(n / _____) as usize];`,
+        accepted: ['10'],
+        acceptedPatterns: ['^10$'],
+        hints: [
+          'You want the tens digit of n.',
+          'Integer-divide by 10.',
+        ],
+        explanation: 'n / 10 drops the ones digit, giving the tens index — e.g. 45 / 10 = 4 selects "forty".',
+        whatYouLearned: 'Integer division extracts higher-place digits.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Join tens and ones with a hyphen. Fill the operator that gets the ones digit.',
+        template: `format!("{}-{}", t, ones[(n _____ 10) as usize])`,
+        accepted: ['%'],
+        acceptedPatterns: ['^%$'],
+        hints: [
+          'You want the remainder after dividing by 10.',
+          'Use the modulo operator %.',
+        ],
+        explanation: 'n % 10 is the ones digit, so forty (n/10) plus five (n%10) becomes "forty-five".',
+        whatYouLearned: 'Modulo extracts the lowest digit.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Larger numbers are spelled by recursion. Fill the function called on the remainder.',
+        template: `// for hundreds: "X hundred" then the rest
+format!("{} {}", h, _____(n % 100))`,
+        accepted: ['spell'],
+        acceptedPatterns: ['^spell$'],
+        hints: [
+          'The same helper handles whatever is left over.',
+          'Call spell recursively.',
+        ],
+        explanation: 'After naming the hundreds, spell(n % 100) recursively names the remaining two digits — the recursion that scales to thousands and millions.',
+        whatYouLearned: 'Recursion breaks a big number into smaller named parts.',
+        conceptId: 'pattern_matching',
+      },
     ],
   },
 
@@ -1738,6 +1912,22 @@ impl Queen {
     },
     sideQuiz: [
       {
+        prompt: 'A board position needs a row and a column. Fill the type of the file (column) field.',
+        template: `pub struct ChessPosition {
+    pub rank: usize,
+    pub file: _____,
+}`,
+        accepted: ['usize'],
+        acceptedPatterns: ['^usize,?$'],
+        hints: [
+          'Both coordinates are non-negative indices.',
+          'Use usize, like rank.',
+        ],
+        explanation: 'rank and file are board indices, so both are usize — non-negative whole numbers.',
+        whatYouLearned: 'usize is the natural type for indices and sizes.',
+        conceptId: 'structs',
+      },
+      {
         prompt: 'Only on-board coordinates are valid. Fill the condition for ChessPosition::new to return Some.',
         template: `pub fn new(rank: usize, file: usize) -> Option<Self> {
     if _____ {
@@ -1754,6 +1944,23 @@ impl Queen {
         conceptId: 'option',
       },
       {
+        prompt: 'Off-board coordinates are rejected. Fill the else branch of ChessPosition::new.',
+        template: `if rank < 8 && file < 8 {
+    Some(ChessPosition { rank, file })
+} else {
+    _____
+}`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: [
+          'An invalid position has no value.',
+          'Return None.',
+        ],
+        explanation: 'Coordinates outside the 8x8 board cannot form a valid position, so new returns None for them.',
+        whatYouLearned: 'None signals construction failed validation.',
+        conceptId: 'option',
+      },
+      {
         prompt: 'Two queens attack on a diagonal when the row distance equals the column distance. Fill the diagonal test.',
         template: `// r1,f1,r2,f2 are i64
 r1 == r2 || f1 == f2 || _____`,
@@ -1762,6 +1969,32 @@ r1 == r2 || f1 == f2 || _____`,
         hints: ['A diagonal has equal vertical and horizontal distance.', 'Compare (r1 - r2).abs() with (f1 - f2).abs().'],
         explanation: 'Same rank or same file covers straight lines; equal absolute differences covers diagonals. Casting to i64 first lets the subtraction go negative safely.',
         whatYouLearned: 'Cast unsigned coordinates to signed before subtracting.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Why cast at all? Fill the signed type the coordinates are converted to before subtracting.',
+        template: `let (r1, f1) = (self.position.rank as _____, self.position.file as i64);`,
+        accepted: ['i64'],
+        acceptedPatterns: ['^i64$'],
+        hints: [
+          'usize subtraction can underflow when the second value is larger.',
+          'Cast to a signed type: i64.',
+        ],
+        explanation: 'Casting usize coordinates to i64 lets (r1 - r2) go negative safely, so .abs() measures the true distance.',
+        whatYouLearned: 'Convert to signed before a subtraction that may go negative.',
+        conceptId: 'structs',
+      },
+      {
+        prompt: 'Assemble the full attack rule: same rank, same file, or same diagonal. Fill the diagonal test.',
+        template: `r1 == r2 || f1 == f2 || _____`,
+        accepted: ['(r1 - r2).abs() == (f1 - f2).abs()'],
+        acceptedPatterns: ['^\\(r1\\s*-\\s*r2\\)\\.abs\\(\\)\\s*==\\s*\\(f1\\s*-\\s*f2\\)\\.abs\\(\\)$'],
+        hints: [
+          'A diagonal has equal vertical and horizontal distance.',
+          'Compare (r1 - r2).abs() with (f1 - f2).abs().',
+        ],
+        explanation: 'The complete rule ORs three cases: same rank, same file, or equal absolute differences (a diagonal). Any one makes the queens attack.',
+        whatYouLearned: 'Combine independent conditions with || for the final rule.',
         conceptId: 'pattern_matching',
       },
     ],
