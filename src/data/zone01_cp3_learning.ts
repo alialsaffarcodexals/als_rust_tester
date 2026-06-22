@@ -177,6 +177,26 @@ if _____ {
         conceptId: 'cli_args',
       },
       {
+        prompt: 'Before applying an operator you must have two operands waiting. Fill the guard that rejects a malformed expression.',
+        template: `"+" | "-" | "*" | "/" | "%" => {
+    if _____ {
+        return Err(());
+    }
+    let b = stack.pop().unwrap();
+    let a = stack.pop().unwrap();
+}`,
+        accepted: ['stack.len() < 2'],
+        acceptedPatterns: ['^stack\\.len\\(\\)\\s*<\\s*2$'],
+        hints: [
+          'An operator needs two numbers already on the stack.',
+          'If fewer than 2 are present the expression is invalid.',
+        ],
+        explanation:
+          'Applying an operator with fewer than two operands means the input was malformed, so we return Err before popping anything.',
+        whatYouLearned: 'Guard the stack depth before every operator.',
+        conceptId: 'error_handling',
+      },
+      {
         prompt: 'An operator pops the top two operands. We popped b first; now pop the second operand a.',
         template: `let b = stack.pop().unwrap();
 let a = _____;
@@ -212,6 +232,23 @@ let result = a - b;  // order matters: a is the left operand`,
           'The % operator computes the remainder of a divided by b. It is required by the spec and easy to forget.',
         whatYouLearned: 'All five operators (+, -, *, /, %) must be handled.',
         conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'A token that is not an operator must be a number. Fill what happens when parsing fails.',
+        template: `num => match num.parse::<i64>() {
+    Ok(n) => stack.push(n),
+    Err(_) => _____,
+}`,
+        accepted: ['return Err(())'],
+        acceptedPatterns: ['^return Err\\(\\(\\)\\)$'],
+        hints: [
+          'An unparseable token (like "ksd") is invalid input.',
+          'Bail out of the function with return Err(()).',
+        ],
+        explanation:
+          'Every non-operator token is parsed as an i64; if parsing fails the expression is invalid, so we return Err immediately.',
+        whatYouLearned: 'Reject unknown tokens by propagating an error.',
+        conceptId: 'error_handling',
       },
       {
         prompt: 'After processing every token a valid expression leaves exactly one value on the stack. Fill the count to check for.',
@@ -407,6 +444,22 @@ let mut counts: HashMap<String, u32> = _____;`,
         conceptId: 'collections',
       },
       {
+        prompt: 'Loop over the words in the text. Fill the iterator that yields whitespace-separated words.',
+        template: `for word in words._____() {
+    // count each word
+}`,
+        accepted: ['split_whitespace'],
+        acceptedPatterns: ['^split_whitespace$'],
+        hints: [
+          'The standard library can split on any run of whitespace.',
+          'split_whitespace() yields each word and skips empty pieces.',
+        ],
+        explanation:
+          'split_whitespace() breaks the text into words on any ASCII whitespace (spaces, tabs, newlines), which is exactly how words are separated here.',
+        whatYouLearned: 'split_whitespace() iterates the words of a string.',
+        conceptId: 'iterators',
+      },
+      {
         prompt: 'Lowercase the word so that "Hello" and "hello" count as one.',
         template: `let key = word._____();`,
         accepted: ['to_lowercase'],
@@ -424,6 +477,35 @@ let mut counts: HashMap<String, u32> = _____;`,
         hints: ['The entry API returns whatever is there, or lets you supply a default.', 'or_insert(0) inserts 0 the first time, then returns a mutable reference.'],
         explanation: 'entry(key).or_insert(0) gives a &mut to the count (starting at 0); the leading * dereferences it so += 1 updates the stored value.',
         whatYouLearned: 'entry(...).or_insert(...) is the canonical insert-or-update idiom.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'or_insert(0) returns a mutable reference. Fill the symbol that dereferences it so += 1 updates the stored count.',
+        template: `_____counts.entry(key).or_insert(0) += 1;`,
+        accepted: ['*'],
+        acceptedPatterns: ['^\\*$'],
+        hints: [
+          'or_insert returns &mut u32, not u32.',
+          'Dereference the reference with * before += .',
+        ],
+        explanation:
+          'or_insert hands back a mutable reference; the leading * dereferences it so += 1 modifies the value stored in the map.',
+        whatYouLearned: 'Dereference a &mut with * to modify what it points to.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'Finish the function. Fill what it returns after the loop.',
+        template: `// after counting every word
+_____`,
+        accepted: ['counts'],
+        acceptedPatterns: ['^counts$'],
+        hints: [
+          'The function returns the populated map.',
+          'Return counts (no semicolon = return value).',
+        ],
+        explanation:
+          'After the loop the map holds every word and its count, so the function’s final expression is counts.',
+        whatYouLearned: 'A function’s last expression (no semicolon) is its return value.',
         conceptId: 'collections',
       },
     ],
@@ -507,6 +589,20 @@ $ cargo run
         conceptId: 'iterators',
       },
       {
+        prompt: 'Guard against overflow at i32::MIN. Fill the wider signed type we cast to before calling abs().',
+        template: `let abs = (v as _____).abs();`,
+        accepted: ['i64'],
+        acceptedPatterns: ['^i64$'],
+        hints: [
+          'i32::MIN has no positive counterpart inside i32.',
+          'Cast to a wider signed type first: i64.',
+        ],
+        explanation:
+          '(i32::MIN).abs() would overflow because +2147483648 is out of i32 range; widening to i64 first makes abs() safe for every input.',
+        whatYouLearned: 'Widen before abs() to avoid overflow at i32::MIN.',
+        conceptId: 'error_handling',
+      },
+      {
         prompt: 'Reverse the characters of the digit string.',
         template: `let reversed: String = original.chars()._____.collect();`,
         accepted: ['rev()'],
@@ -515,6 +611,20 @@ $ cargo run
         explanation: 'chars() makes an iterator of characters, rev() reverses it, and collect() gathers them into a new String.',
         whatYouLearned: '.rev() reverses any double-ended iterator.',
         conceptId: 'iterators',
+      },
+      {
+        prompt: 'Build the leading sign. Fill the else branch (empty for non-negative numbers).',
+        template: `let sign = if v < 0 { "-" } else { _____ };`,
+        accepted: ['""'],
+        acceptedPatterns: ['^""$'],
+        hints: [
+          'Positive numbers get no sign.',
+          'Use an empty string "".',
+        ],
+        explanation:
+          'Negative inputs get a "-" prefix; everything else contributes an empty string, so only negatives show a sign. if/else is an expression that yields the chosen text.',
+        whatYouLearned: 'if/else is an expression that produces a value.',
+        conceptId: 'pattern_matching',
       },
       {
         prompt: 'Append the original number after the reversed digits.',
@@ -636,6 +746,35 @@ Calling inv_pyramid with a string and a size returns the lines of the pyramid, w
         whatYouLearned: '.rev() walks a range from high to low.',
         conceptId: 'iterators',
       },
+      {
+        prompt: 'Collect each line into the result. Fill the Vec method that appends a line.',
+        template: `result._____(format!("{}{}", " ".repeat(k), v.repeat(k)));`,
+        accepted: ['push'],
+        acceptedPatterns: ['^push$'],
+        hints: [
+          'A Vec grows from the back.',
+          'Use push to append one element.',
+        ],
+        explanation:
+          'Each formatted line is appended to the result vector with push, building the pyramid line by line.',
+        whatYouLearned: 'Vec::push appends a single element.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'Finish the function. Fill what it returns (the pyramid of 2*i-1 lines).',
+        template: `// after the ascending and descending loops
+_____`,
+        accepted: ['result'],
+        acceptedPatterns: ['^result$'],
+        hints: [
+          'Return the collected lines.',
+          'The variable holding them is result.',
+        ],
+        explanation:
+          'Both loops have filled result with the ascending then descending lines, so the function returns result.',
+        whatYouLearned: 'Return the accumulated Vec as the final expression.',
+        conceptId: 'collections',
+      },
     ],
   },
 
@@ -754,6 +893,38 @@ while _____ {
         conceptId: 'error_handling',
       },
       {
+        prompt: 'Inside the loop, a clean divisor means n is composite. Fill the value returned.',
+        template: `if n % i == 0 {
+    return _____;
+}`,
+        accepted: ['false'],
+        acceptedPatterns: ['^false$'],
+        hints: [
+          'If i divides n with no remainder, n is not prime.',
+          'Return false immediately.',
+        ],
+        explanation:
+          'A divisor other than 1 and n proves n is composite, so the helper returns false at once.',
+        whatYouLearned: 'Exit early as soon as the answer is known.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'If the loop finds no divisor, n is prime. Fill the value the helper returns.',
+        template: `    // no divisor found
+    _____
+}`,
+        accepted: ['true'],
+        acceptedPatterns: ['^true$'],
+        hints: [
+          'Reaching here means nothing divided n.',
+          'Return true.',
+        ],
+        explanation:
+          'If no divisor was found up to the square root, n has no factors other than 1 and itself, so it is prime.',
+        whatYouLearned: 'The loop falling through means the predicate holds.',
+        conceptId: 'error_handling',
+      },
+      {
         prompt: 'Search upward from nbr until is_prime holds. Fill the step that advances the candidate.',
         template: `let mut n = nbr;
 while !is_prime(n) {
@@ -852,6 +1023,20 @@ parts_sums(&[3, 5, 8]) returns [16, 8, 3, 0].`,
         conceptId: 'iterators',
       },
       {
+        prompt: 'A prefix is a sub-slice of the first k elements. Fill the range used to take it.',
+        template: `let total: u64 = v[.._____].iter().sum();`,
+        accepted: ['k'],
+        acceptedPatterns: ['^k$'],
+        hints: [
+          'You want elements 0 up to (but not including) k.',
+          'The range is ..k, so the index is k.',
+        ],
+        explanation:
+          'v[..k] borrows the first k elements as a slice; summing it gives the partial sum for that prefix size.',
+        whatYouLearned: 'v[..k] is the slice of the first k elements.',
+        conceptId: 'references',
+      },
+      {
         prompt: 'Iterate prefix sizes from len down to 0. Fill the reversed inclusive range.',
         template: `for k in _____.rev() {
     sums.push(v[..k].iter().sum());
@@ -862,6 +1047,35 @@ parts_sums(&[3, 5, 8]) returns [16, 8, 3, 0].`,
         explanation: '(0..=v.len()).rev() yields len, len-1, ..., 0, so the first push is the full sum and the last is the empty-slice sum (0).',
         whatYouLearned: 'Inclusive ranges plus .rev() count down including both ends.',
         conceptId: 'iterators',
+      },
+      {
+        prompt: 'Inside the loop, store each partial sum. Fill the Vec method that appends it.',
+        template: `sums._____(v[..k].iter().sum());`,
+        accepted: ['push'],
+        acceptedPatterns: ['^push$'],
+        hints: [
+          'A Vec grows from the back.',
+          'Use push to append the computed sum.',
+        ],
+        explanation:
+          'Each prefix sum is appended to sums with push, building the result largest-first down to the trailing 0.',
+        whatYouLearned: 'Vec::push appends one element.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'Finish the function. Fill what it returns.',
+        template: `// after the loop
+_____`,
+        accepted: ['sums'],
+        acceptedPatterns: ['^sums$'],
+        hints: [
+          'Return the vector you built.',
+          'The variable is sums.',
+        ],
+        explanation:
+          'The loop has filled sums with every partial total, so the function returns sums.',
+        whatYouLearned: 'Return the accumulated Vec as the final expression.',
+        conceptId: 'collections',
       },
     ],
   },
@@ -935,6 +1149,44 @@ prev_prime(13) returns 13, prev_prime(10) returns 7, prev_prime(1) returns 0.`,
     },
     sideQuiz: [
       {
+        prompt: 'The primality helper rejects small numbers. Fill the condition that means "not prime".',
+        template: `fn is_prime(n: u64) -> bool {
+    if _____ {
+        return false;
+    }
+    // ... divisor checks ...
+    true
+}`,
+        accepted: ['n < 2'],
+        acceptedPatterns: ['^n\\s*<\\s*2$'],
+        hints: [
+          '0 and 1 are not prime.',
+          'Reject anything below 2.',
+        ],
+        explanation:
+          'The smallest prime is 2, so any n below 2 is immediately not prime.',
+        whatYouLearned: 'Handle edge cases before the main loop.',
+        conceptId: 'error_handling',
+      },
+      {
+        prompt: 'Only check divisors up to the square root. Fill the loop bound.',
+        template: `let mut i = 2;
+while _____ {
+    if n % i == 0 { return false; }
+    i += 1;
+}`,
+        accepted: ['i * i <= n'],
+        acceptedPatterns: ['^i\\s*\\*\\s*i\\s*<=\\s*n$'],
+        hints: [
+          'A factor larger than sqrt(n) pairs with a smaller one.',
+          'Compare i*i with n instead of taking a square root.',
+        ],
+        explanation:
+          'Checking divisors only up to sqrt(n) (i*i <= n) is enough and far faster than going all the way to n.',
+        whatYouLearned: 'The square-root bound makes primality testing efficient.',
+        conceptId: 'error_handling',
+      },
+      {
         prompt: 'Return immediately when the current candidate is prime.',
         template: `let mut n = nbr;
 loop {
@@ -963,6 +1215,21 @@ n -= 1;`,
         explanation: 'u64 cannot go below 0, so we must return before n -= 1 would underflow. Reaching 0 means no prime was found.',
         whatYouLearned: 'Unsigned subtraction needs an explicit lower-bound guard.',
         conceptId: 'error_handling',
+      },
+      {
+        prompt: 'After the guard, move to the next lower candidate. Fill the step-down operator.',
+        template: `if n == 0 { return 0; }
+n _____ 1;`,
+        accepted: ['-='],
+        acceptedPatterns: ['^-=$'],
+        hints: [
+          'You want to decrease n by one.',
+          'Use the compound subtraction operator -= .',
+        ],
+        explanation:
+          'After confirming n is not yet 0, n -= 1 steps down to the next candidate and the loop tries again.',
+        whatYouLearned: 'Searching downward decrements until a prime is found.',
+        conceptId: 'pattern_matching',
       },
     ],
   },
@@ -1036,6 +1303,24 @@ pub fn check_user_name(user: &User) -> (bool, &str)
     },
     sideQuiz: [
       {
+        prompt: 'The access level is one of three kinds. Fill the missing variant.',
+        template: `pub enum AccessLevel {
+    Guest,
+    Normal,
+    _____,
+}`,
+        accepted: ['Admin'],
+        acceptedPatterns: ['^Admin,?$'],
+        hints: [
+          'A guest, a normal user, and one more privileged role.',
+          'The third variant is Admin.',
+        ],
+        explanation:
+          'AccessLevel enumerates the three roles; Admin is the privileged one alongside Guest and Normal.',
+        whatYouLearned: 'An enum lists the fixed set of variants a value can be.',
+        conceptId: 'enums',
+      },
+      {
         prompt: 'A guest hides their name. Fill the value send_name returns for a Guest.',
         template: `pub fn send_name(&self) -> Option<&str> {
     match self.access_level {
@@ -1051,6 +1336,23 @@ pub fn check_user_name(user: &User) -> (bool, &str)
         conceptId: 'option',
       },
       {
+        prompt: 'Non-guests may share their name. Fill the value send_name returns for them.',
+        template: `match self.access_level {
+    AccessLevel::Guest => None,
+    _ => _____,
+}`,
+        accepted: ['Some(&self.name)'],
+        acceptedPatterns: ['^Some\\(&self\\.name\\)$'],
+        hints: [
+          'A present value is wrapped in Some.',
+          'Borrow the name: Some(&self.name).',
+        ],
+        explanation:
+          'For Normal and Admin the name is available, so send_name returns Some(&self.name) — a borrowed string, not an owned copy.',
+        whatYouLearned: 'Some(x) wraps a value that is present.',
+        conceptId: 'option',
+      },
+      {
         prompt: 'Turn the Option from send_name into the result tuple. Fill the None arm.',
         template: `match user.send_name() {
     Some(name) => (true, name),
@@ -1061,6 +1363,23 @@ pub fn check_user_name(user: &User) -> (bool, &str)
         hints: ['The tuple is (bool, &str).', 'A guest gives (false, "ERROR: User is guest").'],
         explanation: 'When send_name is None the user is a guest, so we report (false, error message); a present name gives (true, name).',
         whatYouLearned: 'match converts an Option into whatever shape you need.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Build the success case. Fill the Some arm of check_user_name.',
+        template: `match user.send_name() {
+    Some(name) => _____,
+    None => (false, "ERROR: User is guest"),
+}`,
+        accepted: ['(true, name)'],
+        acceptedPatterns: ['^\\(true,\\s*name\\)$'],
+        hints: [
+          'The tuple is (bool, &str).',
+          'A present name gives (true, name).',
+        ],
+        explanation:
+          'When send_name yields Some(name) the user is allowed, so we return (true, name); the None arm returns the guest error.',
+        whatYouLearned: 'Each match arm produces the same result type.',
         conceptId: 'pattern_matching',
       },
     ],
