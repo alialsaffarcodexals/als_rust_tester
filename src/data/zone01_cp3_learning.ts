@@ -2065,6 +2065,21 @@ pub fn scytale_decoder(s: String, letters_per_turn: usize) -> Option<String>
     },
     sideQuiz: [
       {
+        prompt: 'Reject the impossible inputs first. Fill what is returned for an empty message or zero columns.',
+        template: `if s.is_empty() || letters_per_turn == 0 {
+    return _____;
+}`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: [
+          'There is nothing to decode in these cases.',
+          'Return None.',
+        ],
+        explanation: 'An empty message or a column count of zero cannot describe a grid, so the decoder bails out with None.',
+        whatYouLearned: 'Validate the easy impossible cases before any work.',
+        conceptId: 'option',
+      },
+      {
         prompt: 'The grid must be a clean rectangle. Fill the condition that rejects a non-divisible length.',
         template: `let len = s.chars().count();
 if _____ {
@@ -2076,6 +2091,32 @@ if _____ {
         explanation: 'If the length is not a multiple of the column count the grid is ragged and cannot be decoded, so we return None.',
         whatYouLearned: 'The modulo operator checks divisibility.',
         conceptId: 'option',
+      },
+      {
+        prompt: 'Work out the grid height. Fill the divisor that gives the number of rows.',
+        template: `let rows = len / _____;`,
+        accepted: ['letters_per_turn'],
+        acceptedPatterns: ['^letters_per_turn$'],
+        hints: [
+          'Total letters divided by columns gives rows.',
+          'Divide by letters_per_turn.',
+        ],
+        explanation: 'len / letters_per_turn is the number of rows in the grid, since each row holds letters_per_turn characters.',
+        whatYouLearned: 'Grid height = total / width.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'Index the message as characters, not bytes. Fill the consumer that gathers them into a Vec<char>.',
+        template: `let chars: Vec<char> = s.chars()._____;`,
+        accepted: ['collect()'],
+        acceptedPatterns: ['^collect\\(\\)$'],
+        hints: [
+          'chars() is an iterator; you want a Vec.',
+          'Finish with collect().',
+        ],
+        explanation: 'Collecting into Vec<char> lets us index the grid by (row, col); using chars avoids byte-vs-character bugs.',
+        whatYouLearned: 'Collect chars into a Vec for random access.',
+        conceptId: 'collections',
       },
       {
         prompt: 'Read the grid column by column. Fill the flat index for the character at (row, col).',
@@ -2090,6 +2131,20 @@ if _____ {
         explanation: 'Since encoding wrote rows of letters_per_turn characters, the cell (row, col) is at row * letters_per_turn + col. Iterating col-major undoes the cipher.',
         whatYouLearned: 'Row-major flattening: index = row * width + col.',
         conceptId: 'collections',
+      },
+      {
+        prompt: 'Return the decoded text. Fill the Option variant that wraps a successful result.',
+        template: `// result holds the decoded message
+_____(result)`,
+        accepted: ['Some'],
+        acceptedPatterns: ['^Some$'],
+        hints: [
+          'Success in an Option is wrapped.',
+          'Use Some(result).',
+        ],
+        explanation: 'After all validations pass and the grid is read column by column, the decoded String is returned as Some(result).',
+        whatYouLearned: 'Some(x) wraps the successful result of an Option-returning function.',
+        conceptId: 'option',
       },
     ],
   },
@@ -2160,6 +2215,32 @@ A 2x2 matrix prints as two lines like "(1 2)" and "(3 4)".`,
     },
     sideQuiz: [
       {
+        prompt: 'A Matrix wraps rows of numbers. Fill the element type stored in the grid.',
+        template: `pub struct Matrix(pub Vec<Vec<_____>>);`,
+        accepted: ['i32'],
+        acceptedPatterns: ['^i32$'],
+        hints: [
+          'The cells are whole signed numbers.',
+          'Use i32.',
+        ],
+        explanation: 'Matrix is a tuple struct wrapping a Vec of rows, each a Vec<i32> of cell values.',
+        whatYouLearned: 'A tuple struct gives a name to a wrapped type.',
+        conceptId: 'structs',
+      },
+      {
+        prompt: 'Implement Display. Fill the return type of the fmt method.',
+        template: `fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::_____ {`,
+        accepted: ['Result'],
+        acceptedPatterns: ['^Result$'],
+        hints: [
+          'Formatting can fail, so it returns a Result.',
+          'The type is fmt::Result.',
+        ],
+        explanation: 'Display::fmt returns fmt::Result, which write! produces — propagating any formatting error.',
+        whatYouLearned: 'Display::fmt returns fmt::Result.',
+        conceptId: 'display_trait',
+      },
+      {
         prompt: 'Wrap a row of stringified cells. Fill the format so it becomes "(a b c)".',
         template: `let cells: Vec<String> = row.iter().map(|n| n.to_string()).collect();
 let line = format!("(_____)", cells.join(" "));`,
@@ -2169,6 +2250,19 @@ let line = format!("(_____)", cells.join(" "));`,
         explanation: 'The literal parentheses surround a {} placeholder, which is filled by the space-joined cells, giving "(1 2 3)".',
         whatYouLearned: 'format! mixes literal text with {} placeholders.',
         conceptId: 'display_trait',
+      },
+      {
+        prompt: 'Turn each number into text before joining. Fill the method that stringifies a number.',
+        template: `let cells: Vec<String> = row.iter().map(|n| n._____()).collect();`,
+        accepted: ['to_string'],
+        acceptedPatterns: ['^to_string$'],
+        hints: [
+          'You need each i32 as a String.',
+          'Use to_string().',
+        ],
+        explanation: 'Mapping each number through to_string() produces the Vec<String> that join(" ") then stitches into a row.',
+        whatYouLearned: 'map(|n| n.to_string()) converts a row of numbers to strings.',
+        conceptId: 'iterators',
       },
       {
         prompt: 'Inside fmt, send the joined lines to the formatter. Fill the macro used (not println!).',
@@ -2260,6 +2354,38 @@ impl From<&str> for Point {
     },
     sideQuiz: [
       {
+        prompt: 'A conversion from text is the From trait. Fill the trait being implemented.',
+        template: `impl _____<&str> for WorkerRole {
+    fn from(s: &str) -> Self { /* ... */ }
+}`,
+        accepted: ['From'],
+        acceptedPatterns: ['^From$'],
+        hints: [
+          'It converts a &str into a WorkerRole.',
+          'Implement From<&str>.',
+        ],
+        explanation: 'Implementing From<&str> for WorkerRole gives an ergonomic conversion (and .into() for free).',
+        whatYouLearned: 'From<T> defines how to build a type from a T.',
+        conceptId: 'traits',
+      },
+      {
+        prompt: 'Map the "admin" word to its variant. Fill the WorkerRole variant.',
+        template: `match s {
+    "admin" => WorkerRole::_____,
+    "user" => WorkerRole::User,
+    _ => WorkerRole::Guest,
+}`,
+        accepted: ['Admin'],
+        acceptedPatterns: ['^Admin,?$'],
+        hints: [
+          'The privileged role.',
+          'It is WorkerRole::Admin.',
+        ],
+        explanation: 'Each known word maps to its variant; "admin" becomes WorkerRole::Admin.',
+        whatYouLearned: 'match maps string keys to enum variants.',
+        conceptId: 'enums',
+      },
+      {
         prompt: 'Map a role word to its variant. Fill the catch-all arm so unknown words become Guest.',
         template: `match s {
     "admin" => WorkerRole::Admin,
@@ -2281,6 +2407,36 @@ impl From<&str> for Point {
         hints: ['The fields are comma-separated.', 'Split on the character literal \',\'.'],
         explanation: "s.split(',') breaks the string at each comma; collecting gives [name, age, role] for indexing.",
         whatYouLearned: 'str::split takes a pattern such as a char to break a string into pieces.',
+        conceptId: 'traits',
+      },
+      {
+        prompt: 'The age field arrives as text. Fill the method that converts it to a number.',
+        template: `OfficeWorker {
+    name: parts[0].to_string(),
+    age: parts[1]._____().unwrap(),
+    role: WorkerRole::from(parts[2]),
+}`,
+        accepted: ['parse'],
+        acceptedPatterns: ['^parse$'],
+        hints: [
+          'A &str becomes a number via one method.',
+          'Use parse() (its target type is inferred from the field).',
+        ],
+        explanation: 'parts[1].parse().unwrap() turns the age text into the numeric age field; the field type tells parse what to produce.',
+        whatYouLearned: 'str::parse converts text into a number.',
+        conceptId: 'traits',
+      },
+      {
+        prompt: 'Reuse the role conversion you wrote earlier. Fill the From method that turns the third part into a WorkerRole.',
+        template: `role: WorkerRole::_____(parts[2]),`,
+        accepted: ['from'],
+        acceptedPatterns: ['^from$'],
+        hints: [
+          'You implemented From<&str> for WorkerRole.',
+          'Call WorkerRole::from(parts[2]).',
+        ],
+        explanation: 'WorkerRole::from(parts[2]) reuses the role conversion, so building the worker composes the two From impls.',
+        whatYouLearned: 'From impls compose: one conversion can call another.',
         conceptId: 'traits',
       },
     ],
@@ -2351,6 +2507,35 @@ impl<T: Add<Output = T> + Copy> Garage<T> { ... }
     },
     sideQuiz: [
       {
+        prompt: 'Each side of the garage may be empty. Fill the type wrapping the left value.',
+        template: `pub struct Garage<T> {
+    pub left: _____<T>,
+    pub right: Option<T>,
+}`,
+        accepted: ['Option'],
+        acceptedPatterns: ['^Option$'],
+        hints: [
+          'A side either holds a value or is empty.',
+          'Use Option<T>.',
+        ],
+        explanation: 'Each side is an Option<T>: Some(value) when occupied, None when empty.',
+        whatYouLearned: 'Option<T> models a slot that may be empty.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Using + on values requires a trait. Fill the trait imported from std::ops.',
+        template: `use std::ops::_____;`,
+        accepted: ['Add'],
+        acceptedPatterns: ['^Add$'],
+        hints: [
+          'The + operator is backed by one trait.',
+          'Import Add.',
+        ],
+        explanation: 'The + operator is defined by the Add trait, which the method bounds require so values can be summed.',
+        whatYouLearned: 'Operators map to traits (+ is Add).',
+        conceptId: 'generics',
+      },
+      {
         prompt: 'The impl needs T to be addable and copyable. Fill the trait bounds.',
         template: `impl<T: _____> Garage<T> {
     // move_to_right, move_to_left ...
@@ -2363,6 +2548,23 @@ impl<T: Add<Output = T> + Copy> Garage<T> { ... }
         conceptId: 'generics',
       },
       {
+        prompt: 'Only act when the source side has a value. Fill the pattern that binds the right value r.',
+        template: `pub fn move_to_left(&mut self) {
+    if let _____ = self.right {
+        // combine into the left, then clear the right
+    }
+}`,
+        accepted: ['Some(r)'],
+        acceptedPatterns: ['^Some\\(r\\)$'],
+        hints: [
+          'You want to run only when right is occupied.',
+          'Match Some(r) with if let.',
+        ],
+        explanation: 'if let Some(r) = self.right runs the body only when the right side holds a value, binding it to r.',
+        whatYouLearned: 'if let runs code only for the matching pattern.',
+        conceptId: 'pattern_matching',
+      },
+      {
         prompt: 'When moving left into an occupied right, sum them. Fill the arm for an already-present right value r.',
         template: `self.right = Some(match self.right {
     Some(r) => _____,
@@ -2373,6 +2575,20 @@ impl<T: Add<Output = T> + Copy> Garage<T> { ... }
         hints: ['Both sides hold a value here.', 'Add them: r + l.'],
         explanation: 'If the right already holds r, the moved-in l is added to it (r + l); if the right was empty, l simply lands there.',
         whatYouLearned: 'match handles the present (Some) and absent (None) cases distinctly.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'After moving a value across, empty the source side. Fill the value assigned to clear it.',
+        template: `// the right value has been moved into the left
+self.right = _____;`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: [
+          'The source side is now empty.',
+          'Set it to None.',
+        ],
+        explanation: 'Once the right value has been combined into the left, the right side is cleared by assigning None.',
+        whatYouLearned: 'Set an Option to None to mark it empty.',
         conceptId: 'option',
       },
     ],
