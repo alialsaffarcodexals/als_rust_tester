@@ -6,6 +6,15 @@ import type { Exercise, ExecutionResult, TestResult, UserProgress } from '../typ
 import { useRustExecution } from '../hooks/useRustExecution';
 import { zone01Guides } from '../data/zone01_guides';
 import { zone01Walkthroughs } from '../data/zone01_walkthroughs';
+import { zone01Cp3Learning } from '../data/zone01_cp3_learning';
+import ExerciseOverview from '../components/learn/ExerciseOverview';
+import OfficialDescription from '../components/learn/OfficialDescription';
+import ConceptGuide from '../components/learn/ConceptGuide';
+import SimilarExample from '../components/learn/SimilarExample';
+import SideQuiz from '../components/learn/SideQuiz';
+import TerminalSimulator from '../components/learn/TerminalSimulator';
+import Walkthrough from '../components/learn/Walkthrough';
+import SelfAssessment from '../components/learn/SelfAssessment';
 
 interface LessonPageProps {
   exercises: Exercise[];
@@ -14,6 +23,15 @@ interface LessonPageProps {
 }
 
 type TabId = 'concept' | 'examples' | 'exercise' | 'hints';
+type JourneyTab =
+  | 'overview'
+  | 'description'
+  | 'concepts'
+  | 'practice'
+  | 'sidequiz'
+  | 'terminal'
+  | 'walkthrough'
+  | 'selfcheck';
 
 export default function LessonPage({ exercises, progress, onComplete }: LessonPageProps) {
   const { id } = useParams<{ id: string }>();
@@ -34,9 +52,17 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSolutionModal, setShowSolutionModal] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
+  const [journeyTab, setJourneyTab] = useState<JourneyTab>('overview');
 
   const isZone01 = exercise?.checkpoint?.startsWith('zone01') ?? false;
   const hasWalkthrough = !!exercise && exercise.checkpoint === 'zone01_cp3' && !!zone01Walkthroughs[exercise.slug];
+  // CP3 guided-learning content (data-driven journey). Undefined for other zones
+  // or any CP3 exercise without authored content — those fall back to the
+  // original four-tab layout, so there is no regression.
+  const cp3Learning =
+    exercise && exercise.checkpoint === 'zone01_cp3'
+      ? zone01Cp3Learning[exercise.slug]
+      : undefined;
 
   const { runCode, runTests, isRunning, isTesting } = useRustExecution();
   const lessonProgress = progress.lessons[exerciseId];
@@ -65,6 +91,7 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       setShowSolutionModal(false);
       setShowWalkthrough(false);
       setActiveTab('concept');
+      setJourneyTab('overview');
     }
   }, [exerciseId, exercise]);
 
@@ -173,20 +200,43 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       <div className="lesson-layout">
         {/* Left panel: content tabs */}
         <div className="lesson-left">
-          <div className="tabs lesson-tabs">
-            {(['concept', 'examples', 'exercise', 'hints'] as TabId[]).map((tab) => (
-              <button
-                key={tab}
-                className={`tab ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === 'concept' && '📚 Concept'}
-                {tab === 'examples' && '💡 Examples'}
-                {tab === 'exercise' && '🎯 Exercise'}
-                {tab === 'hints' && `🔍 Hints (${hintsShown}/${exercise.hints.length})`}
-              </button>
-            ))}
-          </div>
+          {cp3Learning ? (
+            <div className="tabs lesson-tabs lesson-journey-tabs">
+              {([
+                ['overview', '🎯 Overview'],
+                ['description', '📄 Description'],
+                ['concepts', '💡 Concepts'],
+                ['practice', '🔁 Practice'],
+                ['sidequiz', '🧩 Side Quiz'],
+                ...(cp3Learning.terminal ? [['terminal', '🖥️ Terminal'] as [JourneyTab, string]] : []),
+                ...(hasWalkthrough ? [['walkthrough', '🪜 Step-by-Step'] as [JourneyTab, string]] : []),
+                ['selfcheck', '✅ Self-Check'],
+              ] as [JourneyTab, string][]).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  className={`tab ${journeyTab === tab ? 'active' : ''}`}
+                  onClick={() => setJourneyTab(tab)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="tabs lesson-tabs">
+              {(['concept', 'examples', 'exercise', 'hints'] as TabId[]).map((tab) => (
+                <button
+                  key={tab}
+                  className={`tab ${activeTab === tab ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab === 'concept' && '📚 Concept'}
+                  {tab === 'examples' && '💡 Examples'}
+                  {tab === 'exercise' && '🎯 Exercise'}
+                  {tab === 'hints' && `🔍 Hints (${hintsShown}/${exercise.hints.length})`}
+                </button>
+              ))}
+            </div>
+          )}
 
           {isZone01 && (
             <div className="zone01-guide-bar">
@@ -225,23 +275,51 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           )}
 
           <div className="lesson-tab-content">
-            {activeTab === 'concept' && (
-              <ConceptTab exercise={exercise} />
-            )}
-            {activeTab === 'examples' && (
-              <ExamplesTab exercise={exercise} />
-            )}
-            {activeTab === 'exercise' && (
-              <ExerciseTab exercise={exercise} />
-            )}
-            {activeTab === 'hints' && (
-              <HintsTab
-                exercise={exercise}
-                hintsShown={hintsShown}
-                onShowHint={() => setHintsShown((h) => Math.min(h + 1, exercise.hints.length))}
-                showSolution={showSolution}
-                onShowSolution={() => setShowSolution(true)}
-              />
+            {cp3Learning ? (
+              <>
+                {journeyTab === 'overview' && (
+                  <ExerciseOverview overview={cp3Learning.overview} objectives={cp3Learning.objectives} />
+                )}
+                {journeyTab === 'description' && (
+                  <OfficialDescription slug={exercise.slug} description={cp3Learning.officialDescription} />
+                )}
+                {journeyTab === 'concepts' && (
+                  <ConceptGuide conceptIds={cp3Learning.conceptIds} notes={cp3Learning.conceptNotes} />
+                )}
+                {journeyTab === 'practice' && (
+                  <SimilarExample data={cp3Learning.similar} />
+                )}
+                {journeyTab === 'sidequiz' && (
+                  <SideQuiz steps={cp3Learning.sideQuiz} title={`${exercise.title} — Side Quiz`} />
+                )}
+                {journeyTab === 'terminal' && cp3Learning.terminal && (
+                  <TerminalSimulator config={cp3Learning.terminal} />
+                )}
+                {journeyTab === 'walkthrough' && (
+                  <Walkthrough steps={zone01Walkthroughs[exercise.slug] ?? []} onLoad={setCode} />
+                )}
+                {journeyTab === 'selfcheck' && (
+                  <SelfAssessment
+                    prompts={cp3Learning.selfAssessment}
+                    onViewSolution={() => setShowSolutionModal(true)}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                {activeTab === 'concept' && <ConceptTab exercise={exercise} />}
+                {activeTab === 'examples' && <ExamplesTab exercise={exercise} />}
+                {activeTab === 'exercise' && <ExerciseTab exercise={exercise} />}
+                {activeTab === 'hints' && (
+                  <HintsTab
+                    exercise={exercise}
+                    hintsShown={hintsShown}
+                    onShowHint={() => setHintsShown((h) => Math.min(h + 1, exercise.hints.length))}
+                    showSolution={showSolution}
+                    onShowSolution={() => setShowSolution(true)}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -424,6 +502,8 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           overflow: hidden;
         }
         .lesson-tabs { border-bottom: 1px solid var(--border-subtle); padding: 0 16px; flex-shrink: 0; }
+        .lesson-journey-tabs { flex-wrap: wrap; gap: 2px 4px; padding: 6px 12px 0; }
+        .lesson-journey-tabs .tab { padding: 6px 10px; font-size: 0.8rem; }
         .lesson-tab-content { flex: 1; overflow-y: auto; padding: 20px; }
         .lesson-right { display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; }
         .editor-toolbar {

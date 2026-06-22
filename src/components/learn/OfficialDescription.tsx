@@ -28,11 +28,16 @@ function renderMarkdown(md: string): React.ReactNode[] {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Fenced code block
-    if (line.trimStart().startsWith('```')) {
+    // Fenced code block (``` or ~~~ — ~~~ lets us author Rust without escaping backticks)
+    const fence = line.trimStart().startsWith('```')
+      ? '```'
+      : line.trimStart().startsWith('~~~')
+      ? '~~~'
+      : null;
+    if (fence) {
       const buf: string[] = [];
       i++;
-      while (i < lines.length && !lines[i].trimStart().startsWith('```')) {
+      while (i < lines.length && !lines[i].trimStart().startsWith(fence)) {
         buf.push(lines[i]);
         i++;
       }
@@ -73,6 +78,7 @@ function renderMarkdown(md: string): React.ReactNode[] {
       i < lines.length &&
       lines[i].trim() !== '' &&
       !lines[i].trimStart().startsWith('```') &&
+      !lines[i].trimStart().startsWith('~~~') &&
       !/^\s*[-*]\s+/.test(lines[i]) &&
       !/^#{1,6}\s+/.test(lines[i])
     ) {
