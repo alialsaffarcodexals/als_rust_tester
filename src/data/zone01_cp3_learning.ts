@@ -1350,4 +1350,479 @@ format!("minus {}", spell((_____) as u64))`,
       },
     ],
   },
+
+  // -------------------------------------------------------------------------
+  // 98 — queens
+  // -------------------------------------------------------------------------
+  queens: {
+    overview: {
+      whatYouBuild:
+        'A chess model with a validated board position and a queen. The key method can_attack decides whether two queens threaten each other — sharing a rank, a file, or a diagonal.',
+      inputOutput:
+        'ChessPosition::new(rank, file) returns Some only for coordinates on the 8x8 board (else None). Queen::can_attack(other) returns a bool.',
+      constraints: [
+        'Valid coordinates satisfy rank < 8 and file < 8.',
+        'Queens attack along the same rank, the same file, or a diagonal.',
+        'A diagonal means the row distance equals the column distance.',
+      ],
+      commonMistakes: [
+        'Comparing usize coordinates directly so the subtraction underflows — cast to i64 before .abs().',
+        'Forgetting the diagonal case (only checking rank and file).',
+        'Not validating coordinates in ChessPosition::new.',
+      ],
+    },
+    officialDescription: `## queens
+
+Model chess positions and queens.
+
+ChessPosition::new validates a rank and file and returns an Option — Some for a valid square on the 8x8 board, None otherwise.
+
+Queen::can_attack returns true when two queens share a rank, a file, or a diagonal.
+
+### Expected items
+
+~~~
+impl ChessPosition {
+    pub fn new(rank: usize, file: usize) -> Option<Self>
+}
+impl Queen {
+    pub fn can_attack(self, other: Self) -> bool
+}
+~~~`,
+    objectives: {
+      learn: [
+        'Validate construction by returning an Option.',
+        'Compare coordinates safely by casting before subtraction.',
+        'Express a geometric rule as a boolean expression.',
+      ],
+      whyExists:
+        'The queens-attack check is the heart of the N-Queens puzzle and teaches careful signed arithmetic.',
+      rustSkills: ['structs', 'Option', 'integer casts', 'boolean logic'],
+    },
+    conceptIds: ['structs', 'option', 'pattern_matching'],
+    conceptNotes: {
+      option: 'ChessPosition::new returns None for off-board coordinates, so invalid positions cannot be built.',
+    },
+    similar: {
+      title: 'Same diagonal?',
+      prompt:
+        'Write a function on_diagonal(r1, c1, r2, c2): all i64, that returns true if the two points lie on a diagonal — that is, the absolute row difference equals the absolute column difference.',
+      starter: `pub fn on_diagonal(r1: i64, c1: i64, r2: i64, c2: i64) -> bool {
+    // |r1 - r2| == |c1 - c2|
+    todo!()
+}`,
+      hint: 'Use (r1 - r2).abs() == (c1 - c2).abs().',
+      concepts: ['pattern_matching'],
+      solution: `pub fn on_diagonal(r1: i64, c1: i64, r2: i64, c2: i64) -> bool {
+    (r1 - r2).abs() == (c1 - c2).abs()
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Only on-board coordinates are valid. Fill the condition for ChessPosition::new to return Some.',
+        template: `pub fn new(rank: usize, file: usize) -> Option<Self> {
+    if _____ {
+        Some(ChessPosition { rank, file })
+    } else {
+        None
+    }
+}`,
+        accepted: ['rank < 8 && file < 8'],
+        acceptedPatterns: ['^rank\\s*<\\s*8\\s*&&\\s*file\\s*<\\s*8$'],
+        hints: ['The board is 8x8, indices 0..8.', 'Both rank and file must be below 8.'],
+        explanation: 'A square is valid only when both coordinates are in 0..8, so we return Some then, and None otherwise.',
+        whatYouLearned: 'Returning Option from a constructor rejects invalid input by design.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Two queens attack on a diagonal when the row distance equals the column distance. Fill the diagonal test.',
+        template: `// r1,f1,r2,f2 are i64
+r1 == r2 || f1 == f2 || _____`,
+        accepted: ['(r1 - r2).abs() == (f1 - f2).abs()'],
+        acceptedPatterns: ['^\\(r1\\s*-\\s*r2\\)\\.abs\\(\\)\\s*==\\s*\\(f1\\s*-\\s*f2\\)\\.abs\\(\\)$'],
+        hints: ['A diagonal has equal vertical and horizontal distance.', 'Compare (r1 - r2).abs() with (f1 - f2).abs().'],
+        explanation: 'Same rank or same file covers straight lines; equal absolute differences covers diagonals. Casting to i64 first lets the subtraction go negative safely.',
+        whatYouLearned: 'Cast unsigned coordinates to signed before subtracting.',
+        conceptId: 'pattern_matching',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 100 — scytale_decoder
+  // -------------------------------------------------------------------------
+  scytale_decoder: {
+    overview: {
+      whatYouBuild:
+        'A decoder for the scytale transposition cipher. The ciphertext was written row by row into a grid; decoding reads it back column by column. Invalid inputs return None.',
+      inputOutput:
+        'Input: s: String and letters_per_turn: usize. Output: Option<String> — Some(decoded) or None when the input is empty, the turn count is 0, or the length is not divisible by letters_per_turn.',
+      constraints: [
+        'Empty message or letters_per_turn == 0 -> None.',
+        'Length must be divisible by letters_per_turn, else None.',
+        'Read the grid column by column to undo the row-by-row encoding.',
+      ],
+      commonMistakes: [
+        'Indexing the grid the wrong way (row vs column) and reversing the cipher incorrectly.',
+        'Forgetting the divisibility / empty validation.',
+        'Counting bytes instead of chars().',
+      ],
+    },
+    officialDescription: `## scytale_decoder
+
+Decode a scytale cipher. The message was written into a grid row by row with letters_per_turn columns; to decode, read it back column by column.
+
+Return None when the message is empty, when letters_per_turn is 0, or when the message length is not divisible by letters_per_turn.
+
+### Expected function
+
+~~~
+pub fn scytale_decoder(s: String, letters_per_turn: usize) -> Option<String>
+~~~`,
+    objectives: {
+      learn: [
+        'Validate inputs and return None for the invalid cases.',
+        'Index a flat sequence as a 2-D grid.',
+        'Reorder characters by reading columns instead of rows.',
+      ],
+      whyExists:
+        'Transposition ciphers teach index arithmetic over a grid stored in a flat Vec.',
+      rustSkills: ['Option', 'slices/Vec', 'nested loops', 'index math'],
+    },
+    conceptIds: ['option', 'collections', 'iterators'],
+    conceptNotes: {
+      option: 'Every invalid case (empty, zero columns, non-divisible length) returns None instead of a wrong answer.',
+      collections: 'The characters are collected into a Vec<char> so they can be indexed as a grid.',
+    },
+    similar: {
+      title: 'Rectangle check',
+      prompt:
+        'Write a function that returns Some(rows) — the number of rows — when len is exactly divisible by cols (and cols > 0), or None otherwise. This is the validation step the decoder needs first.',
+      starter: `pub fn rows_for(len: usize, cols: usize) -> Option<usize> {
+    // None if cols == 0 or len % cols != 0
+    todo!()
+}`,
+      hint: 'Guard cols == 0 and len % cols != 0 first, else Some(len / cols).',
+      concepts: ['option'],
+      solution: `pub fn rows_for(len: usize, cols: usize) -> Option<usize> {
+    if cols == 0 || len % cols != 0 {
+        return None;
+    }
+    Some(len / cols)
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'The grid must be a clean rectangle. Fill the condition that rejects a non-divisible length.',
+        template: `let len = s.chars().count();
+if _____ {
+    return None;
+}`,
+        accepted: ['len % letters_per_turn != 0'],
+        acceptedPatterns: ['^len\\s*%\\s*letters_per_turn\\s*!=\\s*0$'],
+        hints: ['The letters must fill complete columns.', 'Use the remainder operator: len % letters_per_turn != 0.'],
+        explanation: 'If the length is not a multiple of the column count the grid is ragged and cannot be decoded, so we return None.',
+        whatYouLearned: 'The modulo operator checks divisibility.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Read the grid column by column. Fill the flat index for the character at (row, col).',
+        template: `for col in 0..letters_per_turn {
+    for row in 0..rows {
+        result.push(chars[_____]);
+    }
+}`,
+        accepted: ['row * letters_per_turn + col'],
+        acceptedPatterns: ['^row\\s*\\*\\s*letters_per_turn\\s*\\+\\s*col$'],
+        hints: ['The grid was filled row by row.', 'Element (row, col) sits at row * width + col.'],
+        explanation: 'Since encoding wrote rows of letters_per_turn characters, the cell (row, col) is at row * letters_per_turn + col. Iterating col-major undoes the cipher.',
+        whatYouLearned: 'Row-major flattening: index = row * width + col.',
+        conceptId: 'collections',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 101 — matrix_display
+  // -------------------------------------------------------------------------
+  matrix_display: {
+    overview: {
+      whatYouBuild:
+        'A Matrix type that prints itself nicely. Implementing Display makes each row appear as "(a b c)" with rows separated by newlines.',
+      inputOutput:
+        'Matrix::new(&[&[i32]]) builds the matrix. Printing it with {} yields one parenthesized, space-separated row per line.',
+      constraints: [
+        'Implement std::fmt::Display for Matrix.',
+        'Each row prints as "(n n n)" with single spaces between numbers.',
+        'Rows are joined by newlines, with no trailing newline.',
+      ],
+      commonMistakes: [
+        'Adding a trailing newline after the last row.',
+        'Using commas instead of spaces between numbers.',
+        'Trying to println! inside fmt instead of using write!.',
+      ],
+    },
+    officialDescription: `## matrix_display
+
+Implement Display for a Matrix so that printing it produces one row per line, each row wrapped in parentheses with its numbers separated by single spaces.
+
+### Expected items
+
+~~~
+pub struct Matrix(pub Vec<Vec<i32>>);
+impl std::fmt::Display for Matrix { ... }
+~~~
+
+### Usage
+
+A 2x2 matrix prints as two lines like "(1 2)" and "(3 4)".`,
+    objectives: {
+      learn: [
+        'Implement the Display trait with write!.',
+        'Build per-row strings with map + join.',
+        'Join lines with newlines without a trailing one.',
+      ],
+      whyExists:
+        'Custom Display is essential whenever tests compare printed output exactly.',
+      rustSkills: ['traits', 'Display', 'iterators', 'String join'],
+    },
+    conceptIds: ['display_trait', 'traits', 'iterators'],
+    conceptNotes: {
+      display_trait: 'write!(f, ...) sends formatted text to the formatter; format! builds each row string.',
+      iterators: 'map turns each row into "(...)" and join stitches the lines together.',
+    },
+    similar: {
+      title: 'Print a row',
+      prompt:
+        'Write a function row_string(row: &[i32]) -> String that returns the row as "(1 2 3)". This is the per-row helper the Display impl uses.',
+      starter: `pub fn row_string(row: &[i32]) -> String {
+    // stringify each number, join with spaces, wrap in parentheses
+    todo!()
+}`,
+      hint: 'Map each n to n.to_string(), collect into Vec<String>, join(" "), then format!("({})", joined).',
+      concepts: ['iterators', 'display_trait'],
+      solution: `pub fn row_string(row: &[i32]) -> String {
+    let cells: Vec<String> = row.iter().map(|n| n.to_string()).collect();
+    format!("({})", cells.join(" "))
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Wrap a row of stringified cells. Fill the format so it becomes "(a b c)".',
+        template: `let cells: Vec<String> = row.iter().map(|n| n.to_string()).collect();
+let line = format!("(_____)", cells.join(" "));`,
+        accepted: ['{}'],
+        acceptedPatterns: ['^\\{\\}$'],
+        hints: ['format! uses {} as a placeholder.', 'Put a single {} between the parentheses.'],
+        explanation: 'The literal parentheses surround a {} placeholder, which is filled by the space-joined cells, giving "(1 2 3)".',
+        whatYouLearned: 'format! mixes literal text with {} placeholders.',
+        conceptId: 'display_trait',
+      },
+      {
+        prompt: 'Inside fmt, send the joined lines to the formatter. Fill the macro used (not println!).',
+        template: `impl fmt::Display for Matrix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // lines: Vec<String>
+        _____(f, "{}", lines.join("\\n"))
+    }
+}`,
+        accepted: ['write!'],
+        acceptedPatterns: ['^write!$'],
+        hints: ['You write into the formatter f, not stdout.', 'The macro is write! .'],
+        explanation: 'Inside a Display impl you use write!(f, ...) to send text to the formatter; println! would go to stdout and is wrong here.',
+        whatYouLearned: 'write!(f, ...) is how Display produces its output.',
+        conceptId: 'display_trait',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 102 — office_worker
+  // -------------------------------------------------------------------------
+  office_worker: {
+    overview: {
+      whatYouBuild:
+        'A worker type built from a comma-separated string via the From trait. "name,age,role" converts into an OfficeWorker, and the role word converts into a WorkerRole enum.',
+      inputOutput:
+        'WorkerRole::from("admin") -> Admin. OfficeWorker::from("Ada,30,admin") -> a worker with those fields.',
+      constraints: [
+        'Implement From<&str> for WorkerRole ("admin"/"user"/anything else -> Guest).',
+        'Implement From<&str> for OfficeWorker by splitting on commas.',
+        'Parse the age field into a number.',
+      ],
+      commonMistakes: [
+        'Not handling the default (Guest) role for unknown words.',
+        'Forgetting to parse the age string into u32.',
+        'Indexing split parts without collecting them first.',
+      ],
+    },
+    officialDescription: `## office_worker
+
+Implement the From trait so an OfficeWorker can be created from a string of the form "name,age,role", and a WorkerRole can be created from a role word.
+
+The role is admin, user, or anything else (which becomes Guest).
+
+### Expected items
+
+~~~
+impl From<&str> for WorkerRole { ... }
+impl From<&str> for OfficeWorker { ... }
+~~~`,
+    objectives: {
+      learn: [
+        'Implement the From trait for ergonomic conversions.',
+        'Split a string and parse fields.',
+        'Map words to enum variants with match.',
+      ],
+      whyExists:
+        'From/Into conversions are everywhere in Rust APIs; this teaches you to write them.',
+      rustSkills: ['traits', 'From', 'enums', 'string parsing'],
+    },
+    conceptIds: ['traits', 'enums', 'structs', 'pattern_matching'],
+    conceptNotes: {
+      traits: 'Implementing From<&str> gives you .into() and From::from for free.',
+      pattern_matching: 'A match maps each role word to its WorkerRole variant, with _ as the Guest default.',
+    },
+    similar: {
+      title: 'Parse a point',
+      prompt:
+        'Implement From<&str> for a Point { x: i32, y: i32 } where the input looks like "3,4". Same split-and-parse pattern as the worker.',
+      starter: `pub struct Point { pub x: i32, pub y: i32 }
+
+impl From<&str> for Point {
+    fn from(s: &str) -> Self {
+        // split on ',', parse both numbers
+        todo!()
+    }
+}`,
+      hint: 'let p: Vec<&str> = s.split(\',\').collect(); then parse p[0] and p[1].',
+      concepts: ['traits', 'structs'],
+      solution: `pub struct Point { pub x: i32, pub y: i32 }
+
+impl From<&str> for Point {
+    fn from(s: &str) -> Self {
+        let p: Vec<&str> = s.split(',').collect();
+        Point { x: p[0].parse().unwrap(), y: p[1].parse().unwrap() }
+    }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Map a role word to its variant. Fill the catch-all arm so unknown words become Guest.',
+        template: `match s {
+    "admin" => WorkerRole::Admin,
+    "user" => WorkerRole::User,
+    _____ => WorkerRole::Guest,
+}`,
+        accepted: ['_'],
+        acceptedPatterns: ['^_$'],
+        hints: ['You need a pattern that matches everything else.', 'The wildcard pattern is _ .'],
+        explanation: 'The _ arm catches every word that is not "admin" or "user", defaulting them to Guest and keeping the match exhaustive.',
+        whatYouLearned: '_ is the catch-all pattern that makes a match exhaustive.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'Split "name,age,role" into its parts. Fill the separator passed to split.',
+        template: `let parts: Vec<&str> = s.split(_____).collect();`,
+        accepted: ["','", '\',\''],
+        acceptedPatterns: ["^'\\,'$"],
+        hints: ['The fields are comma-separated.', 'Split on the character literal \',\'.'],
+        explanation: "s.split(',') breaks the string at each comma; collecting gives [name, age, role] for indexing.",
+        whatYouLearned: 'str::split takes a pattern such as a char to break a string into pieces.',
+        conceptId: 'traits',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 103 — organize_garage
+  // -------------------------------------------------------------------------
+  organize_garage: {
+    overview: {
+      whatYouBuild:
+        'A generic Garage<T> holding an optional value on the left and right. Moving a value to one side adds it to whatever is already there (so T must support +), then clears the other side.',
+      inputOutput:
+        'move_to_right() shifts the left value rightward (summing if the right is occupied) and leaves the left empty; move_to_left() mirrors it.',
+      constraints: [
+        'Garage is generic over T; methods require T: Add<Output = T> + Copy.',
+        'Moving into an occupied side sums the two values.',
+        'After a move, the source side becomes None.',
+      ],
+      commonMistakes: [
+        'Forgetting the trait bounds (Add and Copy) on the impl.',
+        'Not clearing the source side after the move.',
+        'Mishandling the empty-destination case (no addition needed).',
+      ],
+    },
+    officialDescription: `## organize_garage
+
+Create a generic Garage<T> with an optional value on the left and on the right.
+
+move_to_right moves the left value to the right, adding it to the existing right value if there is one, then empties the left. move_to_left is the mirror image.
+
+The element type must support addition and be copyable.
+
+### Expected items
+
+~~~
+pub struct Garage<T> { pub left: Option<T>, pub right: Option<T> }
+impl<T: Add<Output = T> + Copy> Garage<T> { ... }
+~~~`,
+    objectives: {
+      learn: [
+        'Write a generic struct and constrained impl.',
+        'Use trait bounds (Add, Copy) to enable operations.',
+        'Combine Option values with match.',
+      ],
+      whyExists:
+        'It introduces generics with trait bounds — writing code that works for many types under stated requirements.',
+      rustSkills: ['generics', 'trait bounds', 'Option', 'match'],
+    },
+    conceptIds: ['generics', 'option', 'pattern_matching'],
+    conceptNotes: {
+      generics: 'Garage<T> works for any T that is addable and Copy, declared as impl<T: Add<Output = T> + Copy>.',
+      option: 'Each side is an Option<T>; take/match handle the present and absent cases.',
+    },
+    similar: {
+      title: 'Generic pair max',
+      prompt:
+        'Write a generic function bigger<T: PartialOrd>(a: T, b: T) -> T that returns the larger of two values. Same idea of a type parameter with a trait bound.',
+      starter: `pub fn bigger<T: PartialOrd>(a: T, b: T) -> T {
+    // return whichever is greater
+    todo!()
+}`,
+      hint: 'if a >= b { a } else { b } — PartialOrd enables the comparison.',
+      concepts: ['generics'],
+      solution: `pub fn bigger<T: PartialOrd>(a: T, b: T) -> T {
+    if a >= b { a } else { b }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'The impl needs T to be addable and copyable. Fill the trait bounds.',
+        template: `impl<T: _____> Garage<T> {
+    // move_to_right, move_to_left ...
+}`,
+        accepted: ['Add<Output = T> + Copy'],
+        acceptedPatterns: ['^Add<Output = T>\\s*\\+\\s*Copy$'],
+        hints: ['You use + on values, and you read them without moving.', 'Require Add<Output = T> + Copy.'],
+        explanation: 'Add<Output = T> lets you write a + b returning a T, and Copy lets you read a value out of an Option without moving it.',
+        whatYouLearned: 'Trait bounds state what operations a generic type must support.',
+        conceptId: 'generics',
+      },
+      {
+        prompt: 'When moving left into an occupied right, sum them. Fill the arm for an already-present right value r.',
+        template: `self.right = Some(match self.right {
+    Some(r) => _____,
+    None => l,
+});`,
+        accepted: ['r + l'],
+        acceptedPatterns: ['^r\\s*\\+\\s*l$'],
+        hints: ['Both sides hold a value here.', 'Add them: r + l.'],
+        explanation: 'If the right already holds r, the moved-in l is added to it (r + l); if the right was empty, l simply lands there.',
+        whatYouLearned: 'match handles the present (Some) and absent (None) cases distinctly.',
+        conceptId: 'option',
+      },
+    ],
+  },
 };
