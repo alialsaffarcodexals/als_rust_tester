@@ -1825,4 +1825,588 @@ impl<T: Add<Output = T> + Copy> Garage<T> { ... }
       },
     ],
   },
+
+  // -------------------------------------------------------------------------
+  // 104 — blood_types_s
+  // -------------------------------------------------------------------------
+  blood_types_s: {
+    overview: {
+      whatYouBuild:
+        'A blood-type compatibility model. A BloodType is an antigen (A/AB/B/O) plus an Rh factor (+/-). can_receive_from encodes the transfusion rules, and donors/recipients list all compatible types.',
+      inputOutput:
+        'can_receive_from(other) -> bool. donors() / recipients() -> Vec<BloodType> filtered from all eight types.',
+      constraints: [
+        'O antigen is universal donor; AB antigen is universal recipient.',
+        'An Rh- donor works for anyone; an Rh+ donor only for an Rh+ recipient.',
+        'donors and recipients filter the full list of 8 types by the rule.',
+      ],
+      commonMistakes: [
+        'Reversing the donor/recipient direction in the filter.',
+        'Getting the Rh rule backwards.',
+        'Forgetting AB accepts A and B antigens.',
+      ],
+    },
+    officialDescription: `## blood_types_s
+
+Model blood types (an antigen A/AB/B/O and an Rh factor + or -) and their compatibility.
+
+can_receive_from(other) returns whether a recipient can safely receive from a donor. donors() returns every type the recipient can receive from; recipients() returns every type that can receive from this one.
+
+### Expected items
+
+~~~
+impl BloodType {
+    pub fn can_receive_from(self, other: Self) -> bool
+    pub fn donors(self) -> Vec<Self>
+    pub fn recipients(self) -> Vec<Self>
+}
+~~~`,
+    objectives: {
+      learn: [
+        'Encode rules with match over enum variants.',
+        'Filter a collection with a closure predicate.',
+        'Generate all combinations with nested loops.',
+      ],
+      whyExists:
+        'Compatibility rules are a great fit for enums + match, and donors/recipients teach filtering.',
+      rustSkills: ['enums', 'match', 'iterators', 'structs'],
+    },
+    conceptIds: ['enums', 'pattern_matching', 'iterators', 'structs'],
+    conceptNotes: {
+      pattern_matching: 'matches!(self.antigen, Antigen::A | Antigen::AB) tests several variants in one shot.',
+      iterators: 'donors/recipients use .filter(...).collect() over all eight types.',
+    },
+    similar: {
+      title: 'Universal donor?',
+      prompt:
+        'Given an Antigen enum (A, AB, B, O), write is_universal_donor(a: Antigen) -> bool that is true only for O. A tiny match/comparison drill.',
+      starter: `pub enum Antigen { A, AB, B, O }
+
+pub fn is_universal_donor(a: Antigen) -> bool {
+    // true only for O
+    todo!()
+}`,
+      hint: 'matches!(a, Antigen::O) or a == Antigen::O (with PartialEq).',
+      concepts: ['enums', 'pattern_matching'],
+      solution: `#[derive(PartialEq)]
+pub enum Antigen { A, AB, B, O }
+
+pub fn is_universal_donor(a: Antigen) -> bool {
+    matches!(a, Antigen::O)
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'AB recipients accept A and B antigens. Fill the test that matches either A or AB on the recipient.',
+        template: `// other.antigen == A is accepted by recipients whose antigen is A or AB
+Antigen::A => _____,`,
+        accepted: ['matches!(self.antigen, Antigen::A | Antigen::AB)'],
+        acceptedPatterns: ['^matches!\\(self\\.antigen,\\s*Antigen::A\\s*\\|\\s*Antigen::AB\\)$'],
+        hints: ['You can test several variants with the matches! macro.', 'matches!(self.antigen, Antigen::A | Antigen::AB).'],
+        explanation: 'An A donor is accepted by recipients carrying the A antigen, i.e. A or AB. matches! with the | pattern checks both at once.',
+        whatYouLearned: 'matches!(x, P | Q) tests membership in a set of variants.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        prompt: 'recipients() keeps every type that can receive from self. Fill the filter predicate.',
+        template: `Self::all().into_iter().filter(|&other| _____).collect()`,
+        accepted: ['other.can_receive_from(self)'],
+        acceptedPatterns: ['^other\\.can_receive_from\\(self\\)$'],
+        hints: ['A recipient is someone who can receive from self.', 'Call other.can_receive_from(self).'],
+        explanation: 'recipients are types that can receive from self, so we keep other where other.can_receive_from(self) is true (the mirror of donors).',
+        whatYouLearned: 'filter keeps elements for which the closure returns true.',
+        conceptId: 'iterators',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 105 — format_me
+  // -------------------------------------------------------------------------
+  format_me: {
+    overview: {
+      whatYouBuild:
+        'A Park type with several optional text fields and a ParkType enum. Display formats a park into a fixed pattern, substituting a "No <field>" placeholder wherever a field is None.',
+      inputOutput:
+        'Printing a Park yields "<type> - <name>, <address>, <cap> - <state>", with missing fields shown as "No name", "No address", etc.',
+      constraints: [
+        'Implement Display for both ParkType and Park.',
+        'Optional fields use as_deref().unwrap_or("No <field>").',
+        'ParkType prints in lowercase (garden/forest/playground).',
+      ],
+      commonMistakes: [
+        'Calling unwrap() on a None field and panicking.',
+        'Forgetting to implement Display for ParkType separately.',
+        'Mismatching the exact separators in the format string.',
+      ],
+    },
+    officialDescription: `## format_me
+
+Implement Display for a Park (and its ParkType). A park has a type plus several optional fields (name, address, cap, state).
+
+Print the park as "<type> - <name>, <address>, <cap> - <state>", substituting a placeholder like "No name" for any field that is None.
+
+### Expected items
+
+~~~
+impl std::fmt::Display for ParkType { ... }
+impl std::fmt::Display for Park { ... }
+~~~`,
+    objectives: {
+      learn: [
+        'Implement Display for an enum and a struct.',
+        'Turn Option<String> into &str with a default using as_deref().unwrap_or(...).',
+        'Compose a multi-field format string.',
+      ],
+      whyExists:
+        'It combines Display with Option defaults — a very common real formatting need.',
+      rustSkills: ['Display', 'Option', 'as_deref', 'format'],
+    },
+    conceptIds: ['display_trait', 'option', 'traits'],
+    conceptNotes: {
+      option: 'as_deref() turns &Option<String> into Option<&str>, then unwrap_or supplies the placeholder when it is None.',
+      display_trait: 'A single write! with the full pattern produces the whole line.',
+    },
+    similar: {
+      title: 'Optional name',
+      prompt:
+        'Write a function label(name: &Option<String>) -> String that returns the name or "No name" when it is None. Same as_deref().unwrap_or pattern used for each park field.',
+      starter: `pub fn label(name: &Option<String>) -> String {
+    // return the name, or "No name" if None
+    todo!()
+}`,
+      hint: 'name.as_deref().unwrap_or("No name").to_string().',
+      concepts: ['option'],
+      solution: `pub fn label(name: &Option<String>) -> String {
+    name.as_deref().unwrap_or("No name").to_string()
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Substitute a placeholder when the name field is None. Fill the default-providing call.',
+        template: `// self.name: Option<String>
+let name = self.name.as_deref()._____("No name");`,
+        accepted: ['unwrap_or'],
+        acceptedPatterns: ['^unwrap_or$'],
+        hints: ['Option has a method that returns the value or a fallback.', 'unwrap_or supplies the default.'],
+        explanation: 'as_deref() gives Option<&str>; unwrap_or("No name") yields the inner string or the placeholder when it is None — no panic.',
+        whatYouLearned: 'unwrap_or supplies a default instead of panicking on None.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Display a ParkType in lowercase. Fill the macro that writes to the formatter.',
+        template: `impl fmt::Display for ParkType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let text = match self {
+            ParkType::Garden => "garden",
+            ParkType::Forest => "forest",
+            ParkType::Playground => "playground",
+        };
+        _____(f, "{}", text)
+    }
+}`,
+        accepted: ['write!'],
+        acceptedPatterns: ['^write!$'],
+        hints: ['Display writes into f.', 'Use the write! macro.'],
+        explanation: 'write!(f, "{}", text) sends the lowercase name to the formatter, which is what printing the ParkType uses.',
+        whatYouLearned: 'Display impls produce output via write!(f, ...).',
+        conceptId: 'display_trait',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 106 — moving_targets
+  // -------------------------------------------------------------------------
+  moving_targets: {
+    overview: {
+      whatYouBuild:
+        'A singly linked stack (Field) of Target values built from Option<Box<Node>>. push adds to the front, pop removes from the front, and peek / peek_mut look at the top without removing it.',
+      inputOutput:
+        'push(target) stores a Target; pop() -> Option<Target>; peek() -> Option<&Target>; peek_mut() -> Option<&mut Target>.',
+      constraints: [
+        'The list is Option<Box<Node>>; Box gives the recursive type a known size.',
+        'Use Option::take() to move a node out while leaving None behind.',
+        'peek borrows shared; peek_mut borrows mutable.',
+      ],
+      commonMistakes: [
+        'Fighting the borrow checker by not using take() when detaching the head.',
+        'Returning the node instead of its contained Target.',
+        'Confusing as_ref (shared) with as_mut (mutable) in peek.',
+      ],
+    },
+    officialDescription: `## moving_targets
+
+Build a singly linked stack of Target values. Implement push (add to front), pop (remove from front), peek (reference to the top), and peek_mut (mutable reference to the top).
+
+### Expected items
+
+~~~
+impl Field {
+    pub fn push(&mut self, target: Target)
+    pub fn pop(&mut self) -> Option<Target>
+    pub fn peek(&self) -> Option<&Target>
+    pub fn peek_mut(&mut self) -> Option<&mut Target>
+}
+~~~`,
+    objectives: {
+      learn: [
+        'Build a recursive data structure with Box.',
+        'Move values out of an Option with take().',
+        'Provide shared and mutable access with as_ref / as_mut.',
+      ],
+      whyExists:
+        'A hand-written linked list is the classic way to internalize ownership, Box, and Option together.',
+      rustSkills: ['Box', 'Option', 'ownership', 'references'],
+    },
+    conceptIds: ['structs', 'option', 'references'],
+    conceptNotes: {
+      option: 'self.head.take() moves the current head out and leaves None, sidestepping borrow-checker conflicts.',
+      references: 'peek uses as_ref() for a shared &Target; peek_mut uses as_mut() for a &mut Target.',
+    },
+    similar: {
+      title: 'Optional swap-out',
+      prompt:
+        'Given let mut slot: Option<i32> = Some(5);, write one line that moves the value out into x and leaves slot as None. This is the take() trick the list relies on.',
+      starter: `let mut slot: Option<i32> = Some(5);
+// move the value out, leaving None behind
+let x = /* fill this */ ;
+// now slot == None and x == Some(5)`,
+      hint: 'Option::take() does exactly this: let x = slot.take();',
+      concepts: ['option'],
+      solution: `let mut slot: Option<i32> = Some(5);
+let x = slot.take();
+// slot == None, x == Some(5)`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'push links the new node to the old head. Fill the call that moves the old head out, leaving None.',
+        template: `let node = Box::new(Node { elem: target, next: self.head._____ });
+self.head = Some(node);`,
+        accepted: ['take()'],
+        acceptedPatterns: ['^take\\(\\)$'],
+        hints: ['You need to move the old head out without cloning.', 'Option::take() leaves None behind.'],
+        explanation: 'self.head.take() hands the old head to the new node’s next and resets head to None, after which we set head to the new node.',
+        whatYouLearned: 'Option::take() moves a value out and leaves None.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'peek returns a shared reference to the top Target. Fill the method that borrows the Option contents.',
+        template: `pub fn peek(&self) -> Option<&Target> {
+    self.head._____.map(|node| &node.elem)
+}`,
+        accepted: ['as_ref()'],
+        acceptedPatterns: ['^as_ref\\(\\)$'],
+        hints: ['You must not move the head out for a peek.', 'as_ref() turns &Option<T> into Option<&T>.'],
+        explanation: 'as_ref() borrows the head without moving it, so map can hand back a reference to the contained Target.',
+        whatYouLearned: 'as_ref() lets you look inside an Option by reference.',
+        conceptId: 'references',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 107 — car_rental
+  // -------------------------------------------------------------------------
+  car_rental: {
+    overview: {
+      whatYouBuild:
+        'A RentalBusiness that stores its Car inside a RefCell, giving interior mutability: the Car can be borrowed, taken, mutated, or replaced even through a shared &self.',
+      inputOutput:
+        'rent_car() -> Ref<Car> (read), repair_car() -> RefMut<Car> (mutate), sell_car() -> Car (take, leaving a default), change_car(new) replaces it.',
+      constraints: [
+        'Store the Car as RefCell<Car>.',
+        'borrow() for shared read, borrow_mut() for mutation.',
+        'take() removes the Car leaving Default in place.',
+      ],
+      commonMistakes: [
+        'Trying to mutate through &self without interior mutability.',
+        'Holding a borrow and a borrow_mut at the same time (runtime panic).',
+        'Forgetting Car: Default for take().',
+      ],
+    },
+    officialDescription: `## car_rental
+
+Model a rental business that owns one Car but can change it through a shared reference, using RefCell for interior mutability.
+
+rent_car hands out a read-only borrow, repair_car a mutable borrow, sell_car takes the car out (leaving a default), and change_car replaces it.
+
+### Expected items
+
+~~~
+impl RentalBusiness {
+    pub fn rent_car(&self) -> Ref<'_, Car>
+    pub fn sell_car(&self) -> Car
+    pub fn repair_car(&self) -> RefMut<'_, Car>
+    pub fn change_car(&self, new_car: Car)
+}
+~~~`,
+    objectives: {
+      learn: [
+        'Use RefCell for interior mutability through &self.',
+        'Distinguish borrow() (shared) from borrow_mut() (exclusive).',
+        'Swap or take the contained value safely.',
+      ],
+      whyExists:
+        'RefCell is the gateway to interior mutability — needed whenever you must mutate behind a shared reference.',
+      rustSkills: ['RefCell', 'interior mutability', 'borrowing'],
+    },
+    conceptIds: ['structs', 'references', 'borrowing'],
+    conceptNotes: {
+      borrowing: 'RefCell moves Rust’s borrow rules to runtime: borrow() yields a shared Ref, borrow_mut() an exclusive RefMut; breaking the rules panics at runtime.',
+      references: 'rent_car returns a Ref guard (read), repair_car a RefMut guard (write).',
+    },
+    similar: {
+      title: 'Mutate through &self',
+      prompt:
+        'Given a struct Counter { n: RefCell<i32> }, write a method bump(&self) that increases n by 1 — through a shared &self. Same interior-mutability move as the rental business.',
+      starter: `use std::cell::RefCell;
+pub struct Counter { pub n: RefCell<i32> }
+
+impl Counter {
+    pub fn bump(&self) {
+        // increment the inner value through &self
+        todo!()
+    }
+}`,
+      hint: '*self.n.borrow_mut() += 1;',
+      concepts: ['references', 'borrowing'],
+      solution: `use std::cell::RefCell;
+pub struct Counter { pub n: RefCell<i32> }
+
+impl Counter {
+    pub fn bump(&self) {
+        *self.n.borrow_mut() += 1;
+    }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'repair_car hands out a mutable borrow of the Car. Fill the RefCell method.',
+        template: `pub fn repair_car(&self) -> RefMut<'_, Car> {
+    self.car._____()
+}`,
+        accepted: ['borrow_mut'],
+        acceptedPatterns: ['^borrow_mut$'],
+        hints: ['You need a writable borrow.', 'RefCell::borrow_mut() yields a RefMut.'],
+        explanation: 'borrow_mut() returns a RefMut guard granting exclusive mutable access to the Car, even though self is only &self.',
+        whatYouLearned: 'borrow_mut() is the mutable side of RefCell.',
+        conceptId: 'borrowing',
+      },
+      {
+        prompt: 'change_car replaces the whole Car through a mutable borrow. Fill the left-hand side being assigned.',
+        template: `pub fn change_car(&self, new_car: Car) {
+    _____ = new_car;
+}`,
+        accepted: ['*self.car.borrow_mut()'],
+        acceptedPatterns: ['^\\*self\\.car\\.borrow_mut\\(\\)$'],
+        hints: ['Write through the mutable borrow.', 'Dereference it: *self.car.borrow_mut().'],
+        explanation: 'Assigning to *self.car.borrow_mut() overwrites the value inside the RefCell with new_car.',
+        whatYouLearned: 'Dereferencing a RefMut lets you assign a new value in place.',
+        conceptId: 'borrowing',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 108 — drop_the_blog
+  // -------------------------------------------------------------------------
+  drop_the_blog: {
+    overview: {
+      whatYouBuild:
+        'A Blog that tracks articles and counts how many have been "dropped". Each Article borrows its parent Blog; when an Article goes out of scope, a Drop implementation automatically records the drop.',
+      inputOutput:
+        'new_article returns an (id, Article). When the Article is dropped (e.g. via discard), the Blog’s drop count and state update automatically.',
+      constraints: [
+        'Use Cell<usize> and RefCell<Vec<bool>> for interior mutability.',
+        'Article holds a reference to its parent Blog (a lifetime).',
+        'Implement Drop for Article so dropping it calls parent.add_drop(id).',
+      ],
+      commonMistakes: [
+        'Forgetting that Drop runs automatically at end of scope.',
+        'Lifetime errors from the Article -> Blog reference.',
+        'Mutating Cell/RefCell incorrectly (get/set vs borrow_mut).',
+      ],
+    },
+    officialDescription: `## drop_the_blog
+
+Model a Blog that owns article state and a drop counter, using Cell and RefCell for interior mutability.
+
+Each Article borrows the Blog. Implement Drop for Article so that when an article is dropped, it records the drop on its parent Blog.
+
+### Expected items
+
+~~~
+impl Blog { pub fn new_article(&self, body: String) -> (usize, Article<'_>) ... }
+impl<'a> Drop for Article<'a> { fn drop(&mut self) ... }
+~~~`,
+    objectives: {
+      learn: [
+        'Implement the Drop trait for cleanup logic.',
+        'Hold a reference with a lifetime parameter.',
+        'Mutate shared state with Cell and RefCell.',
+      ],
+      whyExists:
+        'Drop plus borrowing-with-lifetimes is an advanced ownership scenario that ties the model together.',
+      rustSkills: ['Drop', 'lifetimes', 'Cell/RefCell'],
+    },
+    conceptIds: ['traits', 'lifetimes', 'references'],
+    conceptNotes: {
+      traits: 'Implementing Drop gives a type custom behavior that runs automatically when it goes out of scope.',
+      lifetimes: "Article<'a> borrows its parent Blog for the lifetime 'a, so the Blog must outlive the Article.",
+    },
+    similar: {
+      title: 'Say goodbye on drop',
+      prompt:
+        'Implement Drop for a struct Guard { name: String } so that dropping it prints "bye <name>". This is the same auto-cleanup hook the blog uses.',
+      starter: `pub struct Guard { pub name: String }
+
+impl Drop for Guard {
+    fn drop(&mut self) {
+        // print "bye <name>"
+        todo!()
+    }
+}`,
+      hint: 'println!("bye {}", self.name); inside drop.',
+      concepts: ['traits'],
+      solution: `pub struct Guard { pub name: String }
+
+impl Drop for Guard {
+    fn drop(&mut self) {
+        println!("bye {}", self.name);
+    }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'When an Article is dropped it should tell its parent. Fill the body of drop.',
+        template: `impl<'a> Drop for Article<'a> {
+    fn drop(&mut self) {
+        _____;
+    }
+}`,
+        accepted: ['self.parent.add_drop(self.id)'],
+        acceptedPatterns: ['^self\\.parent\\.add_drop\\(self\\.id\\)$'],
+        hints: ['The Article knows its parent Blog and its own id.', 'Call self.parent.add_drop(self.id).'],
+        explanation: 'drop runs automatically at end of scope; here it records the drop on the parent Blog via add_drop(self.id).',
+        whatYouLearned: 'Drop::drop runs cleanup logic automatically when a value goes out of scope.',
+        conceptId: 'traits',
+      },
+      {
+        prompt: 'add_drop bumps the counter held in a Cell. Fill the call that reads the current count.',
+        template: `// self.drops: Cell<usize>
+self.drops.set(self.drops._____() + 1);`,
+        accepted: ['get'],
+        acceptedPatterns: ['^get$'],
+        hints: ['Cell has get and set.', 'Read with get(), then set the new value.'],
+        explanation: 'Cell stores Copy values; get() reads the current count and set(...) writes the incremented one.',
+        whatYouLearned: 'Cell uses get()/set() for interior mutability of Copy values.',
+        conceptId: 'references',
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 109 — lunch_queue
+  // -------------------------------------------------------------------------
+  lunch_queue: {
+    overview: {
+      whatYouBuild:
+        'A lunch line modeled as a singly linked list of Person nodes. You can add people to the front, remove in FIFO order, reverse the whole queue, and search by name.',
+      inputOutput:
+        'add(name, discount) inserts at the front; rm() -> Option<(String, i32)> removes the oldest; invert_queue() reverses links; search(name) -> Option<(&String, &i32)>.',
+      constraints: [
+        'The list is Option<Box<Person>>; Box makes the recursive type sized.',
+        'rm removes in FIFO order (the first person added, at the tail).',
+        'invert_queue reverses by flipping each next pointer.',
+      ],
+      commonMistakes: [
+        'Removing from the wrong end (FIFO means oldest-out).',
+        'Losing the rest of the list when flipping pointers during invert.',
+        'Borrow-checker errors from not using take()/as_mut() correctly.',
+      ],
+    },
+    officialDescription: `## lunch_queue
+
+Model a lunch queue as a singly linked list of people (name + discount).
+
+Implement add (insert at the front), rm (remove in FIFO order and return the person), invert_queue (reverse the list), and search (find a person by name).
+
+### Expected items
+
+~~~
+impl Queue {
+    pub fn add(&mut self, name: String, discount: i32)
+    pub fn rm(&mut self) -> Option<(String, i32)>
+    pub fn invert_queue(&mut self)
+    pub fn search(&self, name: &str) -> Option<(&String, &i32)>
+}
+~~~`,
+    objectives: {
+      learn: [
+        'Manipulate a linked list with Box and Option.',
+        'Reverse a list by re-pointing links.',
+        'Traverse with as_ref / as_mut to read or edit nodes.',
+      ],
+      whyExists:
+        'A FIFO queue over a linked list is a thorough workout in ownership, Option, and Box.',
+      rustSkills: ['Box', 'Option', 'linked list', 'iteration'],
+    },
+    conceptIds: ['vecdeque', 'structs', 'option'],
+    conceptNotes: {
+      vecdeque: 'This is a hand-built queue. The standard library’s VecDeque offers the same FIFO behavior with push_back / pop_front.',
+      option: 'next_person: Option<Box<Person>> is None at the end of the list; take() detaches nodes during reversal.',
+    },
+    similar: {
+      title: 'Length of a list',
+      prompt:
+        'Given the Person/Link types, write a function that counts the people in a queue by walking next_person until None. Practices the same as_ref() traversal as search.',
+      starter: `// type Link = Option<Box<Person>>;
+pub fn count(mut current: &Link) -> usize {
+    let mut n = 0;
+    while let Some(p) = current {
+        // count and advance
+        todo!()
+    }
+    n
+}`,
+      hint: 'n += 1; current = &p.next_person; (the while-let binds p by reference).',
+      concepts: ['option', 'structs'],
+      solution: `pub fn count(mut current: &Link) -> usize {
+    let mut n = 0;
+    while let Some(p) = current {
+        n += 1;
+        current = &p.next_person;
+    }
+    n
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'add inserts at the front, linking the new person to the old head. Fill the call that detaches the old head.',
+        template: `let person = Box::new(Person { name, discount, next_person: self.node._____ });
+self.node = Some(person);`,
+        accepted: ['take()'],
+        acceptedPatterns: ['^take\\(\\)$'],
+        hints: ['Move the old front out without cloning.', 'Option::take() leaves None behind.'],
+        explanation: 'self.node.take() hands the previous front to the new person’s next_person and resets node, after which the new person becomes the front.',
+        whatYouLearned: 'take() is the key move for restructuring linked lists.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'invert_queue reverses the list. Fill the line that saves the rest of the list before re-pointing the current node.',
+        template: `while let Some(mut boxed) = current {
+    current = boxed.next_person._____;
+    boxed.next_person = prev;
+    prev = Some(boxed);
+}`,
+        accepted: ['take()'],
+        acceptedPatterns: ['^take\\(\\)$'],
+        hints: ['Grab the remainder before you overwrite next_person.', 'boxed.next_person.take() detaches and returns the rest.'],
+        explanation: 'take() moves the rest of the list into current before we flip boxed.next_person to point at prev, so no nodes are lost.',
+        whatYouLearned: 'Reversing a list means saving "next" before re-pointing it.',
+        conceptId: 'option',
+      },
+    ],
+  },
 };
