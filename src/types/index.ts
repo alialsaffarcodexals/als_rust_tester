@@ -159,3 +159,84 @@ export interface TestResult {
   expected: string;
   error?: string;
 }
+
+// ===========================================================================
+// CP3 Guided Learning Platform
+// Reusable, data-driven structures powering the CP3 learning journey.
+// Designed so other zones can adopt the same components later.
+// ===========================================================================
+
+// A reusable Rust concept entry, shared across zones via conceptLibrary.ts.
+export interface ConceptEntry {
+  id: string;             // 'ownership', 'option', 'iterators', ...
+  name: string;           // 'Ownership'
+  explanation: string;    // beginner-friendly explanation
+  whyItMatters: string;   // why Rust uses this concept
+  example: string;        // minimal isolated Rust snippet
+  exampleExplain: string; // what happened and why
+  docUrl?: string;        // official documentation link
+}
+
+// "Exercise Overview" — what the student is building and how it behaves.
+export interface Cp3Overview {
+  whatYouBuild: string;
+  inputOutput: string;      // expected input/output behavior
+  constraints: string[];
+  commonMistakes: string[];
+}
+
+// "Learning Objectives" — what/why/which-skills.
+export interface Cp3Objectives {
+  learn: string[];      // what the student is expected to learn
+  whyExists: string;    // why the exercise exists
+  rustSkills: string[]; // which Rust skills are practiced
+}
+
+// "Similar Practice Example" — a DIFFERENT problem with the same concepts.
+// Must never reveal the real exercise's solution.
+export interface SimilarExample {
+  title: string;
+  prompt: string;        // a different mini-problem, same difficulty/concepts
+  starter: string;       // starter code for the mini-problem
+  hint: string;
+  concepts: string[];    // concept ids reused
+  solution?: string;     // solution of the MINI problem only (collapsible)
+}
+
+// One step of the interactive fill-in-the-blank side quiz.
+export interface SideQuizStep {
+  prompt: string;              // what the student must do
+  template: string;           // code containing the blank marker
+  blankToken?: string;        // the blank marker, default '_____'
+  accepted: string[];         // accepted answers (normalized compare)
+  acceptedPatterns?: string[];// regex strings for semantic matching
+  hints: [string, string];    // exactly two hints, weak then stronger
+  explanation: string;        // why the answer is correct
+  whatYouLearned: string;     // concept reinforced by this step
+  conceptId?: string;         // link to a ConceptEntry
+}
+
+// Terminal simulation config (CLI exercises only).
+export interface TerminalConfig {
+  programName: string;   // e.g. 'rpn'
+  examples: string[];    // sample argument lines, e.g. '"1 2 * 3 * 4 +"'
+  runnerTemplate: string;// self-contained reference binary; {{ARGS}} -> Vec<String> literal
+  explain: string;       // how Rust parses the arguments
+}
+
+export interface SelfAssessmentPrompt {
+  question: string;
+}
+
+// Full structured learning content for one CP3 exercise, keyed by slug.
+export interface Cp3LearningContent {
+  overview: Cp3Overview;
+  officialDescription: string;            // transcribed 01-edu subject text
+  objectives: Cp3Objectives;
+  conceptIds: string[];                   // refs into conceptLibrary
+  conceptNotes?: Record<string, string>;  // per-exercise note for a concept
+  similar: SimilarExample;
+  sideQuiz: SideQuizStep[];
+  terminal?: TerminalConfig;              // present only for CLI exercises
+  selfAssessment?: SelfAssessmentPrompt[];// defaults applied if omitted
+}
