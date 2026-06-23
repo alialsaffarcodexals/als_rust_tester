@@ -268,6 +268,37 @@ let result = a - b;  // order matters: a is the left operand`,
         whatYouLearned: 'The final stack size validates the whole expression.',
         conceptId: 'error_handling',
       },
+      {
+        kind: 'choice',
+        prompt: 'In a program, what does args[0] always hold?',
+        options: ['the first user argument', 'the program name', 'the final result', 'an empty string'],
+        correct: [1],
+        why: [
+          'The first user argument is args[1], not args[0].',
+          'args[0] is always the program (binary) name.',
+          'args holds inputs, not results.',
+          'args[0] is never empty for a real run.',
+        ],
+        hints: ['Think about what cargo run puts before your arguments.', 'It is the program itself.'],
+        explanation: 'std::env::args() yields the program name first, so args[0] is the binary name and real arguments start at args[1] — which is why exactly one user argument means args.len() == 2.',
+        whatYouLearned: 'argv[0] is the program name across languages.',
+        conceptId: 'cli_args',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This tokenizer does not ignore extra spaces as the spec requires. Click the mistake.',
+        code: `for token in expr.split(" ") {
+    stack.push(token.parse().unwrap());
+}`,
+        bugs: [{ line: 1, token: 'split' }],
+        hints: [
+          'Two spaces in a row produce an empty token with this approach.',
+          'Look at how the string is broken into tokens.',
+        ],
+        explanation: 'split(" ") splits on each single space, so "1  2" yields an empty token between the numbers and parse() panics. split_whitespace() collapses any run of whitespace — satisfying the "extra spaces ignored" rule.',
+        whatYouLearned: 'Use split_whitespace(), not split(" "), to ignore extra spaces.',
+        conceptId: 'cli_args',
+      },
     ],
     terminal: {
       programName: 'rpn',
@@ -858,6 +889,64 @@ _____`,
         whatYouLearned: 'Return the accumulated Vec as the final expression.',
         conceptId: 'collections',
       },
+      {
+        kind: 'choice',
+        prompt: 'Which expression repeats the string v exactly k times?',
+        options: ['v.repeat(k)', 'v * k', 'v.clone(k)', 'repeat(v, k)'],
+        correct: [0],
+        why: [
+          'str::repeat(k) returns the string repeated k times.',
+          'Rust strings do not support multiplication.',
+          'clone() takes no count argument.',
+          'There is no free repeat function for this.',
+        ],
+        hints: ['Strings have a method for this.', 'It mirrors " ".repeat(k) used for the indentation.'],
+        explanation: 'v.repeat(k) builds k concatenated copies of v — the content of each pyramid line, after k spaces of indentation.',
+        whatYouLearned: 'str::repeat(n) repeats a string n times.',
+        conceptId: 'display_trait',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This line builds the wrong pyramid content. Click the buggy token.',
+        code: `for k in 1..=i {
+    let line = format!("{}{}", " ".repeat(k), v.repeat(i));
+    result.push(line);
+}`,
+        bugs: [{ line: 2, token: 'i' }],
+        hints: [
+          'The repeat count should grow with the level, not stay fixed.',
+          'Compare the two repeat() calls on line 2.',
+        ],
+        explanation: 'At level k the string must repeat k times, but v.repeat(i) always repeats it i times. It should be v.repeat(k) to match the indentation " ".repeat(k).',
+        whatYouLearned: 'Use the loop variable k, not the fixed bound i, for per-level sizes.',
+        conceptId: 'iterators',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble the full inv_pyramid. One fragment does not belong.',
+        scaffold: `pub fn inv_pyramid(v: String, i: usize) -> Vec<String> {
+    [ slot 1 ]
+    [ slot 2 ]
+    [ slot 3 ]
+    [ slot 4 ]
+}`,
+        fragments: [
+          'let mut result = Vec::new();',
+          'for k in 1..=i { result.push(format!("{}{}", " ".repeat(k), v.repeat(k))); }',
+          'for k in (1..i).rev() { result.push(format!("{}{}", " ".repeat(k), v.repeat(k))); }',
+          'result',
+        ],
+        distractors: [
+          'for k in 0..i { result.push(v.repeat(k)); }',
+        ],
+        hints: [
+          'Create the vector, climb up the levels, then mirror back down.',
+          'The descending loop uses (1..i).rev() so it does not repeat the peak.',
+        ],
+        explanation: 'Start an empty Vec, push lines for levels 1..=i (ascending), then for (1..i).rev() (descending) to mirror the shape, and finally return result. The 0..i fragment is a distractor — it lacks indentation and the descending half.',
+        whatYouLearned: 'A symmetric shape is built by an up-loop then a mirrored down-loop.',
+        conceptId: 'iterators',
+      },
     ],
   },
 
@@ -1021,6 +1110,80 @@ n`,
         whatYouLearned: 'A while-not loop searches for the first value satisfying a predicate.',
         conceptId: 'pattern_matching',
       },
+      {
+        kind: 'choice',
+        prompt: 'Fill the loop bound that checks divisors only up to the square root of n.',
+        template: `let mut i = 2;
+while ____ {
+    if n % i == 0 { return false; }
+    i += 1;
+}`,
+        options: ['i < n', 'i * i <= n', 'i <= n / 2', 'i != n'],
+        correct: [1],
+        why: [
+          'Correct but slow — it checks far more divisors than needed.',
+          'Stops at the square root: any factor above sqrt(n) pairs with one below it.',
+          'Better than i < n but still does too much work.',
+          'This never bounds the loop correctly.',
+        ],
+        hints: ['A factor larger than sqrt(n) pairs with a smaller one.', 'Avoid computing a square root: compare i*i with n.'],
+        explanation: 'i * i <= n stops the loop at the square root of n, which is enough to find any divisor and is far faster than scanning up to n.',
+        whatYouLearned: 'The square-root bound is the efficient primality check.',
+        conceptId: 'error_handling',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This primality test returns the wrong answers. It has TWO bugs — click both.',
+        code: `fn is_prime(n: usize) -> bool {
+    let mut i = 2;
+    while i * i <= n {
+        if n % i == 0 {
+            return true;
+        }
+        i += 1;
+    }
+    false
+}`,
+        bugs: [
+          { line: 5, token: 'true' },
+          { line: 9, token: 'false' },
+        ],
+        hints: [
+          'Finding a divisor means the number is NOT prime.',
+          'Reaching the end with no divisor means it IS prime — check both returns.',
+        ],
+        explanation: 'The returns are swapped: a found divisor (n % i == 0) means composite, so it should return false; falling out of the loop means prime, so the final value should be true.',
+        whatYouLearned: 'A found divisor → false; no divisor → true.',
+        conceptId: 'error_handling',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble next_prime around its is_prime helper. One fragment does not belong.',
+        scaffold: `pub fn next_prime(nbr: usize) -> usize {
+    fn is_prime(n: usize) -> bool {
+        [ slot 1 ]
+        [ slot 2 ]
+        [ slot 3 ]
+    }
+    [ slot 4 ]
+}`,
+        fragments: [
+          'if n < 2 { return false; }',
+          'let mut i = 2; while i * i <= n { if n % i == 0 { return false; } i += 1; }',
+          'true',
+          'let mut n = nbr; while !is_prime(n) { n += 1; } n',
+        ],
+        distractors: [
+          'let mut n = nbr; while !is_prime(n) { n -= 1; } n',
+        ],
+        hints: [
+          'is_prime first rejects < 2, then checks divisors, then returns true.',
+          'The search starts at nbr and steps upward.',
+        ],
+        explanation: 'is_prime rejects numbers below 2, scans divisors up to the square root, and returns true if none divide. Then next_prime steps upward from nbr until is_prime holds. The n -= 1 fragment is a distractor (that would search downward).',
+        whatYouLearned: 'A helper defines the test; the driver loops until it passes.',
+        conceptId: 'error_handling',
+      },
     ],
   },
 
@@ -1159,6 +1322,61 @@ _____`,
           'The loop has filled sums with every partial total, so the function returns sums.',
         whatYouLearned: 'Return the accumulated Vec as the final expression.',
         conceptId: 'collections',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Which expression is the slice of the first k elements of v?',
+        options: ['v[..k]', 'v[k..]', 'v[k]', 'v.first(k)'],
+        correct: [0],
+        why: [
+          'v[..k] is the slice from the start up to (not including) index k.',
+          'v[k..] is the slice from k to the end — the opposite part.',
+          'v[k] is a single element, not a slice.',
+          'first() takes no argument and returns Option<&T>.',
+        ],
+        hints: ['You want the prefix, from the start.', 'A range with no left bound starts at 0.'],
+        explanation: 'v[..k] borrows the first k elements; .iter().sum() then totals them. v[k..] would be the suffix instead.',
+        whatYouLearned: 'v[..k] is the prefix slice of length k.',
+        conceptId: 'references',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This builds the wrong values — it counts elements instead of summing them. Click the buggy token.',
+        code: `for k in (0..=v.len()).rev() {
+    sums.push(v[..k].iter().count());
+}`,
+        bugs: [{ line: 2, token: 'count' }],
+        hints: [
+          'We want the total of the elements, not how many there are.',
+          'Look at the iterator consumer.',
+        ],
+        explanation: 'count() returns the number of elements; we need their total, so it must be sum(). For [3,5,8] the first push should be 16, not 3.',
+        whatYouLearned: 'sum() totals values; count() counts them.',
+        conceptId: 'iterators',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble parts_sums. One fragment does not belong.',
+        scaffold: `pub fn parts_sums(v: &[u64]) -> Vec<u64> {
+    [ slot 1 ]
+    [ slot 2 ]
+    [ slot 3 ]
+}`,
+        fragments: [
+          'let mut sums = Vec::with_capacity(v.len() + 1);',
+          'for k in (0..=v.len()).rev() { sums.push(v[..k].iter().sum()); }',
+          'sums',
+        ],
+        distractors: [
+          'for k in 0..v.len() { sums.push(v[k]); }',
+        ],
+        hints: [
+          'Pre-size the vector, fill it from the full slice down to empty, then return it.',
+          'The range counts down with (0..=v.len()).rev().',
+        ],
+        explanation: 'Allocate the result, then for k from len down to 0 push the sum of v[..k] (full total first, trailing 0 last), and return sums. The distractor pushes single elements, not prefix sums.',
+        whatYouLearned: 'Iterate prefix sizes high-to-low to produce the partial sums.',
+        conceptId: 'iterators',
       },
     ],
   },
@@ -1312,6 +1530,39 @@ n _____ 1;`,
         explanation:
           'After confirming n is not yet 0, n -= 1 steps down to the next candidate and the loop tries again.',
         whatYouLearned: 'Searching downward decrements until a prime is found.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'choice',
+        prompt: 'prev_prime searches downward over u64. What prevents an underflow panic?',
+        options: ['if n == 0 { return 0; }', 'n.abs()', 'cast to i64 first', 'nothing is needed'],
+        correct: [0],
+        why: [
+          'Returning before n would drop below 0 avoids the panic.',
+          'u64 has no abs(), and there is no negative to strip.',
+          'Casting changes the type but the loop still must stop at 0.',
+          'Without a guard, n -= 1 at n == 0 panics in debug and wraps in release.',
+        ],
+        hints: ['u64 cannot go below 0.', 'Stop the loop before subtracting from 0.'],
+        explanation: 'Subtracting 1 from a 0_u64 underflows, so the function must return (here, 0 — no prime found) once n reaches 0, before the n -= 1 step.',
+        whatYouLearned: 'Guard unsigned subtraction against underflow.',
+        conceptId: 'error_handling',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This search goes the wrong direction for prev_prime. Click the buggy token.',
+        code: `let mut n = nbr;
+while !is_prime(n) {
+    n += 1;
+}
+n`,
+        bugs: [{ line: 3, token: '+=' }],
+        hints: [
+          'prev_prime wants the largest prime not exceeding nbr.',
+          'Which way should n move?',
+        ],
+        explanation: 'prev_prime searches downward, so it must step n -= 1, not n += 1 (that would find the NEXT prime instead of the previous one).',
+        whatYouLearned: 'Previous-prime searches down; next-prime searches up.',
         conceptId: 'pattern_matching',
       },
     ],
