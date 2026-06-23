@@ -337,6 +337,101 @@ assert_eq!(format!("{}", Money(5)), "$ 5");`,
       '`write!` formats into the provided formatter `f`. Now `format!("{}", Money(5))` yields exactly "$ 5".',
     docUrl: 'https://doc.rust-lang.org/std/fmt/trait.Display.html',
   },
+
+  recursion: {
+    id: 'recursion',
+    name: 'Recursion',
+    explanation:
+      'A recursive function calls itself on a smaller input until it reaches a base case that stops the recursion. Each call solves a tiny piece and combines it with the result of the smaller call.',
+    whyItMatters:
+      'Many problems are naturally self-similar — factorials, tree traversals, divide-and-conquer. Recursion expresses them directly, often more clearly than a manual stack.',
+    example: `fn factorial(n: u64) -> u64 {
+    if n <= 1 {
+        1                 // base case
+    } else {
+        n * factorial(n - 1) // recursive case
+    }
+}`,
+    exampleExplain:
+      'The base case (n <= 1) stops the recursion; otherwise each call multiplies n by the factorial of n-1, unwinding to the final product.',
+    docUrl: 'https://doc.rust-lang.org/book/ch03-05-control-flow.html',
+  },
+
+  sorting: {
+    id: 'sorting',
+    name: 'Sorting',
+    explanation:
+      'Arranging elements into order. The standard library offers sort() and sort_by(|a, b| ...) for custom keys; you can also implement a sort (e.g. insertion sort) by repeatedly placing each element into its correct position.',
+    whyItMatters:
+      'Ordered data powers search, ranking, and deduplication. Knowing both the built-in sorts and how a simple sort works is core algorithmic literacy.',
+    example: `let mut v = vec![3, 1, 2];
+v.sort();                       // [1, 2, 3]
+v.sort_by(|a, b| b.cmp(a));     // [3, 2, 1] (descending)`,
+    exampleExplain:
+      'sort() orders ascending in place; sort_by takes a comparator returning an Ordering, here reversing the comparison for descending order.',
+    docUrl: 'https://doc.rust-lang.org/std/primitive.slice.html#method.sort',
+  },
+
+  matrices: {
+    id: 'matrices',
+    name: 'Matrices & Grids',
+    explanation:
+      'A 2-D grid of values, usually a Vec<Vec<T>> (rows of columns) or a struct with fixed fields. You index with two coordinates, m[row][col], and loop with nested ranges.',
+    whyItMatters:
+      'Matrices appear in graphics, linear algebra, and games. Comfort with nested indexing and row/column iteration is essential for these problems.',
+    example: `let m = vec![vec![1, 2], vec![3, 4]];
+let mut sum = 0;
+for row in 0..m.len() {
+    for col in 0..m[row].len() {
+        sum += m[row][col];
+    }
+}`,
+    exampleExplain:
+      'The outer loop walks rows, the inner loop walks columns; m[row][col] reads one cell. Nested loops visit every element.',
+    docUrl: 'https://doc.rust-lang.org/book/ch08-01-vectors.html',
+  },
+
+  trees: {
+    id: 'trees',
+    name: 'Recursive Data (Trees)',
+    explanation:
+      'A tree is a value that contains more values of the same kind — e.g. an enum where a node holds child nodes. Because the type is recursive, the children usually sit behind a Vec or Box, and you process them with a recursive function.',
+    whyItMatters:
+      'Nested/hierarchical data (file systems, expression trees, JSON) is everywhere. Recursive types plus recursive functions are the natural way to model and flatten them.',
+    example: `enum Tree {
+    Leaf(i32),
+    Node(Vec<Tree>),
+}
+fn sum(t: &Tree) -> i32 {
+    match t {
+        Tree::Leaf(v) => *v,
+        Tree::Node(children) => children.iter().map(sum).sum(),
+    }
+}`,
+    exampleExplain:
+      'A Leaf yields its value; a Node recursively sums its children. The match handles both shapes, and recursion walks the whole tree.',
+    docUrl: 'https://doc.rust-lang.org/book/ch15-01-box.html',
+  },
+
+  parsing: {
+    id: 'parsing',
+    name: 'Parsing & Interpreters',
+    explanation:
+      'Turning raw text into meaning: scanning characters or tokens and acting on them. A simple interpreter walks the input once, keeping state (a position, a stack, counters) and reacting to each symbol.',
+    whyItMatters:
+      'Reading structured input — numbers, commands, mini-languages — is a recurring task. A clear scan-and-act loop keeps parsers correct and readable.',
+    example: `let mut depth = 0;
+for c in "(())".chars() {
+    match c {
+        '(' => depth += 1,
+        ')' => depth -= 1,
+        _ => {}
+    }
+}`,
+    exampleExplain:
+      'The loop scans each character and updates state: depth rises on "(" and falls on ")", a tiny parser for nesting.',
+    docUrl: 'https://doc.rust-lang.org/std/primitive.str.html#method.chars',
+  },
 };
 
 // Resolve a list of concept ids into their entries, skipping unknown ids.

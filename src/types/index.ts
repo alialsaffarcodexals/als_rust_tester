@@ -279,7 +279,29 @@ export interface SelfAssessmentPrompt {
   question: string;
 }
 
-// Full structured learning content for one CP3 exercise, keyed by slug.
+// Documentation references for an exercise (Zone01 Final and beyond).
+export interface DocApi {
+  name: string;     // e.g. 'Vec::push' or 'split_whitespace'
+  url: string;      // official documentation URL
+  note?: string;    // one-line "what it's for in this exercise"
+}
+export interface DocLink {
+  title: string;
+  url: string;
+}
+export interface DocVideo {
+  title: string;
+  url: string;
+  channel?: string;
+}
+export interface ExerciseDocs {
+  apis: DocApi[];
+  links: DocLink[];
+  videos?: DocVideo[];
+}
+
+// Full structured learning content for one guided exercise, keyed by slug.
+// Used by both Zone01 CP3 and Zone01 Final.
 export interface Cp3LearningContent {
   overview: Cp3Overview;
   officialDescription: string;            // transcribed 01-edu subject text
@@ -290,4 +312,22 @@ export interface Cp3LearningContent {
   sideQuiz: SideQuizStep[];
   terminal?: TerminalConfig;              // present only for CLI exercises
   selfAssessment?: SelfAssessmentPrompt[];// defaults applied if omitted
+  documentation?: ExerciseDocs;           // Documentation tab (Final)
+  editorHints?: string[];                 // progressive in-editor guidance (Final)
+}
+
+// A self-contained coding challenge for the Final Preparation Quiz.
+export interface FinalPrepChallenge {
+  id: string;
+  level: number;                 // 1..9
+  title: string;
+  difficulty: Difficulty;
+  description: string;
+  requirements: string[];
+  expectedBehavior: string;
+  starter: string;
+  hints: string[];
+  concepts: string[];            // concept ids (conceptLibrary)
+  docs?: ExerciseDocs;
+  testCases: TestCase[];         // graded via the Rust playground
 }
