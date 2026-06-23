@@ -806,4 +806,492 @@ s.chars().filter(|&c| c != target).collect()`,
       'For the insensitive version, lowercase BOTH c and letter before comparing.',
     ],
   },
+
+  smallest: {
+    overview: {
+      whatYouBuild: 'A function that returns the smallest value stored in a HashMap of name -> value.',
+      inputOutput: 'Input: a HashMap<&str, i32>. Output: the smallest i32 value (0 for an empty map).',
+      constraints: ['Look at the values, not the keys.', 'Handle the empty map without panicking.'],
+      commonMistakes: ['Iterating keys instead of values.', 'Calling unwrap() on an empty map (panics).'],
+    },
+    officialDescription: `## smallest
+
+Create a function smallest that takes a HashMap of &str to i32 and returns the smallest value it contains.
+
+### Expected function
+
+~~~
+pub fn smallest(h: HashMap<&str, i32>) -> i32
+~~~`,
+    objectives: {
+      learn: ['Iterate a map\'s values.', 'Find a minimum with Iterator::min.', 'Default safely on an empty collection.'],
+      whyExists: 'Practices HashMap iteration and the Option returned by min.',
+      rustSkills: ['HashMap', 'iterators', 'Option'],
+    },
+    conceptIds: ['collections', 'iterators'],
+    conceptNotes: {
+      collections: 'HashMap::values() yields the stored i32s.',
+      iterators: 'min() returns an Option because the iterator could be empty.',
+    },
+    similar: {
+      title: 'Largest value',
+      prompt: 'Return the largest value in a HashMap<&str, i32> (0 if empty). Same values().max() pattern.',
+      starter: `use std::collections::HashMap;
+pub fn largest(h: HashMap<&str, i32>) -> i32 {
+    todo!()
+}`,
+      hint: 'h.values().copied().max().unwrap_or(0)',
+      concepts: ['collections', 'iterators'],
+      solution: `use std::collections::HashMap;
+pub fn largest(h: HashMap<&str, i32>) -> i32 {
+    h.values().copied().max().unwrap_or(0)
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Iterate the map\'s values. Fill the accessor.',
+        template: `let result = h._____().copied().min().unwrap_or(0);`,
+        accepted: ['values'],
+        acceptedPatterns: ['^values$'],
+        hints: ['You want the stored numbers, not the names.', 'HashMap has values().'],
+        explanation: 'values() yields the i32 values; copied() turns &i32 into i32 so min() can compare owned values.',
+        whatYouLearned: 'Use values() to iterate a map\'s values.',
+        conceptId: 'collections',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Why does min() need unwrap_or(0) here?',
+        options: [
+          'min() returns Option, which is None for an empty map',
+          'min() can panic',
+          'unwrap_or speeds it up',
+          'min() returns a Result',
+        ],
+        correct: [0],
+        why: [
+          'An empty iterator has no minimum, so min() returns None; unwrap_or supplies 0.',
+          'min() does not panic.',
+          'It is about correctness, not speed.',
+          'min() returns Option, not Result.',
+        ],
+        hints: ['What if the map is empty?', 'min() of nothing is None.'],
+        explanation: 'min() returns Option<i32>; unwrap_or(0) provides a sensible default when the map is empty.',
+        whatYouLearned: 'min()/max() return Option to handle the empty case.',
+        conceptId: 'iterators',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This looks at the wrong part of the map. Click the mistake.',
+        code: `let result = h.keys().copied().min().unwrap_or(0);`,
+        bugs: [{ line: 1, token: 'keys' }],
+        hints: ['We want the smallest value, not key.', 'Check the accessor.'],
+        explanation: 'keys() iterates the &str names; we need values() to find the smallest i32.',
+        whatYouLearned: 'keys() vs values(): pick the right one.',
+        conceptId: 'collections',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'HashMap::values', url: 'https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.values', note: 'iterate values' },
+        { name: 'Iterator::min', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.min', note: 'smallest (Option)' },
+        { name: 'Option::unwrap_or', url: 'https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or', note: 'default for empty' },
+      ],
+      links: [
+        { title: 'The Book — Hash maps', url: 'https://doc.rust-lang.org/book/ch08-03-hash-maps.html' },
+        { title: 'Rust By Example — Iterators', url: 'https://doc.rust-lang.org/rust-by-example/trait/iter.html' },
+      ],
+    },
+    editorHints: [
+      'Iterate values() (not keys()).',
+      'Use min() to find the smallest — it returns an Option.',
+      'unwrap_or(0) handles the empty map.',
+    ],
+  },
+
+  prime_checker: {
+    overview: {
+      whatYouBuild:
+        'A function that classifies a number: None for inputs <= 1, otherwise a Result that is Ok(n) for primes, Err(Even) for even numbers, or Err(Divider(d)) with the smallest odd divider.',
+      inputOutput: 'Input: a usize. Output: Option<Result<usize, PrimeErr>>. 2 -> Some(Ok(2)); 14 -> Some(Err(Even)); 9 -> Some(Err(Divider(3))); 1 -> None.',
+      constraints: ['<= 1 returns None.', 'Even numbers (except 2) return Err(Even).', 'Otherwise return the smallest odd divider, or Ok(n) if prime.', 'Should be reasonably optimized (check to the square root).'],
+      commonMistakes: ['Forgetting the None case for <= 1.', 'Treating 2 as Even.', 'Scanning all numbers instead of stopping at the square root.'],
+    },
+    officialDescription: `## prime_checker
+
+Create a function prime_checker that takes a usize and checks if it is prime.
+
+The result is None if the argument is <= 1. Otherwise it returns a Result: Ok(usize) if prime, or Err(PrimeErr). PrimeErr is Even if the number is a multiple of two, or Divider(usize) where the usize is the smallest divider.
+
+### Expected items
+
+~~~
+#[derive(PartialEq, Eq, Debug)]
+pub enum PrimeErr { Even, Divider(usize) }
+
+pub fn prime_checker(nb: usize) -> Option<Result<usize, PrimeErr>>
+~~~
+
+### Usage
+
+prime_checker(2) = Some(Ok(2)), prime_checker(14) = Some(Err(Even)), prime_checker(2147483647) = Some(Ok(2147483647)).`,
+    objectives: {
+      learn: ['Combine Option and Result in one return type.', 'Model errors with an enum.', 'Optimize a primality test to the square root.'],
+      whyExists: 'A rich exercise in nested Option/Result modelling and efficient looping.',
+      rustSkills: ['Option', 'Result', 'enums', 'algorithms'],
+    },
+    conceptIds: ['option', 'result', 'enums', 'error_handling'],
+    conceptNotes: {
+      option: 'The outer Option encodes "out of range" (<= 1) as None.',
+      result: 'The inner Result is Ok(prime) or Err(PrimeErr).',
+      enums: 'PrimeErr carries the failure reason (Even or the divider).',
+    },
+    similar: {
+      title: 'Classify even/odd/zero',
+      prompt: 'Write a function returning an enum Sign { Zero, Even, Odd } describing a usize. Practices enum returns and branching.',
+      starter: `pub enum Sign { Zero, Even, Odd }
+pub fn classify(n: usize) -> Sign {
+    todo!()
+}`,
+      hint: 'match on n == 0, then n % 2.',
+      concepts: ['enums', 'pattern_matching'],
+      solution: `pub enum Sign { Zero, Even, Odd }
+pub fn classify(n: usize) -> Sign {
+    if n == 0 { Sign::Zero } else if n % 2 == 0 { Sign::Even } else { Sign::Odd }
+}`,
+    },
+    sideQuiz: [
+      {
+        kind: 'choice',
+        prompt: 'What is the correct return type for prime_checker?',
+        options: [
+          'Option<Result<usize, PrimeErr>>',
+          'Result<usize, PrimeErr>',
+          'Option<usize>',
+          'Result<Option<usize>, PrimeErr>',
+        ],
+        correct: [0],
+        why: [
+          'None for <= 1, otherwise a Result(Ok/Err) — an Option wrapping a Result.',
+          'Misses the None (<= 1) case.',
+          'Cannot express the Even/Divider error.',
+          'The nesting is backwards: <= 1 is the Option layer, not the Result layer.',
+        ],
+        hints: ['Two layers: in-range? then prime?', 'Outer Option, inner Result.'],
+        explanation: 'The <= 1 case is None; everything else is a Result, so the type is Option<Result<usize, PrimeErr>>.',
+        whatYouLearned: 'Nest Option and Result to model two independent outcomes.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Reject the out-of-range inputs. Fill the value returned for nb <= 1.',
+        template: `if nb <= 1 {
+    return _____;
+}`,
+        accepted: ['None'],
+        acceptedPatterns: ['^None$'],
+        hints: ['<= 1 is not classified as prime or not.', 'Return None.'],
+        explanation: 'Per the spec, inputs of 1 or less return None (outside the prime question).',
+        whatYouLearned: 'None marks an input outside the meaningful range.',
+        conceptId: 'option',
+      },
+      {
+        prompt: 'Report an even number. Fill the value for a multiple of two (after handling 2).',
+        template: `if nb % 2 == 0 {
+    return Some(Err(PrimeErr::_____));
+}`,
+        accepted: ['Even'],
+        acceptedPatterns: ['^Even$'],
+        hints: ['The variant for multiples of two.', 'PrimeErr::Even.'],
+        explanation: 'Even numbers greater than 2 fail with Err(PrimeErr::Even).',
+        whatYouLearned: 'Enum variants name each failure reason.',
+        conceptId: 'enums',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What does prime_checker(9) return?',
+        options: ['Some(Err(Divider(3)))', 'Some(Err(Even))', 'Some(Ok(9))', 'None'],
+        correct: [0],
+        why: [
+          '9 is odd and divisible by 3 — the smallest divider is 3.',
+          '9 is odd, not even.',
+          '9 is not prime (3 * 3).',
+          '9 is greater than 1, so not None.',
+        ],
+        hints: ['9 is odd; what divides it?', '3 * 3 = 9.'],
+        explanation: '9 is odd, and the first odd divisor found is 3, so it returns Some(Err(PrimeErr::Divider(3))).',
+        whatYouLearned: 'The smallest divider is the first odd factor found.',
+        conceptId: 'result',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This primality loop is slow and can mis-handle 2. Click the inefficiency in the bound.',
+        code: `let mut i = 3;
+while i < nb {
+    if nb % i == 0 { return Some(Err(PrimeErr::Divider(i))); }
+    i += 2;
+}`,
+        bugs: [{ line: 2, token: 'nb' }],
+        hints: ['How far do you really need to check divisors?', 'A divisor pairs with one below the square root.'],
+        explanation: 'Scanning while i < nb is O(n). Stop at the square root: while i * i <= nb. (The spec asks for an optimized solution.)',
+        whatYouLearned: 'Bound divisor checks by the square root for efficiency.',
+        conceptId: 'error_handling',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'Option<Result<T, E>>', url: 'https://doc.rust-lang.org/std/option/enum.Option.html', note: 'nested outcome type' },
+        { name: 'enum with data', url: 'https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html', note: 'PrimeErr::Divider(usize)' },
+        { name: 'Rem (%)', url: 'https://doc.rust-lang.org/std/ops/trait.Rem.html', note: 'divisibility test' },
+      ],
+      links: [
+        { title: 'Rust By Example — Result', url: 'https://doc.rust-lang.org/rust-by-example/error/result.html' },
+        { title: 'The Book — Enums', url: 'https://doc.rust-lang.org/book/ch06-00-enums.html' },
+      ],
+      videos: [{ title: "Use and Understand Rust's Result Type", channel: 'Rust Tutorial', url: 'https://www.youtube.com/watch?v=s7z_sdPBwFg' }],
+    },
+    editorHints: [
+      'Return None for nb <= 1; handle 2 as the only even prime.',
+      'Reject other even numbers with Err(PrimeErr::Even).',
+      'Scan odd divisors only up to the square root; the first one found is Divider(i), else Ok(nb).',
+    ],
+  },
+
+  profanity_filter: {
+    overview: {
+      whatYouBuild: 'A message validator that returns the text on success or an error string when the message is empty or contains a banned word.',
+      inputOutput: 'Input: a &str message. Output: Result<&str, &str> — Ok(message) or Err("ERROR: illegal").',
+      constraints: ['Empty input -> Err("ERROR: illegal").', 'Contains "stupid" -> Err("ERROR: illegal").', 'Otherwise Ok(message).'],
+      commonMistakes: ['Panicking instead of returning an Err.', 'Mismatching the exact error text.', 'Forgetting the empty-string case.'],
+    },
+    officialDescription: `## profanity_filter
+
+Create a function check_ms that takes a &str and returns Result<&str, &str>.
+
+- Return Err("ERROR: illegal") if the input is empty.
+- Return Err("ERROR: illegal") if the input contains the word "stupid".
+- Otherwise return Ok(message).
+
+### Expected function
+
+~~~
+pub fn check_ms(message: &str) -> Result<&str, &str>
+~~~
+
+### Usage
+
+check_ms("hello there") = Ok("hello there"), check_ms("") = Err("ERROR: illegal"), check_ms("you are stupid") = Err("ERROR: illegal").`,
+    objectives: {
+      learn: ['Return Result instead of panicking.', 'Test substrings with contains.', 'Branch into Ok/Err.'],
+      whyExists: 'A clean introduction to recoverable errors via Result.',
+      rustSkills: ['Result', 'string search', 'error handling'],
+    },
+    conceptIds: ['result', 'error_handling'],
+    conceptNotes: {
+      result: 'Ok carries the valid message; Err carries the rejection reason.',
+      error_handling: 'Validation returns an Err value rather than panicking.',
+    },
+    similar: {
+      title: 'Non-empty validator',
+      prompt: 'Write a function that returns Ok(name) if a name is non-empty, else Err("empty"). Same Result branching.',
+      starter: `pub fn check_name(name: &str) -> Result<&str, &str> {
+    todo!()
+}`,
+      hint: 'if name.is_empty() { Err("empty") } else { Ok(name) }',
+      concepts: ['result', 'error_handling'],
+      solution: `pub fn check_name(name: &str) -> Result<&str, &str> {
+    if name.is_empty() { Err("empty") } else { Ok(name) }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Detect the banned word. Fill the method that tests for a substring.',
+        template: `if message.is_empty() || message._____("stupid") {
+    return Err("ERROR: illegal");
+}`,
+        accepted: ['contains'],
+        acceptedPatterns: ['^contains$'],
+        hints: ['You want to know if a substring is present.', 'str has contains().'],
+        explanation: 'contains("stupid") is true when the banned word appears anywhere in the message.',
+        whatYouLearned: 'str::contains tests for a substring.',
+        conceptId: 'result',
+      },
+      {
+        prompt: 'On success, return the message. Fill the Result variant.',
+        template: `_____(message)`,
+        accepted: ['Ok'],
+        acceptedPatterns: ['^Ok$'],
+        hints: ['Success is the Ok side.', 'Wrap the message in Ok.'],
+        explanation: 'A valid message is returned as Ok(message).',
+        whatYouLearned: 'Ok(value) is the success side of a Result.',
+        conceptId: 'result',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What does check_ms("") return?',
+        options: ['Err("ERROR: illegal")', 'Ok("")', 'None', 'a panic'],
+        correct: [0],
+        why: [
+          'Empty input is explicitly rejected with the error string.',
+          'Empty is not Ok.',
+          'The function returns Result, not Option.',
+          'It returns an Err value, it does not panic.',
+        ],
+        hints: ['Empty input is one of the rejection cases.', 'It returns an Err, not Ok.'],
+        explanation: 'The empty string triggers the first guard, returning Err("ERROR: illegal").',
+        whatYouLearned: 'Handle the empty-input edge case explicitly.',
+        conceptId: 'error_handling',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This validator crashes instead of reporting an error. Click the mistake.',
+        code: `if message.contains("stupid") {
+    panic!("ERROR: illegal");
+}
+Ok(message)`,
+        bugs: [{ line: 2, token: 'panic' }],
+        hints: ['The function returns a Result for a reason.', 'Errors should be values, not crashes.'],
+        explanation: 'panic! aborts the program; a banned word should instead return Err("ERROR: illegal") so the caller can handle it.',
+        whatYouLearned: 'Return Err values; reserve panic for unrecoverable bugs.',
+        conceptId: 'error_handling',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'str::contains', url: 'https://doc.rust-lang.org/std/primitive.str.html#method.contains', note: 'detect the banned word' },
+        { name: 'str::is_empty', url: 'https://doc.rust-lang.org/std/primitive.str.html#method.is_empty', note: 'reject empty input' },
+        { name: 'Result', url: 'https://doc.rust-lang.org/std/result/enum.Result.html', note: 'Ok / Err return' },
+      ],
+      links: [
+        { title: 'The Book — Recoverable errors with Result', url: 'https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html' },
+        { title: 'Rust By Example — Result', url: 'https://doc.rust-lang.org/rust-by-example/error/result.html' },
+      ],
+    },
+    editorHints: [
+      'Reject empty input and any message containing "stupid".',
+      'Both rejections return Err("ERROR: illegal") (exact text).',
+      'Otherwise return Ok(message).',
+    ],
+  },
+
+  insertion_sort: {
+    overview: {
+      whatYouBuild: 'An in-place insertion sort that runs only up to a given number of passes — allowing partial or full sorting.',
+      inputOutput: 'Input: &mut [i32] and a steps count. Effect: the slice is sorted in place by up to `steps` outer passes.',
+      constraints: ['Sort in place (mutable slice).', 'Run at most `steps` passes (and at most len-1).', 'Each pass inserts one more element into the sorted left part.'],
+      commonMistakes: ['Running more passes than `steps`.', 'Index underflow when shifting at the front.', 'Returning a new Vec instead of mutating in place.'],
+    },
+    officialDescription: `## insertion_sort
+
+Implement insertion_sort on a mutable slice of i32, running iterations of the algorithm up to the number indicated by steps.
+
+Insertion sort takes each element (from index 1) and shifts it left past any larger neighbours until it is in order. The steps parameter limits how many outer iterations run, so the array may be partially or fully sorted.
+
+### Expected function
+
+~~~
+pub fn insertion_sort(slice: &mut [i32], steps: usize)
+~~~
+
+### Usage
+
+With steps = 1 on [5, 3, 7, 2, 1, 6, 8, 4] -> [3, 5, 7, 2, 1, 6, 8, 4]; with steps = 7 the array is fully sorted.`,
+    objectives: {
+      learn: ['Mutate a slice in place.', 'Implement insertion sort.', 'Bound the work by a parameter.'],
+      whyExists: 'Implementing a sort by hand builds core algorithmic understanding and in-place mutation skills.',
+      rustSkills: ['mutable slices', 'sorting', 'loops'],
+    },
+    conceptIds: ['sorting', 'references'],
+    conceptNotes: {
+      sorting: 'Insertion sort grows a sorted prefix one element at a time.',
+      references: 'A &mut [i32] lets the function reorder the caller\'s data in place.',
+    },
+    similar: {
+      title: 'One bubble pass',
+      prompt: 'Write a function that performs a single bubble-sort pass over a &mut [i32] (swap adjacent out-of-order pairs once). Same in-place swap idea.',
+      starter: `pub fn bubble_pass(slice: &mut [i32]) {
+    todo!()
+}`,
+      hint: 'for i in 0..slice.len().saturating_sub(1) { if slice[i] > slice[i+1] { slice.swap(i, i+1); } }',
+      concepts: ['sorting', 'references'],
+      solution: `pub fn bubble_pass(slice: &mut [i32]) {
+    for i in 0..slice.len().saturating_sub(1) {
+        if slice[i] > slice[i + 1] { slice.swap(i, i + 1); }
+    }
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Shift an element left into place. Fill the call that swaps neighbours.',
+        template: `while j > 0 && slice[j - 1] > slice[j] {
+    slice._____(j - 1, j);
+    j -= 1;
+}`,
+        accepted: ['swap'],
+        acceptedPatterns: ['^swap$'],
+        hints: ['Slices have a method to exchange two indices.', 'slice.swap(a, b).'],
+        explanation: 'swap(j-1, j) moves the element one position left while it is smaller than its left neighbour.',
+        whatYouLearned: 'slice::swap exchanges two elements in place.',
+        conceptId: 'sorting',
+      },
+      {
+        prompt: 'Limit the passes. Fill the bound so we never exceed the slice or `steps`.',
+        template: `let limit = steps.min(slice.len()._____(1));`,
+        accepted: ['saturating_sub'],
+        acceptedPatterns: ['^saturating_sub$'],
+        hints: ['len - 1 could underflow on an empty slice.', 'Use saturating_sub(1).'],
+        explanation: 'saturating_sub(1) yields len-1 without underflowing to a huge usize when the slice is empty.',
+        whatYouLearned: 'saturating_sub avoids unsigned underflow.',
+        conceptId: 'references',
+      },
+      {
+        kind: 'choice',
+        prompt: 'After insertion_sort(&mut [5,3,7,2,1,6,8,4], 1), what is the array?',
+        options: ['[3, 5, 7, 2, 1, 6, 8, 4]', '[1, 2, 3, 4, 5, 6, 7, 8]', '[3, 5, 2, 7, 1, 6, 8, 4]', 'unchanged'],
+        correct: [0],
+        why: [
+          'One pass inserts index 1 (the 3) before the 5; the rest is untouched.',
+          'That is the fully sorted result (needs more passes).',
+          'Only the first two elements change on pass 1.',
+          'Pass 1 does change the array.',
+        ],
+        hints: ['steps = 1 does a single outer pass.', 'Only element at index 1 is inserted.'],
+        explanation: 'The first pass moves the 3 left past the 5, giving [3, 5, 7, ...]; later elements wait for later passes.',
+        whatYouLearned: 'Each pass places exactly one more element.',
+        conceptId: 'sorting',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble insertion_sort. One fragment does not belong.',
+        scaffold: `pub fn insertion_sort(slice: &mut [i32], steps: usize) {
+    [ slot 1 ]
+    [ slot 2 ]
+}`,
+        fragments: [
+          'let limit = steps.min(slice.len().saturating_sub(1));',
+          'for i in 1..=limit { let mut j = i; while j > 0 && slice[j - 1] > slice[j] { slice.swap(j - 1, j); j -= 1; } }',
+        ],
+        distractors: ['slice.sort();'],
+        hints: ['Compute the pass limit, then run the bounded insertion loop.', 'slice.sort() would ignore the steps parameter.'],
+        explanation: 'First clamp the number of passes, then run insertion sort for that many outer iterations. slice.sort() is a distractor — it ignores steps.',
+        whatYouLearned: 'A bounded loop gives partial sorting controlled by a parameter.',
+        conceptId: 'sorting',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'slice::swap', url: 'https://doc.rust-lang.org/std/primitive.slice.html#method.swap', note: 'exchange two elements' },
+        { name: 'usize::saturating_sub', url: 'https://doc.rust-lang.org/std/primitive.usize.html#method.saturating_sub', note: 'safe len - 1' },
+        { name: 'Ord::min', url: 'https://doc.rust-lang.org/std/cmp/trait.Ord.html#method.min', note: 'clamp the pass count' },
+      ],
+      links: [
+        { title: 'Insertion sort (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Insertion_sort' },
+        { title: 'The Book — Slices', url: 'https://doc.rust-lang.org/book/ch04-03-slices.html' },
+      ],
+      videos: [{ title: 'Crust of Rust: Sorting Algorithms', channel: 'Jon Gjengset', url: 'https://www.youtube.com/watch?v=h4RkCyJyXmM' }],
+    },
+    editorHints: [
+      'Sort in place through the &mut slice — do not return a new Vec.',
+      'Run at most `steps` outer passes (and at most len-1).',
+      'Each pass shifts one element left with slice.swap until it is in order.',
+    ],
+  },
 };
