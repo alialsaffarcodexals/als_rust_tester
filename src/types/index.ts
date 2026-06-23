@@ -300,6 +300,16 @@ export interface ExerciseDocs {
   videos?: DocVideo[];
 }
 
+// A short, concept-focused learning video shown in the Videos journey section.
+export interface LearningVideo {
+  title: string;
+  url: string;
+  channel?: string;
+  duration: string;   // human label, e.g. "~12 min"
+  concept: string;    // the concept this video covers (display name)
+  why: string;        // one line on why it's relevant to the exercise
+}
+
 // Full structured learning content for one guided exercise, keyed by slug.
 // Used by both Zone01 CP3 and Zone01 Final.
 export interface Cp3LearningContent {

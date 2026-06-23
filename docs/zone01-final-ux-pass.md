@@ -107,3 +107,26 @@ a flat collection of tabs — modern, clean, motivating, easy to navigate, learn
 - **Sticky in-page nav** inside long Documentation/Concepts sections (jump-to anchors).
 - **Concept relationship map** linking related concepts across exercises.
 - **Exam summary** at the end of a timed Final Prep session (score, time, weak areas).
+
+---
+
+## Follow-up pass — manual progress + Videos section
+
+Two further changes after the first pass:
+
+1. **Manual completion (no auto-complete).** Visiting a section used to mark it done,
+   which conflated navigation with learning. Now completion is **fully user-controlled**:
+   each section has a "○ Mark section complete" / "✓ Completed — click to undo" toggle, and
+   the journey progress bar counts only manually-completed sections (starts at 0/N on load).
+   `src/pages/LessonPage.tsx` — the `visited`/quiz-solved auto-completion was replaced by a
+   `completed` set toggled by `toggleComplete`. (Applies to all guided journeys; the Side
+   Quiz's internal "all solved" celebration is unchanged.)
+
+2. **Videos section (Zone01 Final only).** A new "🎬 Videos" journey tab between
+   Documentation and Practice shows short, concept-focused videos. It is **data-driven**:
+   `src/data/conceptVideos.ts` maps each concept id to curated short videos (5–20 min,
+   reusing the app's known-good URLs; multi-hour courses avoided), and `VideosPanel`
+   resolves them from the exercise's `conceptIds` (de-duplicated). Each card shows the
+   **title, duration, concept covered, and why it's relevant**. When no relevant video
+   exists it shows a friendly "No high-quality concept video was found for this exercise."
+   message rather than padding with irrelevant content.
