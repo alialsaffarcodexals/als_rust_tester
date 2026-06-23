@@ -2677,6 +2677,63 @@ _____(result)`,
         whatYouLearned: 'Some(x) wraps the successful result of an Option-returning function.',
         conceptId: 'option',
       },
+      {
+        kind: 'choice',
+        prompt: 'Which condition detects a length that is NOT a clean multiple of the column count?',
+        options: ['len % letters_per_turn != 0', 'len / letters_per_turn', 'len == letters_per_turn', 'letters_per_turn % len != 0'],
+        correct: [0],
+        why: [
+          'A non-zero remainder means the grid is not a clean rectangle.',
+          'Division gives the row count, not a divisibility test.',
+          'Equality is unrelated to divisibility.',
+          'The operands are the wrong way round.',
+        ],
+        hints: ['Think remainder.', 'len divided by columns must leave nothing over.'],
+        explanation: 'If len % letters_per_turn != 0 the characters cannot fill complete columns, so the message is invalid and the decoder returns None.',
+        whatYouLearned: 'Modulo checks for a clean rectangular fit.',
+        conceptId: 'option',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This guard returns the wrong thing for invalid input. Click the mistake.',
+        code: `if s.is_empty() || letters_per_turn == 0 {
+    return Some(s);
+}`,
+        bugs: [{ line: 2, token: 'Some' }],
+        hints: [
+          'Empty input or zero columns cannot be decoded.',
+          'What does an Option-returning function give on failure?',
+        ],
+        explanation: 'Invalid input has no decoding, so the guard must return None, not Some(s). Returning Some would hand back the raw (undecoded) string.',
+        whatYouLearned: 'Return None for the invalid cases of an Option function.',
+        conceptId: 'option',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble scytale_decoder. One fragment does not belong.',
+        scaffold: `pub fn scytale_decoder(s: String, letters_per_turn: usize) -> Option<String> {
+    [ slot 1 ]
+    [ slot 2 ]
+    [ slot 3 ]
+    [ slot 4 ]
+}`,
+        fragments: [
+          'if s.is_empty() || letters_per_turn == 0 { return None; }',
+          'let len = s.chars().count(); if len % letters_per_turn != 0 { return None; }',
+          'let rows = len / letters_per_turn; let chars: Vec<char> = s.chars().collect(); let mut result = String::new(); for col in 0..letters_per_turn { for row in 0..rows { result.push(chars[row * letters_per_turn + col]); } }',
+          'Some(result)',
+        ],
+        distractors: [
+          'let rows = letters_per_turn / len;',
+        ],
+        hints: [
+          'Validate first (empty/zero, then divisibility), then read the grid column by column.',
+          'rows = len / letters_per_turn, not the other way round.',
+        ],
+        explanation: 'Reject the impossible cases, check the length divides evenly, read the grid column-major into result, then return Some(result). The rows = letters_per_turn / len fragment is a distractor with the division reversed.',
+        whatYouLearned: 'Validate, then transform, then wrap in Some.',
+        conceptId: 'option',
+      },
     ],
   },
 
@@ -2809,6 +2866,55 @@ let line = format!("(_____)", cells.join(" "));`,
         explanation: 'Inside a Display impl you use write!(f, ...) to send text to the formatter; println! would go to stdout and is wrong here.',
         whatYouLearned: 'write!(f, ...) is how Display produces its output.',
         conceptId: 'display_trait',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Inside a Display::fmt implementation, which macro emits the output?',
+        options: ['write!', 'println!', 'print!', 'format!'],
+        correct: [0],
+        why: [
+          'write!(f, ...) sends formatted text to the formatter.',
+          'println! goes to stdout, bypassing the formatter.',
+          'print! also writes to stdout, not f.',
+          'format! builds a String but does not write to f.',
+        ],
+        hints: ['You write into the formatter f.', 'It looks like print but takes f first.'],
+        explanation: 'Display::fmt receives a Formatter f and must write into it with write!(f, ...); println!/print! would wrongly target stdout.',
+        whatYouLearned: 'Use write!(f, ...) inside fmt, not println!.',
+        conceptId: 'display_trait',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This Display impl writes to the wrong place. Click the mistake.',
+        code: `fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    println!("{}", self.0.len());
+    Ok(())
+}`,
+        bugs: [{ line: 2, token: 'println' }],
+        hints: [
+          'The output must go into the formatter, not stdout.',
+          'Look at the macro used.',
+        ],
+        explanation: 'println! prints to stdout and ignores f; it must be write!(f, "{}", ...) so the formatted text becomes the value’s Display output.',
+        whatYouLearned: 'fmt writes into f with write!, never println!.',
+        conceptId: 'display_trait',
+      },
+      {
+        kind: 'match',
+        prompt: 'Match each piece of the Matrix Display to its job.',
+        pairs: [
+          { left: 'self.0.iter()', right: 'iterate over the rows' },
+          { left: '.map(|n| n.to_string())', right: 'turn numbers into text' },
+          { left: 'cells.join(" ")', right: 'space-separate a row' },
+          { left: 'lines.join("\\n")', right: 'put each row on its own line' },
+        ],
+        hints: [
+          'iter walks the rows; map transforms each number.',
+          'join(" ") spaces cells within a row; join("\\n") stacks rows.',
+        ],
+        explanation: 'The rows are iterated, each number stringified, the cells joined by spaces into "(a b c)", and finally the row strings joined by newlines so each row prints on its own line.',
+        whatYouLearned: 'map + join build the formatted rows and the final layout.',
+        conceptId: 'iterators',
       },
     ],
   },
@@ -2970,6 +3076,42 @@ impl From<&str> for Point {
         whatYouLearned: 'From impls compose: one conversion can call another.',
         conceptId: 'traits',
       },
+      {
+        kind: 'choice',
+        prompt: 'You implemented From<&str> for WorkerRole. Which method does that give you for free?',
+        options: ['.into()', '.parse()', '.as_str()', '.clone()'],
+        correct: [0],
+        why: [
+          'Implementing From<T> automatically provides Into for the reverse direction, so "admin".into() works.',
+          'parse() comes from FromStr, a different trait.',
+          'as_str() is unrelated to conversion.',
+          'clone() duplicates a value; it is not a conversion.',
+        ],
+        hints: ['From and Into are paired.', 'It is the dual of From.'],
+        explanation: 'A From<A> for B impl gives a matching Into<B> for A for free, so you can write let r: WorkerRole = "admin".into();',
+        whatYouLearned: 'Implement From; get Into automatically.',
+        conceptId: 'traits',
+      },
+      {
+        kind: 'bug',
+        prompt: 'The fields are filled from the wrong parts. It has TWO bugs (swapped indices) — click both.',
+        code: `OfficeWorker {
+    name: parts[1].to_string(),
+    age: parts[0].parse().unwrap(),
+    role: WorkerRole::from(parts[2]),
+}`,
+        bugs: [
+          { line: 2, token: '1' },
+          { line: 3, token: '0' },
+        ],
+        hints: [
+          'The input is "name,age,role" in that order.',
+          'Check which index feeds name and which feeds age.',
+        ],
+        explanation: 'For "name,age,role", parts[0] is the name and parts[1] is the age. They are swapped here — name should use parts[0] and age parts[1].',
+        whatYouLearned: 'Map split parts to fields in the right order.',
+        conceptId: 'traits',
+      },
     ],
   },
 
@@ -3120,6 +3262,38 @@ self.right = _____;`,
         ],
         explanation: 'Once the right value has been combined into the left, the right side is cleared by assigning None.',
         whatYouLearned: 'Set an Option to None to mark it empty.',
+        conceptId: 'option',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Which trait bound lets you use + on values of type T?',
+        options: ['T: Add<Output = T>', 'T: Sum', 'T: Ord', 'T: Default'],
+        correct: [0],
+        why: [
+          'The + operator is provided by the Add trait.',
+          'Sum is for totalling an iterator, not the + operator.',
+          'Ord is for comparison/ordering.',
+          'Default provides a zero value, not addition.',
+        ],
+        hints: ['Operators map to traits.', '+ is the Add trait.'],
+        explanation: 'Add<Output = T> means a + b is valid and yields a T, which is what the garage needs to combine two values.',
+        whatYouLearned: 'The + operator requires the Add trait bound.',
+        conceptId: 'generics',
+      },
+      {
+        kind: 'bug',
+        prompt: 'After moving the value right, the source side is not cleared. Click the mistake.',
+        code: `if let Some(l) = self.left {
+    self.right = Some(l);
+    self.left = Some(l);
+}`,
+        bugs: [{ line: 3, token: 'Some' }],
+        hints: [
+          'Once moved, the left side should be empty.',
+          'Look at what self.left is set to.',
+        ],
+        explanation: 'After moving the value to the right, the left must be emptied: self.left = None. Setting it to Some(l) leaves the value duplicated on both sides.',
+        whatYouLearned: 'Clear the source side (None) after a move.',
         conceptId: 'option',
       },
     ],
