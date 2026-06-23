@@ -270,8 +270,8 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
       label: 'Zone01 — Final',
       sublabel: 'Advanced Rust',
       icon: '🏆',
-      examPath: null as string | null,
-      examUnlocked: false,
+      examPath: '/final-prep' as string | null,
+      examUnlocked: true,
       stats: z01finalStats,
       zoneExercises: z01finalExercises,
       items: [],
@@ -339,6 +339,17 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
             </svg>
           </span>
           CP3 Quiz
+        </button>
+        <button
+          className={`sidebar-nav-item ${isActive('/final-prep') ? 'active' : ''}`}
+          onClick={() => nav('/final-prep')}
+        >
+          <span className="sidebar-nav-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 2v12M3 3h7l-1.5 2.5L10 8H3" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"/>
+            </svg>
+          </span>
+          Final Prep
         </button>
       </nav>
 
@@ -524,6 +535,8 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
                   >
                     {section.examPath === '/quiz'
                       ? `🧩 ${section.label} Quiz`
+                      : section.examPath === '/final-prep'
+                      ? '🏁 Final Prep Quiz'
                       : `${section.examUnlocked ? '🎯' : '🔒'} ${section.label} Exam`}
                   </button>}
                 </div>
