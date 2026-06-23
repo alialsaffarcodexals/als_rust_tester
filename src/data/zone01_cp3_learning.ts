@@ -475,35 +475,50 @@ let mut counts: HashMap<String, u32> = _____;`,
         conceptId: 'collections',
       },
       {
-        prompt: 'Loop over the words in the text. Fill the iterator that yields whitespace-separated words.',
-        template: `for word in words._____() {
-    // count each word
+        kind: 'choice',
+        prompt: 'Punctuation attached to words must be ignored — e.g. "It is, a test" counts as it / is / a / test — but the apostrophe inside "it\'s" must be kept. Which split does that?',
+        template: `for word in words.____ {
+    if word.is_empty() {
+        continue;
+    }
+    // lowercase and count each word
 }`,
-        accepted: ['split_whitespace'],
-        acceptedPatterns: ['^split_whitespace$'],
+        options: [
+          'split_whitespace()',
+          "split(|c: char| !c.is_alphanumeric() && c != '\\'')",
+          "split(',')",
+          'chars()',
+        ],
+        correct: [1],
+        why: [
+          'split_whitespace() only breaks on spaces, so "is," and "test," keep their commas and are miscounted.',
+          'Splits on every character that is not a letter, digit, or apostrophe — punctuation is dropped, but "it\'s" stays one word.',
+          'split(\',\') removes only commas and ignores periods and other punctuation.',
+          'chars() yields single characters, not whole words.',
+        ],
         hints: [
-          'The standard library can split on any run of whitespace.',
-          'split_whitespace() yields each word and skips empty pieces.',
+          'The spec says ignore ALL punctuation except an apostrophe inside a word.',
+          'Split on any character that is not alphanumeric and not an apostrophe.',
         ],
         explanation:
-          'split_whitespace() breaks the text into words on any ASCII whitespace (spaces, tabs, newlines), which is exactly how words are separated here.',
-        whatYouLearned: 'split_whitespace() iterates the words of a string.',
+          'The official rule separates words on anything that is not a letter, digit, or an in-word apostrophe, so commas and periods are dropped while "it\'s" stays intact. split_whitespace() would leave "test," attached and miscount it. Consecutive separators produce empty pieces, which is why is_empty() skips them.',
+        whatYouLearned: 'Split on non-alphanumeric (keeping apostrophes), not just whitespace.',
         conceptId: 'iterators',
       },
       {
         kind: 'match',
         prompt: 'Match each piece of the word-counting solution to what it does.',
         pairs: [
-          { left: 'split_whitespace()', right: 'break the text into words' },
+          { left: "split(|c| !c.is_alphanumeric() && c != '\\'')", right: 'break into words, ignoring punctuation' },
           { left: '.to_lowercase()', right: 'make the count case-insensitive' },
           { left: '.entry(key)', right: 'look up the slot for a word' },
           { left: '.or_insert(0)', right: 'start a new word at count 0' },
         ],
         hints: [
-          'Think about the order: split, normalize, then count.',
+          'Think about the order: split (dropping punctuation), normalize, then count.',
           'entry/or_insert together create-or-update a counter.',
         ],
-        explanation: 'The text is split into words, each word is lowercased so cases merge, and entry(key).or_insert(0) returns a counter (creating it at 0 the first time) that is then incremented.',
+        explanation: 'The text is split into words on any non-alphanumeric character (keeping the in-word apostrophe so "it\'s" stays one word), each word is lowercased so cases merge, and entry(key).or_insert(0) returns a counter (creating it at 0 the first time) that is then incremented.',
         whatYouLearned: 'Each method has a single clear role in the counting pipeline.',
         conceptId: 'collections',
       },
