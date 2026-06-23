@@ -1,7 +1,23 @@
 import React, { useMemo, useState } from 'react';
-import type { SideQuizStep } from '../../types';
+import type {
+  SideQuizStep,
+  BlankQuizStep,
+  BugQuizStep,
+  ChoiceQuizStep,
+  OrderQuizStep,
+  MatchQuizStep,
+} from '../../types';
 import { conceptLibrary } from '../../data/conceptLibrary';
-import { validateAnswer, fillTemplate, DEFAULT_BLANK } from './quizValidation';
+import {
+  checkStep,
+  isReady,
+  revealAnswer,
+  emptyAnswer,
+  kindOf,
+  DEFAULT_BLANK,
+  type QuizAnswer,
+} from './quizValidation';
+import { BugWidget, ChoiceWidget, OrderWidget, MatchWidget } from './QuizWidgets';
 
 interface SideQuizProps {
   steps: SideQuizStep[];
@@ -10,33 +26,34 @@ interface SideQuizProps {
 
 type StepStatus = 'unanswered' | 'wrong' | 'correct';
 
-// Interactive fill-in-the-blank quiz. The student completes the missing part of
-// a snippet; we validate semantically (multiple accepted answers), offer up to
-// two hints, then explain the answer and what concept it reinforced before
-// unlocking the next step.
+const KIND_LABEL: Record<string, string> = {
+  blank: '✏️ Fill in the blank',
+  bug: '🐛 Find the bug',
+  choice: '◉ Multiple choice',
+  order: '🔀 Order the code',
+  match: '🔗 Matching',
+};
+
+// Interactive side quiz. A quiz is a sequence of steps; each step can be one of
+// several question types (fill-in-the-blank, find-the-bug, multiple choice,
+// code ordering, matching). This component owns the shared chrome — progress,
+// stepper, hints, feedback, navigation — and delegates the interaction body and
+// answer-checking to per-kind helpers and widgets.
 export default function SideQuiz({ steps, title }: SideQuizProps) {
   const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<number, QuizAnswer>>({});
   const [status, setStatus] = useState<Record<number, StepStatus>>({});
   const [hintsShown, setHintsShown] = useState<Record<number, number>>({});
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
 
   const total = steps.length;
   const step = steps[index];
-  const token = step?.blankToken ?? DEFAULT_BLANK;
 
   const stepStatus = status[index] ?? 'unanswered';
   const isCorrect = stepStatus === 'correct';
   const hints = hintsShown[index] ?? 0;
   const isRevealed = revealed[index] ?? false;
-  const value = answers[index] ?? '';
-
-  const [before, after] = useMemo(() => {
-    if (!step) return ['', ''];
-    const i = step.template.indexOf(token);
-    if (i === -1) return [step.template, ''];
-    return [step.template.slice(0, i), step.template.slice(i + token.length)];
-  }, [step, token]);
+  const value = answers[index] ?? (step ? emptyAnswer(step) : '');
 
   const solvedCount = useMemo(
     () => steps.filter((_, i) => (status[i] ?? 'unanswered') === 'correct').length,
@@ -47,12 +64,11 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
     return <div className="sq-empty">No side quiz available for this exercise yet.</div>;
   }
 
-  const setValue = (v: string) =>
-    setAnswers((prev) => ({ ...prev, [index]: v }));
+  const setValue = (v: QuizAnswer) => setAnswers((prev) => ({ ...prev, [index]: v }));
 
   const handleCheck = () => {
-    const result = validateAnswer(value, step);
-    setStatus((prev) => ({ ...prev, [index]: result.correct ? 'correct' : 'wrong' }));
+    const ok = checkStep(step, value);
+    setStatus((prev) => ({ ...prev, [index]: ok ? 'correct' : 'wrong' }));
   };
 
   const handleShowHint = () =>
@@ -60,7 +76,7 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
 
   const handleReveal = () => {
     setRevealed((prev) => ({ ...prev, [index]: true }));
-    setValue(step.accepted[0] ?? '');
+    setValue(revealAnswer(step));
     setStatus((prev) => ({ ...prev, [index]: 'correct' }));
   };
 
@@ -70,6 +86,76 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
   const concept = step.conceptId ? conceptLibrary[step.conceptId] : undefined;
   const atEnd = index >= total - 1;
   const allSolved = solvedCount === total;
+  const ready = isReady(step, value);
+  const kind = kindOf(step);
+
+  // Per-kind interaction body. Shared chrome lives outside this.
+  const renderInteraction = () => {
+    switch (step.kind) {
+      case 'bug':
+        return (
+          <BugWidget
+            step={step as BugQuizStep}
+            answer={value as string[]}
+            onChange={setValue}
+            disabled={isCorrect}
+            reveal={isCorrect}
+          />
+        );
+      case 'choice':
+        return (
+          <ChoiceWidget
+            step={step as ChoiceQuizStep}
+            answer={value as number[]}
+            onChange={setValue}
+            disabled={isCorrect}
+            reveal={isCorrect}
+          />
+        );
+      case 'order':
+        return (
+          <OrderWidget
+            step={step as OrderQuizStep}
+            answer={value as (string | null)[]}
+            onChange={setValue}
+            disabled={isCorrect}
+          />
+        );
+      case 'match':
+        return (
+          <MatchWidget
+            step={step as MatchQuizStep}
+            answer={value as (string | null)[]}
+            onChange={setValue}
+            disabled={isCorrect}
+            reveal={isCorrect}
+          />
+        );
+      default: {
+        const b = step as BlankQuizStep;
+        const token = b.blankToken ?? DEFAULT_BLANK;
+        const i = b.template.indexOf(token);
+        const before = i === -1 ? b.template : b.template.slice(0, i);
+        const after = i === -1 ? '' : b.template.slice(i + token.length);
+        const text = (value as string) ?? '';
+        return (
+          <div className="sq-code">
+            <pre><code>{before}<input
+              className={`sq-blank ${stepStatus}`}
+              value={text}
+              spellCheck={false}
+              autoComplete="off"
+              placeholder="your answer"
+              disabled={isCorrect}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && ready && !isCorrect) handleCheck(); }}
+              style={{ width: `${Math.max(8, text.length + 2)}ch` }}
+            />{after}</code></pre>
+          </div>
+        );
+      }
+    }
+  };
 
   return (
     <div className="sq-root animate-fade-in">
@@ -83,14 +169,14 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
       </div>
 
       <div className="sq-stepper">
-        {steps.map((_, i) => {
+        {steps.map((s, i) => {
           const st = status[i] ?? 'unanswered';
           return (
             <button
               key={i}
               className={`sq-dot ${i === index ? 'active' : ''} ${st}`}
               onClick={() => setIndex(i)}
-              title={`Step ${i + 1}`}
+              title={`Step ${i + 1} — ${KIND_LABEL[kindOf(s)]}`}
             >
               {st === 'correct' ? '✓' : i + 1}
             </button>
@@ -99,27 +185,17 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
       </div>
 
       <div className="sq-card">
-        <div className="sq-step-label">Step {index + 1} of {total}</div>
+        <div className="sq-step-label">
+          Step {index + 1} of {total} <span className="sq-kind">· {KIND_LABEL[kind]}</span>
+        </div>
         <p className="sq-prompt">{step.prompt}</p>
 
-        <div className="sq-code">
-          <pre><code>{before}<input
-            className={`sq-blank ${stepStatus}`}
-            value={value}
-            spellCheck={false}
-            autoComplete="off"
-            placeholder="your answer"
-            disabled={isCorrect}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !isCorrect) handleCheck(); }}
-            style={{ width: `${Math.max(8, value.length + 2)}ch` }}
-          />{after}</code></pre>
-        </div>
+        {renderInteraction()}
 
         {/* Feedback states */}
         {stepStatus === 'wrong' && !isRevealed && (
           <div className="sq-feedback wrong">
-            Not quite — check the syntax and try again. Use a hint if you're stuck.
+            Not quite — review it and try again. Use a hint if you're stuck.
           </div>
         )}
         {isCorrect && (
@@ -150,7 +226,7 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
         <div className="sq-actions">
           {!isCorrect && (
             <>
-              <button className="btn btn-primary btn-sm" onClick={handleCheck} disabled={!value.trim()}>
+              <button className="btn btn-primary btn-sm" onClick={handleCheck} disabled={!ready}>
                 Check answer
               </button>
               {hints < 2 && (
@@ -213,6 +289,7 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
           font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
           color: var(--rust-light);
         }
+        .sq-kind { color: var(--text-muted); font-weight: 600; }
         .sq-prompt { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
         .sq-code {
           background: var(--bg-base); border: 1px solid var(--border-normal);
@@ -264,6 +341,3 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
     </div>
   );
 }
-
-// Exported for the optional "preview completed snippet" use and tests.
-export { fillTemplate };

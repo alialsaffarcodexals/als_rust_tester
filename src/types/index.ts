@@ -203,18 +203,69 @@ export interface SimilarExample {
   solution?: string;     // solution of the MINI problem only (collapsible)
 }
 
-// One step of the interactive fill-in-the-blank side quiz.
-export interface SideQuizStep {
-  prompt: string;              // what the student must do
+// ---------------------------------------------------------------------------
+// Side Quiz steps — a discriminated union of interactive question types.
+// `kind` is the discriminant; it is OPTIONAL on the fill-in-the-blank variant
+// so existing data (which omits it) keeps working and defaults to 'blank'.
+// ---------------------------------------------------------------------------
+export type QuizKind = 'blank' | 'bug' | 'choice' | 'order' | 'match';
+
+// Fields shared by every question type.
+interface QuizStepBase {
+  prompt: string;             // what the student must do
+  hints: [string, string];    // exactly two hints, weak then stronger
+  explanation: string;        // why the answer is correct (shown when solved)
+  whatYouLearned: string;     // concept reinforced by this step
+  conceptId?: string;         // link to a ConceptEntry
+}
+
+// Fill-in-the-blank (the original, default type).
+export interface BlankQuizStep extends QuizStepBase {
+  kind?: 'blank';
   template: string;           // code containing the blank marker
   blankToken?: string;        // the blank marker, default '_____'
   accepted: string[];         // accepted answers (normalized compare)
   acceptedPatterns?: string[];// regex strings for semantic matching
-  hints: [string, string];    // exactly two hints, weak then stronger
-  explanation: string;        // why the answer is correct
-  whatYouLearned: string;     // concept reinforced by this step
-  conceptId?: string;         // link to a ConceptEntry
 }
+
+// Find-the-Bug — the student clicks the buggy token(s) in a snippet.
+export interface BugQuizStep extends QuizStepBase {
+  kind: 'bug';
+  code: string;                         // the snippet, possibly multi-line
+  bugs: { line: number; token: string }[]; // 1-based line + exact token text
+}
+
+// Multiple-choice code completion — pick the correct option(s).
+export interface ChoiceQuizStep extends QuizStepBase {
+  kind: 'choice';
+  template?: string;          // optional code context shown above the options
+  options: string[];          // the choices
+  correct: number[];          // index(es) of the correct option(s)
+  multi?: boolean;            // true → more than one option is correct
+  why?: string[];             // optional per-option rationale (parallel to options)
+}
+
+// Code ordering / assembly — arrange fragments into the correct sequence.
+export interface OrderQuizStep extends QuizStepBase {
+  kind: 'order';
+  scaffold?: string;          // optional surrounding code shown for context
+  fragments: string[];        // the correct fragments, in correct order
+  distractors?: string[];     // extra fragments that do NOT belong
+}
+
+// Matching — connect each left item to its correct right item.
+export interface MatchQuizStep extends QuizStepBase {
+  kind: 'match';
+  intro?: string;             // optional code/context shown above
+  pairs: { left: string; right: string }[]; // left → correct right
+}
+
+export type SideQuizStep =
+  | BlankQuizStep
+  | BugQuizStep
+  | ChoiceQuizStep
+  | OrderQuizStep
+  | MatchQuizStep;
 
 // Terminal simulation config (CLI exercises only).
 export interface TerminalConfig {
