@@ -1716,6 +1716,38 @@ pub fn check_user_name(user: &User) -> (bool, &str)
         whatYouLearned: 'Each match arm produces the same result type.',
         conceptId: 'pattern_matching',
       },
+      {
+        kind: 'choice',
+        prompt: 'Which type lets send_name express "there is no name" without using null?',
+        options: ['Option', 'Result', 'Vec', 'bool'],
+        correct: [0],
+        why: [
+          'Option<T> is Some(value) or None — exactly "maybe a value".',
+          'Result is for success/failure with an error value, not mere absence.',
+          'Vec is a list; it does not model a single optional value.',
+          'bool says yes/no but cannot also carry the name.',
+        ],
+        hints: ['Rust has no null.', 'It is the Some/None type.'],
+        explanation: 'Option<&str> models a value that may be absent: None for a guest, Some(name) otherwise — checked at compile time.',
+        whatYouLearned: 'Option replaces null for "value may be missing".',
+        conceptId: 'option',
+      },
+      {
+        kind: 'bug',
+        prompt: 'send_name returns an Option, but this match treats it like a Result. Click the mistake.',
+        code: `match user.send_name() {
+    Some(name) => (true, name),
+    Err(_) => (false, "ERROR: User is guest"),
+}`,
+        bugs: [{ line: 3, token: 'Err' }],
+        hints: [
+          'send_name returns Option<&str>, not Result.',
+          'What is the "empty" variant of an Option?',
+        ],
+        explanation: 'An Option has Some and None — not Err. The second arm must be None => (false, "ERROR: User is guest"); Err belongs to Result.',
+        whatYouLearned: 'Match Option with Some/None, Result with Ok/Err.',
+        conceptId: 'option',
+      },
     ],
   },
 
@@ -1881,6 +1913,42 @@ _____ => Jacket::Black,`,
         whatYouLearned: 'Combine independent decisions into one returned struct.',
         conceptId: 'structs',
       },
+      {
+        kind: 'choice',
+        prompt: 'Which match arm fires only for a formality level greater than 0?',
+        options: ['Some(level) if level > 0', 'Some(level > 0)', 'Some(_) if > 0', 'level > 0'],
+        correct: [0],
+        why: [
+          'A pattern Some(level) with a guard if level > 0 is the correct form.',
+          'You cannot put an expression inside Some(...) as a pattern.',
+          'A guard needs the bound name: if level > 0.',
+          'This is a bare condition, not a match pattern.',
+        ],
+        hints: ['Bind the inner value, then add a condition.', 'The condition after a pattern is a guard (if ...).'],
+        explanation: 'Some(level) binds the inner number, and the guard if level > 0 restricts the arm to positive levels; Some(0) then falls through to the next arm.',
+        whatYouLearned: 'Pattern + guard: Some(x) if cond.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'bug',
+        prompt: 'The hat choice is inverted. It has TWO bugs (the swapped hats) — click both.',
+        code: `let hat = if invitation_message.is_ok() {
+    Hat::Snapback
+} else {
+    Hat::Fedora
+};`,
+        bugs: [
+          { line: 2, token: 'Snapback' },
+          { line: 4, token: 'Fedora' },
+        ],
+        hints: [
+          'A valid (Ok) invitation should give the dressier hat.',
+          'Compare which hat goes with Ok vs Err.',
+        ],
+        explanation: 'The hats are swapped: an Ok invitation should give Hat::Fedora and the else (Err) branch Hat::Snapback.',
+        whatYouLearned: 'Read which branch is Ok vs Err before assigning.',
+        conceptId: 'result',
+      },
     ],
   },
 
@@ -2016,6 +2084,41 @@ impl OfficeOne {
         explanation: 'A successful Result is built with Ok(value); the ? operator is the inverse — it unwraps an Ok.',
         whatYouLearned: 'Ok(x) constructs the success side of a Result.',
         conceptId: 'result',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What does the ? operator do when it meets an Err?',
+        options: [
+          'returns that Err from the whole function',
+          'panics the program',
+          'silently ignores it',
+          'converts it to None',
+        ],
+        correct: [0],
+        why: [
+          'On Err, ? returns it early from the enclosing function.',
+          'panic is what unwrap() does, not ?.',
+          '? never ignores an error.',
+          '? works on Result here, not Option.',
+        ],
+        hints: ['It is the opposite of unwrap’s panic.', 'It propagates the error upward.'],
+        explanation: 'On Ok(v) the ? operator yields v; on Err(e) it returns Err(e) from the function — propagating the failure without a manual match.',
+        whatYouLearned: 'The ? operator propagates errors instead of panicking.',
+        conceptId: 'error_handling',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This walks the office chain but will panic on a failure instead of propagating it. Click the mistake.',
+        code: `let two = self.next_office.unwrap();
+let three = two.next_office?;`,
+        bugs: [{ line: 1, token: 'unwrap' }],
+        hints: [
+          'unwrap() crashes on an Err.',
+          'The chain wants to propagate errors, like the next line does.',
+        ],
+        explanation: 'unwrap() panics if next_office is an Err. Use ? instead so the error is returned from the function, matching the rest of the chain.',
+        whatYouLearned: 'Prefer ? over unwrap() to propagate errors gracefully.',
+        conceptId: 'error_handling',
       },
     ],
   },
@@ -2175,6 +2278,36 @@ format!("{} {}", h, _____(n % 100))`,
         whatYouLearned: 'Recursion breaks a big number into smaller named parts.',
         conceptId: 'pattern_matching',
       },
+      {
+        kind: 'choice',
+        prompt: 'How do you get the ones digit of a number n?',
+        options: ['n % 10', 'n / 10', 'n - 10', 'n & 10'],
+        correct: [0],
+        why: [
+          'The remainder after dividing by 10 is the last digit.',
+          'n / 10 drops the last digit (gives the higher places).',
+          'Subtraction does not isolate a digit.',
+          'Bitwise AND with 10 is unrelated to decimal digits.',
+        ],
+        hints: ['Think remainder.', 'Use the modulo operator.'],
+        explanation: 'n % 10 yields the ones digit (45 % 10 == 5), while n / 10 yields the tens and above — together they drive the spelling.',
+        whatYouLearned: 'Modulo extracts the last digit; division shifts it away.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'bug',
+        prompt: 'Spelling the magnitude of a negative number goes wrong here. Click the buggy token.',
+        code: `// n is negative
+format!("minus {}", spell(n as u64))`,
+        bugs: [{ line: 2, token: 'n' }],
+        hints: [
+          'n is negative; casting it straight to u64 gives a huge wrong number.',
+          'You need the positive magnitude first.',
+        ],
+        explanation: 'Casting a negative i64 to u64 wraps to an enormous value. Negate first: spell((-n) as u64) passes the positive magnitude to the speller.',
+        whatYouLearned: 'Take the magnitude before converting a negative to unsigned.',
+        conceptId: 'error_handling',
+      },
     ],
   },
 
@@ -2329,6 +2462,70 @@ r1 == r2 || f1 == f2 || _____`,
         ],
         explanation: 'The complete rule ORs three cases: same rank, same file, or equal absolute differences (a diagonal). Any one makes the queens attack.',
         whatYouLearned: 'Combine independent conditions with || for the final rule.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Two queens share a diagonal exactly when:',
+        options: [
+          '(r1 - r2).abs() == (f1 - f2).abs()',
+          'r1 == r2',
+          'f1 == f2',
+          'r1 + f1 == r2 + f2',
+        ],
+        correct: [0],
+        why: [
+          'Equal row distance and column distance means a diagonal.',
+          'Equal ranks means the same row, not a diagonal.',
+          'Equal files means the same column, not a diagonal.',
+          'That captures only one of the two diagonal directions.',
+        ],
+        hints: ['A diagonal step changes row and column by the same amount.', 'Compare the absolute differences.'],
+        explanation: 'On a diagonal the vertical and horizontal distances are equal, so |r1 - r2| == |f1 - f2| (covering both diagonal directions).',
+        whatYouLearned: 'Diagonal ⇔ equal absolute row/column differences.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'bug',
+        prompt: 'ChessPosition::new should reject off-board coordinates. Click the mistake.',
+        code: `pub fn new(rank: usize, file: usize) -> Option<Self> {
+    if rank < 8 && file < 8 {
+        Some(ChessPosition { rank, file })
+    } else {
+        Some(ChessPosition { rank, file })
+    }
+}`,
+        bugs: [{ line: 5, token: 'Some' }],
+        hints: [
+          'What should happen for invalid coordinates?',
+          'Look at the else branch.',
+        ],
+        explanation: 'The else branch handles off-board coordinates, so it must return None, not another Some — otherwise invalid positions are accepted.',
+        whatYouLearned: 'A validating constructor returns None on failure.',
+        conceptId: 'option',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble can_attack. One fragment does not belong.',
+        scaffold: `pub fn can_attack(self, other: Self) -> bool {
+    [ slot 1 ]
+    [ slot 2 ]
+    [ slot 3 ]
+}`,
+        fragments: [
+          'let (r1, f1) = (self.position.rank as i64, self.position.file as i64);',
+          'let (r2, f2) = (other.position.rank as i64, other.position.file as i64);',
+          'r1 == r2 || f1 == f2 || (r1 - r2).abs() == (f1 - f2).abs()',
+        ],
+        distractors: [
+          'r1 == r2 && f1 == f2 && r1 == f1',
+        ],
+        hints: [
+          'Cast both positions to i64 first, then test the three attack lines.',
+          'The result combines rank, file, and diagonal with ||.',
+        ],
+        explanation: 'Bind both positions as signed pairs, then return the OR of same-rank, same-file, and same-diagonal. The && fragment is wrong — queens attack if ANY line matches, not all.',
+        whatYouLearned: 'Cast, then OR the three attack conditions.',
         conceptId: 'pattern_matching',
       },
     ],
