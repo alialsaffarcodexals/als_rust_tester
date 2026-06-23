@@ -1294,4 +1294,429 @@ With steps = 1 on [5, 3, 7, 2, 1, 6, 8, 4] -> [3, 5, 7, 2, 1, 6, 8, 4]; with ste
       'Each pass shifts one element left with slice.swap until it is in order.',
     ],
   },
+
+  matrix_determinant: {
+    overview: {
+      whatYouBuild: 'A function that computes the determinant of a 3x3 integer matrix by cofactor expansion along the top row.',
+      inputOutput: 'Input: [[isize; 3]; 3]. Output: the determinant as isize. The example matrix gives 35.',
+      constraints: ['Use cofactor expansion (or the rule of Sarrus).', 'Mind the alternating + - + signs.', 'A 2x2 determinant is a*d - b*c.'],
+      commonMistakes: ['Getting the cofactor signs wrong (the middle term is subtracted).', 'Picking the wrong minor elements.'],
+    },
+    officialDescription: `## matrix_determinant
+
+Create a function that receives a 3x3 matrix ([[isize; 3]; 3]) and returns its determinant.
+
+A 2x2 determinant |a b / c d| is a*d - b*c. For a 3x3 matrix, expand along the top row: a*det(minor of a) - b*det(minor of b) + c*det(minor of c).
+
+### Expected function
+
+~~~
+pub fn matrix_determinant(matrix: [[isize; 3]; 3]) -> isize
+~~~
+
+### Example
+
+The determinant of [[1, 2, 4], [2, -1, 3], [4, 0, 1]] is 35.`,
+    objectives: {
+      learn: ['Index a 2-D array.', 'Apply cofactor expansion.', 'Track the alternating signs.'],
+      whyExists: 'Connects nested indexing with a real linear-algebra formula.',
+      rustSkills: ['arrays', 'arithmetic', 'algorithms'],
+    },
+    conceptIds: ['matrices', 'recursion'],
+    conceptNotes: {
+      matrices: 'm[row][col] indexes the grid; the determinant combines 2x2 minors.',
+      recursion: 'A 3x3 determinant is defined in terms of 2x2 determinants — the same idea generalizes recursively.',
+    },
+    similar: {
+      title: '2x2 determinant',
+      prompt: 'Write det2(m: [[isize; 2]; 2]) -> isize returning a*d - b*c. This is the building block of the 3x3 case.',
+      starter: `pub fn det2(m: [[isize; 2]; 2]) -> isize {
+    todo!()
+}`,
+      hint: 'm[0][0]*m[1][1] - m[0][1]*m[1][0]',
+      concepts: ['matrices'],
+      solution: `pub fn det2(m: [[isize; 2]; 2]) -> isize {
+    m[0][0] * m[1][1] - m[0][1] * m[1][0]
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Fill the 2x2 determinant of the minor for the top-left element a (rows 1-2, cols 1-2).',
+        template: `let a_term = m[0][0] * (_____);`,
+        accepted: ['m[1][1] * m[2][2] - m[1][2] * m[2][1]'],
+        acceptedPatterns: ['^m\\[1\\]\\[1\\]\\s*\\*\\s*m\\[2\\]\\[2\\]\\s*-\\s*m\\[1\\]\\[2\\]\\s*\\*\\s*m\\[2\\]\\[1\\]$'],
+        hints: ['Delete a\'s row (0) and column (0); the minor is rows 1-2, cols 1-2.', 'Its determinant is e*i - f*h.'],
+        explanation: 'The minor for a excludes row 0 and column 0, leaving [[e,f],[h,i]] whose determinant is m[1][1]*m[2][2] - m[1][2]*m[2][1].',
+        whatYouLearned: 'A cofactor uses the 2x2 determinant of the remaining minor.',
+        conceptId: 'matrices',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Cofactor expansion along the top row uses which sign pattern?',
+        options: ['+ - +', '+ + +', '- + -', '+ - + - (four terms)'],
+        correct: [0],
+        why: [
+          'For a 3x3, the top-row cofactors alternate plus, minus, plus.',
+          'The middle term must be subtracted.',
+          'The first term is positive, not negative.',
+          'A 3x3 row has three terms, not four.',
+        ],
+        hints: ['The signs alternate starting with +.', 'Three columns → three signs.'],
+        explanation: 'Expanding along row 0: +a*minor - b*minor + c*minor.',
+        whatYouLearned: 'Cofactor signs alternate + - + along a row.',
+        conceptId: 'matrices',
+      },
+      {
+        kind: 'bug',
+        prompt: 'The middle term has the wrong sign. Click the mistake.',
+        code: `m[0][0] * (m[1][1]*m[2][2] - m[1][2]*m[2][1])
+    + m[0][1] * (m[1][0]*m[2][2] - m[1][2]*m[2][0])
+    + m[0][2] * (m[1][0]*m[2][1] - m[1][1]*m[2][0])`,
+        bugs: [{ line: 2, token: '+' }],
+        hints: ['Remember the + - + pattern.', 'The b term should be subtracted.'],
+        explanation: 'The second (b) cofactor must be subtracted: change the leading + on line 2 to a minus.',
+        whatYouLearned: 'The middle cofactor is negated.',
+        conceptId: 'matrices',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'Arrays [[T; N]; M]', url: 'https://doc.rust-lang.org/std/primitive.array.html', note: 'fixed-size 2-D matrix' },
+        { name: 'isize', url: 'https://doc.rust-lang.org/std/primitive.isize.html', note: 'signed result' },
+      ],
+      links: [
+        { title: 'Determinant (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Determinant' },
+        { title: 'Rust By Example — Arrays', url: 'https://doc.rust-lang.org/rust-by-example/primitives/array.html' },
+      ],
+    },
+    editorHints: [
+      'Expand along the top row: a*minor - b*minor + c*minor.',
+      'Each minor is a 2x2 determinant (e*i - f*h form).',
+      'Watch the alternating + - + signs.',
+    ],
+  },
+
+  order_books: {
+    overview: {
+      whatYouBuild: 'A function that sorts a writer\'s list of books alphabetically by title, case-insensitively, in place.',
+      inputOutput: 'Input: &mut Writer (which owns a Vec<Book>). Effect: writer.books is sorted by title, ignoring case.',
+      constraints: ['Sort in place via sort_by.', 'Comparison must be case-insensitive.', 'Order by the book title.'],
+      commonMistakes: ['Sorting case-sensitively (uppercase sorts before lowercase).', 'Returning a new Vec instead of mutating in place.'],
+    },
+    officialDescription: `## order_books
+
+Given a Writer that owns a Vec of Book (each Book has a title and a year), implement order_books to sort the writer's books alphabetically by title, case-insensitively, in place.
+
+### Expected function
+
+~~~
+pub fn order_books(writer: &mut Writer)
+~~~
+
+### Behavior
+
+After sorting, titles appear in case-insensitive alphabetical order (e.g. Hamlet, MacBeth, Othelo, Romeo and Juliet).`,
+    objectives: {
+      learn: ['Sort a Vec with sort_by and a comparator closure.', 'Compare strings case-insensitively.', 'Mutate data behind a &mut reference.'],
+      whyExists: 'Teaches custom sorting with closures over struct fields.',
+      rustSkills: ['sorting', 'closures', 'structs'],
+    },
+    conceptIds: ['sorting', 'closures', 'structs'],
+    conceptNotes: {
+      sorting: 'sort_by orders elements using a comparator you provide.',
+      closures: 'The comparator closure compares the two books\' titles.',
+    },
+    similar: {
+      title: 'Sort names case-insensitively',
+      prompt: 'Sort a Vec<String> of names alphabetically ignoring case, in place. Same sort_by + to_lowercase comparator.',
+      starter: `pub fn sort_names(names: &mut Vec<String>) {
+    todo!()
+}`,
+      hint: 'names.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()))',
+      concepts: ['sorting', 'closures'],
+      solution: `pub fn sort_names(names: &mut Vec<String>) {
+    names.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Sort the books by title, ignoring case. Fill the comparator body.',
+        template: `writer.books.sort_by(|a, b| {
+    _____
+});`,
+        accepted: ['a.title.to_lowercase().cmp(&b.title.to_lowercase())'],
+        acceptedPatterns: ['^a\\.title\\.to_lowercase\\(\\)\\.cmp\\(&b\\.title\\.to_lowercase\\(\\)\\)$'],
+        hints: ['Compare the lowercased titles.', 'Use a.title.to_lowercase().cmp(&b.title.to_lowercase()).'],
+        explanation: 'cmp returns an Ordering; comparing lowercased titles makes the sort case-insensitive.',
+        whatYouLearned: 'sort_by with a comparator orders by any key you choose.',
+        conceptId: 'sorting',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Why lowercase both titles before comparing?',
+        options: [
+          'so "apple" and "Apple" sort together (case-insensitive)',
+          'to make the sort faster',
+          'because cmp does not work on String',
+          'to remove punctuation',
+        ],
+        correct: [0],
+        why: [
+          'Raw comparison puts all uppercase before lowercase; lowercasing both removes that bias.',
+          'It is about ordering, not speed.',
+          'cmp works fine on String; the issue is case.',
+          'Lowercasing does not remove punctuation.',
+        ],
+        hints: ['ASCII uppercase sorts before lowercase.', 'Normalize case for a fair comparison.'],
+        explanation: 'Without lowercasing, "Zebra" would sort before "apple"; lowercasing both gives true alphabetical order.',
+        whatYouLearned: 'Normalize keys for case-insensitive ordering.',
+        conceptId: 'sorting',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This sort is case-sensitive. Click the change needed (the call that should lowercase).',
+        code: `writer.books.sort_by(|a, b| {
+    a.title.cmp(&b.title)
+});`,
+        bugs: [{ line: 2, token: 'cmp' }],
+        hints: ['Titles must compare without case.', 'Lowercase both sides before cmp.'],
+        explanation: 'Comparing raw titles is case-sensitive; lowercase both first: a.title.to_lowercase().cmp(&b.title.to_lowercase()).',
+        whatYouLearned: 'Apply to_lowercase() to both keys for a case-insensitive sort.',
+        conceptId: 'sorting',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'slice::sort_by', url: 'https://doc.rust-lang.org/std/primitive.slice.html#method.sort_by', note: 'sort with a comparator' },
+        { name: 'str::to_lowercase', url: 'https://doc.rust-lang.org/std/primitive.str.html#method.to_lowercase', note: 'case-insensitive key' },
+        { name: 'Ord::cmp', url: 'https://doc.rust-lang.org/std/cmp/trait.Ord.html#tymethod.cmp', note: 'returns an Ordering' },
+      ],
+      links: [
+        { title: 'The Book — Closures', url: 'https://doc.rust-lang.org/book/ch13-01-closures.html' },
+        { title: 'std::cmp::Ordering', url: 'https://doc.rust-lang.org/std/cmp/enum.Ordering.html' },
+      ],
+      videos: [{ title: 'Closures in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=kZXJvLfjUS4' }],
+    },
+    editorHints: [
+      'Use writer.books.sort_by(|a, b| ...) to sort in place.',
+      'Compare a.title.to_lowercase() with b.title.to_lowercase().',
+      'cmp on the lowercased titles gives case-insensitive order.',
+    ],
+  },
+
+  rot21: {
+    overview: {
+      whatYouBuild: 'A ROT cipher that rotates each ASCII letter 21 positions forward in the alphabet, leaving non-letters unchanged and preserving case.',
+      inputOutput: 'Input: a &str. Output: a String with letters shifted by 21. "MISS" -> "HDNN".',
+      constraints: ['Only ASCII letters are shifted.', 'Wrap around with modulo 26.', 'Preserve case; pass non-letters through unchanged.'],
+      commonMistakes: ['Forgetting to wrap with % 26.', 'Using the wrong base (\'a\' vs \'A\').', 'Shifting non-letter characters.'],
+    },
+    officialDescription: `## rot21
+
+Implement rot21, which rotates each letter of the input 21 positions to the right in the alphabet, leaving non-letter characters unchanged and preserving case.
+
+### Function signature
+
+~~~
+pub fn rot21(input: &str) -> String
+~~~
+
+### Examples
+
+'a' -> 'v', "MISS" -> "HDNN", "Testing numbers 1 2 3" -> "Oznodib iphwzmn 1 2 3".`,
+    objectives: {
+      learn: ['Map over characters.', 'Do modular arithmetic on letter offsets.', 'Preserve case and non-letters.'],
+      whyExists: 'A classic cipher that drills character arithmetic and modulo wrap-around.',
+      rustSkills: ['chars', 'arithmetic', 'iterators'],
+    },
+    conceptIds: ['iterators', 'parsing'],
+    conceptNotes: {
+      iterators: 'chars().map(...).collect() transforms each character into the result String.',
+      parsing: 'Each letter is converted to a 0..26 offset, shifted, and converted back.',
+    },
+    similar: {
+      title: 'ROT13',
+      prompt: 'Implement rot13 (shift letters by 13). Identical structure to rot21 with a different shift.',
+      starter: `pub fn rot13(input: &str) -> String {
+    todo!()
+}`,
+      hint: 'For a lowercase c: (((c as u8 - b\'a\' + 13) % 26) + b\'a\') as char.',
+      concepts: ['iterators', 'parsing'],
+      solution: `pub fn rot13(input: &str) -> String {
+    input.chars().map(|c| {
+        if c.is_ascii_lowercase() { (((c as u8 - b'a' + 13) % 26) + b'a') as char }
+        else if c.is_ascii_uppercase() { (((c as u8 - b'A' + 13) % 26) + b'A') as char }
+        else { c }
+    }).collect()
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Shift a lowercase letter by 21 with wrap-around. Fill the modulus.',
+        template: `(((c as u8 - b'a' + 21) % _____) + b'a') as char`,
+        accepted: ['26'],
+        acceptedPatterns: ['^26$'],
+        hints: ['How many letters in the alphabet?', 'Wrap with % 26.'],
+        explanation: '% 26 keeps the shifted offset within the 26-letter alphabet, wrapping past z back to a.',
+        whatYouLearned: 'Modulo wraps an index back into range.',
+        conceptId: 'parsing',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What does rot21("a") produce?',
+        options: ["\"v\"", "\"u\"", "\"b\"", "\"a\""],
+        correct: [0],
+        why: [
+          "a is index 0; 0 + 21 = 21, which is 'v'.",
+          "u is index 20, one short.",
+          "b would be a shift of 1, not 21.",
+          "a unchanged would be a shift of 0 or 26.",
+        ],
+        hints: ["'a' is offset 0.", '0 + 21 = 21 → the 22nd letter.'],
+        explanation: "'a' has offset 0; (0 + 21) % 26 = 21, which maps to 'v'.",
+        whatYouLearned: 'Letter arithmetic uses 0-based offsets from the base letter.',
+        conceptId: 'parsing',
+      },
+      {
+        kind: 'bug',
+        prompt: 'Uppercase letters come out wrong here. Click the mistake.',
+        code: `else if c.is_ascii_uppercase() {
+    (((c as u8 - b'a' + 21) % 26) + b'A') as char
+}`,
+        bugs: [{ line: 2, token: "b'a'" }],
+        hints: ['Uppercase offsets must be measured from the uppercase base.', "Check the subtraction base."],
+        explanation: "For uppercase letters subtract b'A', not b'a'; otherwise the offset is wrong (the gap between 'A' and 'a' is 32).",
+        whatYouLearned: 'Anchor letter arithmetic to the correct case base.',
+        conceptId: 'parsing',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'char::is_ascii_lowercase', url: 'https://doc.rust-lang.org/std/primitive.char.html#method.is_ascii_lowercase', note: 'detect letters to shift' },
+        { name: 'Iterator::map', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map', note: 'transform each char' },
+        { name: 'as casts (char/u8)', url: 'https://doc.rust-lang.org/rust-by-example/types/cast.html', note: 'char <-> byte arithmetic' },
+      ],
+      links: [
+        { title: 'ROT13 (Wikipedia)', url: 'https://en.wikipedia.org/wiki/ROT13' },
+        { title: 'Rust By Example — Casting', url: 'https://doc.rust-lang.org/rust-by-example/types/cast.html' },
+      ],
+    },
+    editorHints: [
+      'map over input.chars() and collect into a String.',
+      'For each letter, subtract the case base, add 21, take % 26, add the base back.',
+      'Leave non-letters unchanged.',
+    ],
+  },
+
+  display_table: {
+    overview: {
+      whatYouBuild: 'A Table type whose Display prints a bordered, column-aligned table: a header row, a separator, and centered data cells whose columns auto-size to the widest content.',
+      inputOutput: 'Building blocks: Table::new(), add_row(&[String]); printing with {} produces the formatted table (nothing for an empty table).',
+      constraints: ['Each column width = its widest cell.', 'Center text in each cell (offset one left when not exact).', 'Use pipe delimiters and a dash/plus separator.', 'Print nothing when empty.'],
+      commonMistakes: ['Not sizing columns to the widest cell.', 'Using println! inside fmt instead of write!.', 'Off-by-one in the centering padding.'],
+    },
+    officialDescription: `## display_table
+
+Implement a Table (headers + body rows) and its Display so that printing it shows a formatted table:
+
+- A header row and the data rows, separated by pipes, with text centered in each cell.
+- A separator line of dashes and plus signs.
+- Column widths adjust to the longest element in each column.
+- When centering is not exact, offset the text one position to the left.
+- Print nothing when the table has no data.
+
+### Expected items
+
+~~~
+pub struct Table { pub headers: Vec<String>, pub body: Vec<Vec<String>> }
+impl std::fmt::Display for Table { ... }
+~~~`,
+    objectives: {
+      learn: ['Implement Display for a complex layout.', 'Compute per-column widths.', 'Center and pad strings.'],
+      whyExists: 'A demanding formatting exercise combining Display, iterators, and string padding.',
+      rustSkills: ['Display', 'iterators', 'string formatting'],
+    },
+    conceptIds: ['display_trait', 'iterators', 'collections'],
+    conceptNotes: {
+      display_trait: 'write!/writeln! emit each line into the formatter.',
+      iterators: 'map + max compute column widths; map + join build each row.',
+    },
+    similar: {
+      title: 'Column widths',
+      prompt: 'Given headers and rows (Vec<Vec<String>>), write a function returning a Vec<usize> of each column\'s maximum width. This is the sizing step display_table needs.',
+      starter: `pub fn col_widths(headers: &[String], body: &[Vec<String>]) -> Vec<usize> {
+    todo!()
+}`,
+      hint: 'Start widths from header lengths, then take the max with each cell length.',
+      concepts: ['iterators', 'collections'],
+      solution: `pub fn col_widths(headers: &[String], body: &[Vec<String>]) -> Vec<usize> {
+    let mut w: Vec<usize> = headers.iter().map(|h| h.len()).collect();
+    for row in body {
+        for (i, c) in row.iter().enumerate() { w[i] = w[i].max(c.len()); }
+    }
+    w
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'A column is as wide as its widest cell. Fill the update that grows the width.',
+        template: `for (i, cell) in row.iter().enumerate() {
+    widths[i] = widths[i]._____(cell.len());
+}`,
+        accepted: ['max'],
+        acceptedPatterns: ['^max$'],
+        hints: ['Keep the larger of the current width and this cell.', 'usize has a max() method.'],
+        explanation: 'widths[i].max(cell.len()) keeps each column at least as wide as its widest cell.',
+        whatYouLearned: 'Fold a maximum across values with max().',
+        conceptId: 'collections',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Inside Display::fmt, how should each line be emitted?',
+        options: ['writeln!(f, ...)', 'println!(...)', 'print!(...)', 'format!(...) then drop it'],
+        correct: [0],
+        why: [
+          'writeln! writes a line into the formatter f (what Display must do).',
+          'println! goes to stdout, not the formatter.',
+          'print! also targets stdout.',
+          'format! builds a String but never writes it to f.',
+        ],
+        hints: ['Display writes into f.', 'You also want a trailing newline per row.'],
+        explanation: 'writeln!(f, ...) appends a formatted line to the formatter, which is what printing the Table uses.',
+        whatYouLearned: 'Use write!/writeln! into the formatter inside fmt.',
+        conceptId: 'display_trait',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This Display prints to the wrong place. Click the mistake.',
+        code: `fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    println!("{}", self.headers.join(" | "));
+    Ok(())
+}`,
+        bugs: [{ line: 2, token: 'println' }],
+        hints: ['Output must go into f.', 'Swap the macro.'],
+        explanation: 'println! writes to stdout and ignores f; use writeln!(f, ...) so the text becomes the Table\'s Display output.',
+        whatYouLearned: 'fmt must write into the formatter, never to stdout.',
+        conceptId: 'display_trait',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'std::fmt::Display', url: 'https://doc.rust-lang.org/std/fmt/trait.Display.html', note: 'custom {} output' },
+        { name: 'write! / writeln!', url: 'https://doc.rust-lang.org/std/macro.writeln.html', note: 'emit lines into the formatter' },
+        { name: 'str::repeat', url: 'https://doc.rust-lang.org/std/primitive.str.html#method.repeat', note: 'build padding and separators' },
+        { name: 'slice::join', url: 'https://doc.rust-lang.org/std/primitive.slice.html#method.join', note: 'join cells with delimiters' },
+      ],
+      links: [
+        { title: 'Rust By Example — Display', url: 'https://doc.rust-lang.org/rust-by-example/hello/print/print_display.html' },
+        { title: 'std::fmt module', url: 'https://doc.rust-lang.org/std/fmt/' },
+      ],
+      videos: [{ title: 'Traits in Rust', channel: 'Tensor Programming', url: 'https://www.youtube.com/watch?v=T0Xfltu4h3A' }],
+    },
+    editorHints: [
+      'First compute each column width as the max of its header and cell lengths.',
+      'Center each value in its column; put the extra space on the right when padding is odd.',
+      'Emit rows and a dash/plus separator with writeln!(f, ...); print nothing if empty.',
+    ],
+  },
 };
