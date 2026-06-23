@@ -1719,4 +1719,490 @@ impl std::fmt::Display for Table { ... }
       'Emit rows and a dash/plus separator with writeln!(f, ...); print nothing if empty.',
     ],
   },
+
+  filter_table: {
+    overview: {
+      whatYouBuild: 'A Table type that can be built up row by row and filtered: return a new Table containing only the rows whose chosen column matches a value.',
+      inputOutput: 'Table::new(); add_row(&[String]); a filter method returns a new Table with the matching rows (same headers).',
+      constraints: ['Keep the original headers in the filtered Table.', 'Compare the chosen column to the target value.', 'Build a new Table; do not mutate the original.'],
+      commonMistakes: ['Indexing a missing column (use get()).', 'Mutating the original instead of returning a new Table.'],
+    },
+    officialDescription: `## filter_table
+
+Build a Table (headers + body rows) with new() and add_row, then implement a filter that returns a new Table containing only the rows whose value in a given column equals a target string. The headers are preserved.
+
+### Expected items
+
+~~~
+pub struct Table { pub headers: Vec<String>, pub body: Vec<Vec<String>> }
+impl Table {
+    pub fn new() -> Table
+    pub fn add_row(&mut self, row: &[String])
+    // a filter returning a new Table of matching rows
+}
+~~~`,
+    objectives: {
+      learn: ['Filter a collection with a predicate.', 'Clone matching rows into a new structure.', 'Guard against missing indices.'],
+      whyExists: 'Practices iterator filtering over structured data and building new owned values.',
+      rustSkills: ['iterators', 'closures', 'Vec'],
+    },
+    conceptIds: ['iterators', 'closures', 'collections'],
+    conceptNotes: {
+      iterators: 'body.iter().filter(...).cloned().collect() keeps the matching rows.',
+      closures: 'The filter predicate compares one column of each row to the target.',
+    },
+    similar: {
+      title: 'Keep even numbers',
+      prompt: 'Given a &[i32], return a Vec<i32> of just the even values. Same iter().filter().collect() shape.',
+      starter: `pub fn evens(v: &[i32]) -> Vec<i32> {
+    todo!()
+}`,
+      hint: 'v.iter().filter(|&&n| n % 2 == 0).copied().collect()',
+      concepts: ['iterators', 'closures'],
+      solution: `pub fn evens(v: &[i32]) -> Vec<i32> {
+    v.iter().filter(|&&n| n % 2 == 0).copied().collect()
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Keep only the matching rows. Fill the iterator adapter.',
+        template: `let body = self.body.iter()
+    ._____(|row| row.get(column_index).map(|c| c == value).unwrap_or(false))
+    .cloned()
+    .collect();`,
+        accepted: ['filter'],
+        acceptedPatterns: ['^filter$'],
+        hints: ['You want to keep rows that pass a test.', 'Use filter with a predicate.'],
+        explanation: 'filter keeps rows where the closure is true; cloned() copies each kept row; collect() gathers them into the new body.',
+        whatYouLearned: 'iter().filter(pred).cloned().collect() selects matching elements.',
+        conceptId: 'iterators',
+      },
+      {
+        kind: 'choice',
+        prompt: 'Why use row.get(column_index) instead of row[column_index]?',
+        options: [
+          'get returns an Option, avoiding a panic on a missing column',
+          'get is faster',
+          'indexing does not compile',
+          'get sorts the row',
+        ],
+        correct: [0],
+        why: [
+          'get() returns Option<&T>, so a short row yields None instead of panicking.',
+          'Performance is not the reason.',
+          'Indexing compiles but can panic out of bounds.',
+          'get() does not sort anything.',
+        ],
+        hints: ['What if a row is shorter than expected?', 'Indexing out of bounds panics.'],
+        explanation: 'row.get(i) safely returns None for an out-of-range index, which the closure treats as "no match".',
+        whatYouLearned: 'Prefer get() over [] when an index might be out of range.',
+        conceptId: 'collections',
+      },
+      {
+        kind: 'bug',
+        prompt: 'The filtered Table loses its headers. Click the mistake.',
+        code: `Table {
+    headers: Vec::new(),
+    body,
+}`,
+        bugs: [{ line: 2, token: 'Vec::new' }],
+        hints: ['A filtered table should keep its column titles.', 'Reuse the original headers.'],
+        explanation: 'headers should be self.headers.clone(), not a fresh empty Vec — the filtered Table keeps the same columns.',
+        whatYouLearned: 'Preserve unchanged fields when deriving a new value.',
+        conceptId: 'collections',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'Iterator::filter', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.filter', note: 'keep matching rows' },
+        { name: 'slice::get', url: 'https://doc.rust-lang.org/std/primitive.slice.html#method.get', note: 'safe indexing (Option)' },
+        { name: 'Iterator::cloned', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.cloned', note: 'copy kept rows' },
+      ],
+      links: [
+        { title: 'Rust By Example — Iterators', url: 'https://doc.rust-lang.org/rust-by-example/trait/iter.html' },
+        { title: 'The Book — Closures', url: 'https://doc.rust-lang.org/book/ch13-01-closures.html' },
+      ],
+    },
+    editorHints: [
+      'Filter self.body, keeping rows where the chosen column equals the value.',
+      'Use row.get(i) so a short row does not panic.',
+      'Return a new Table that clones the original headers.',
+    ],
+  },
+
+  flat_tree: {
+    overview: {
+      whatYouBuild: 'A generic function that flattens a BTreeSet into a sorted Vec of its elements.',
+      inputOutput: 'Input: &BTreeSet<T>. Output: Vec<T> in sorted order. {34,0,9,30} -> [0,9,30,34].',
+      constraints: ['A BTreeSet is already sorted — iterate it in order.', 'Return owned values (the bound T: ToOwned<Owned = T> lets you clone each).'],
+      commonMistakes: ['Trying to sort manually (the set is already ordered).', 'Returning references instead of owned values.'],
+    },
+    officialDescription: `## flat_tree
+
+Implement flatten_tree, which takes a reference to a std::collections::BTreeSet and returns a fresh Vec containing the tree's elements in sorted order.
+
+### Expected function
+
+~~~
+pub fn flatten_tree<T: ToOwned<Owned = T>>(tree: &BTreeSet<T>) -> Vec<T>
+~~~
+
+### Usage
+
+flatten_tree(&BTreeSet::from([34, 0, 9, 30])) = [0, 9, 30, 34].`,
+    objectives: {
+      learn: ['Iterate a BTreeSet (sorted order).', 'Convert borrowed items to owned with to_owned.', 'Use a generic with a trait bound.'],
+      whyExists: 'Introduces ordered sets and generic functions with trait bounds.',
+      rustSkills: ['BTreeSet', 'generics', 'iterators'],
+    },
+    conceptIds: ['collections', 'iterators', 'generics'],
+    conceptNotes: {
+      collections: 'A BTreeSet keeps elements sorted, so iteration yields them in order.',
+      generics: 'The bound T: ToOwned<Owned = T> lets the function clone each element into the Vec.',
+    },
+    similar: {
+      title: 'Set to sorted Vec of i32',
+      prompt: 'Write a non-generic function that turns a &BTreeSet<i32> into a sorted Vec<i32>. Same iterate-and-collect idea.',
+      starter: `use std::collections::BTreeSet;
+pub fn to_vec(set: &BTreeSet<i32>) -> Vec<i32> {
+    todo!()
+}`,
+      hint: 'set.iter().copied().collect()',
+      concepts: ['collections', 'iterators'],
+      solution: `use std::collections::BTreeSet;
+pub fn to_vec(set: &BTreeSet<i32>) -> Vec<i32> {
+    set.iter().copied().collect()
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Turn each borrowed element into an owned one. Fill the method.',
+        template: `tree.iter().map(|x| x._____()).collect()`,
+        accepted: ['to_owned'],
+        acceptedPatterns: ['^to_owned$'],
+        hints: ['iter() yields &T, but the Vec needs T.', 'The bound gives you to_owned().'],
+        explanation: 'to_owned() converts &T into an owned T (the bound T: ToOwned<Owned = T> guarantees it), so collect() can build a Vec<T>.',
+        whatYouLearned: 'to_owned() produces an owned value from a reference.',
+        conceptId: 'generics',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What does flatten_tree(&BTreeSet::from([34, 0, 9, 30])) return?',
+        options: ['[0, 9, 30, 34]', '[34, 0, 9, 30]', '[34, 30, 9, 0]', 'an unsorted Vec'],
+        correct: [0],
+        why: [
+          'A BTreeSet stores elements sorted, so iteration is ascending.',
+          'Insertion order is not preserved by a set.',
+          'That is descending; BTreeSet iterates ascending.',
+          'It is sorted, because the set is ordered.',
+        ],
+        hints: ['BTreeSet keeps its elements ordered.', 'Iteration is ascending.'],
+        explanation: 'BTreeSet is an ordered set, so iterating it yields sorted values: [0, 9, 30, 34].',
+        whatYouLearned: 'BTreeSet iteration is already sorted — no extra sort needed.',
+        conceptId: 'collections',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This does redundant (and wrong) work. Click the unnecessary call.',
+        code: `let mut v: Vec<T> = tree.iter().map(|x| x.to_owned()).collect();
+v.sort();`,
+        bugs: [{ line: 2, token: 'sort' }],
+        hints: ['Where do the elements come from?', 'A BTreeSet is already ordered.'],
+        explanation: 'The elements are already sorted by the BTreeSet, so the extra v.sort() is unnecessary (and would also require T: Ord).',
+        whatYouLearned: 'Do not re-sort data that is already ordered.',
+        conceptId: 'collections',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'BTreeSet', url: 'https://doc.rust-lang.org/std/collections/struct.BTreeSet.html', note: 'ordered set' },
+        { name: 'ToOwned', url: 'https://doc.rust-lang.org/std/borrow/trait.ToOwned.html', note: 'borrowed -> owned' },
+        { name: 'Iterator::collect', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect', note: 'build the Vec' },
+      ],
+      links: [
+        { title: 'The Book — Generic types and traits', url: 'https://doc.rust-lang.org/book/ch10-00-generics.html' },
+        { title: 'std::collections', url: 'https://doc.rust-lang.org/std/collections/' },
+      ],
+    },
+    editorHints: [
+      'A BTreeSet iterates in sorted order — no manual sorting needed.',
+      'Map each &T to an owned value with to_owned().',
+      'collect() into the Vec<T>.',
+    ],
+  },
+
+  brackets_matching: {
+    overview: {
+      whatYouBuild: 'A command-line program that, for each argument, prints "OK" if its brackets are correctly matched/nested, otherwise "Error". Non-bracket characters are ignored.',
+      inputOutput: 'Args: any number of strings. For each, print OK or Error. No arguments -> print nothing.',
+      constraints: ['Match (), [], {} — an opener must close with its own kind.', 'Ignore all non-bracket characters.', 'A string with no brackets is OK.'],
+      commonMistakes: ['Not checking that the popped opener matches the closer type.', 'Forgetting the empty-stack case on a closer.', 'Not handling "no arguments" (print nothing).'],
+    },
+    officialDescription: `## brackets_matching
+
+Create a program that takes any number of command-line arguments. For each argument, print "OK" if the expression is correctly bracketed, otherwise "Error".
+
+All characters are ignored except the brackets (), [], {}. An opening bracket must be closed by the matching closing bracket. A string with no brackets is correctly bracketed. With no arguments, print nothing.
+
+Use std::env::args() to read the arguments.
+
+### Usage
+
+~~~
+$ cargo run '(johndoe)'
+OK
+$ cargo run '([)]'
+Error
+~~~`,
+    objectives: {
+      learn: ['Use a Vec as a stack.', 'Match closers to the correct opener.', 'Read and loop over CLI arguments.'],
+      whyExists: 'The canonical stack problem; also practices argv handling.',
+      rustSkills: ['stack (Vec)', 'pattern matching', 'CLI args'],
+    },
+    conceptIds: ['collections', 'pattern_matching', 'cli_args'],
+    conceptNotes: {
+      collections: 'A Vec<char> stack remembers the open brackets seen so far.',
+      pattern_matching: 'A match routes each character to push, pop-and-check, or ignore.',
+    },
+    similar: {
+      title: 'Balanced parentheses',
+      prompt: 'Write balanced(s: &str) -> bool that checks only round parentheses () using a counter (no other bracket types). A simpler version of the stack idea.',
+      starter: `pub fn balanced(s: &str) -> bool {
+    todo!()
+}`,
+      hint: 'Keep a depth counter; +1 on (, -1 on ); fail if it goes negative; OK if it ends at 0.',
+      concepts: ['pattern_matching'],
+      solution: `pub fn balanced(s: &str) -> bool {
+    let mut depth = 0i32;
+    for c in s.chars() {
+        if c == '(' { depth += 1; }
+        else if c == ')' { depth -= 1; if depth < 0 { return false; } }
+    }
+    depth == 0
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Remember each opener. Fill the action for an opening bracket.',
+        template: `match c {
+    '(' | '[' | '{' => stack._____(c),
+    // closers handled below
+    _ => {}
+}`,
+        accepted: ['push'],
+        acceptedPatterns: ['^push$'],
+        hints: ['Put the opener on the stack.', 'Vec::push.'],
+        explanation: 'Each opening bracket is pushed so a later closer can check it.',
+        whatYouLearned: 'A stack records the still-open brackets.',
+        conceptId: 'collections',
+      },
+      {
+        prompt: 'A closer must match the most recent opener. Fill the check for ")".',
+        template: `')' => if stack.pop() != _____ { return false; },`,
+        accepted: ["Some('(')"],
+        acceptedPatterns: ["^Some\\('\\('\\)$"],
+        hints: ['pop() returns an Option.', 'It must be Some with the matching opener.'],
+        explanation: 'pop() returns the last opener (or None if empty); for ")" it must be Some(\'(\'), else the string is unbalanced.',
+        whatYouLearned: 'Match each closer to the correct opener via the popped value.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What should "([)]" print, and why?',
+        options: [
+          'Error, because ")" tries to close "[" (wrong type)',
+          'OK, because every bracket has a partner',
+          'Error, because there are too many brackets',
+          'OK, because the counts are equal',
+        ],
+        correct: [0],
+        why: [
+          'After ( [ the next is ), which would close [, but [ needs ] — mismatch.',
+          'Counts being equal is not enough; nesting must match.',
+          'The count is fine; the nesting is wrong.',
+          'Equal counts do not guarantee correct nesting.',
+        ],
+        hints: ['Brackets must close in the right order.', 'Can ) close [ ?'],
+        explanation: '"([)]" is interleaved: ) tries to close [, which is invalid, so it prints Error.',
+        whatYouLearned: 'Correct bracketing needs proper nesting, not just equal counts.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'bug',
+        prompt: 'This balance check ignores the bracket TYPE. Click the mistake.',
+        code: `')' => if stack.pop().is_none() { return false; },
+']' => if stack.pop().is_none() { return false; },`,
+        bugs: [{ line: 1, token: 'is_none' }],
+        hints: ['A ) must close a ( specifically.', 'is_none only checks the stack is non-empty.'],
+        explanation: 'is_none() only verifies something was open, not that it was the right kind. Compare the popped value to the matching opener, e.g. != Some(\'(\').',
+        whatYouLearned: 'Check the popped opener\'s type, not just that one exists.',
+        conceptId: 'pattern_matching',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble is_balanced. One fragment does not belong.',
+        scaffold: `fn is_balanced(s: &str) -> bool {
+    [ slot 1 ]
+    [ slot 2 ]
+    [ slot 3 ]
+}`,
+        fragments: [
+          'let mut stack: Vec<char> = Vec::new();',
+          "for c in s.chars() { match c { '(' | '[' | '{' => stack.push(c), ')' => if stack.pop() != Some('(') { return false; }, ']' => if stack.pop() != Some('[') { return false; }, '}' => if stack.pop() != Some('{') { return false; }, _ => {} } }",
+          'stack.is_empty()',
+        ],
+        distractors: ['return s.len() % 2 == 0;'],
+        hints: ['Make a stack, scan characters pushing/popping, then check nothing is left open.', 'An even length does not prove balance.'],
+        explanation: 'Create the stack, push openers and match closers as you scan, then balanced means the stack is empty. The length-parity fragment is a distractor.',
+        whatYouLearned: 'Stack scan + empty-at-end is the bracket-matching algorithm.',
+        conceptId: 'collections',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'Vec::push / Vec::pop', url: 'https://doc.rust-lang.org/std/vec/struct.Vec.html#method.pop', note: 'use a Vec as a stack' },
+        { name: 'std::env::args', url: 'https://doc.rust-lang.org/std/env/fn.args.html', note: 'read the arguments' },
+        { name: 'match', url: 'https://doc.rust-lang.org/book/ch06-02-match.html', note: 'route each character' },
+      ],
+      links: [
+        { title: 'The Book — Command line arguments', url: 'https://doc.rust-lang.org/book/ch12-01-accepting-command-line-arguments.html' },
+        { title: 'Vec as a stack', url: 'https://doc.rust-lang.org/std/vec/struct.Vec.html' },
+      ],
+      videos: [{ title: 'Build a Rust CLI — Command Line Arguments', channel: 'Rust Tutorial', url: 'https://www.youtube.com/watch?v=_T4sE6NEcV0' }],
+    },
+    editorHints: [
+      'Use a Vec<char> as a stack; push openers, pop on closers.',
+      'A closer must pop its matching opener — check the type, not just non-empty.',
+      'Balanced means the stack is empty at the end; ignore non-bracket characters.',
+    ],
+  },
+
+  brain_fuck: {
+    overview: {
+      whatYouBuild: 'A Brainfuck interpreter: an array of 2048 bytes and a data pointer, executing the program given as the first command-line argument.',
+      inputOutput: 'Arg: Brainfuck source (guaranteed valid). Effect: runs it, printing bytes via the "." command.',
+      constraints: ['Tape of 2048 bytes, all starting at 0.', 'Commands: > < + - . [ ]; all other characters are comments.', '[ and ] loop while the current cell is non-zero.'],
+      commonMistakes: ['Not matching nested [ ] when jumping.', 'Forgetting byte wrap-around (use wrapping_add/sub).', 'Off-by-one in the program counter after a jump.'],
+    },
+    officialDescription: `## brain_fuck
+
+Build a Brainfuck interpreter using an array of 2048 bytes and a memory pointer. The program is the first command-line argument (guaranteed valid).
+
+Commands:
+
+- > and < move the pointer right and left
+- + and - increment and decrement the current byte
+- . outputs the current byte as an ASCII character
+- [ and ] form a loop that runs while the current byte is non-zero
+- all other characters are comments
+
+### Behavior
+
+Running the classic program prints "Hello World!".`,
+    objectives: {
+      learn: ['Scan and interpret commands with state.', 'Manage a tape, a data pointer, and a program counter.', 'Match nested loop brackets.'],
+      whyExists: 'A complete (if tiny) interpreter — the capstone of parsing and stateful iteration.',
+      rustSkills: ['parsing', 'arrays', 'control flow', 'CLI args'],
+    },
+    conceptIds: ['parsing', 'collections', 'cli_args'],
+    conceptNotes: {
+      parsing: 'The interpreter scans the source once, reacting to each command and jumping for loops.',
+      collections: 'A fixed [u8; 2048] tape holds the memory cells.',
+    },
+    similar: {
+      title: 'Run + and - only',
+      prompt: 'Write a function that takes a string of only + and - and returns the resulting byte value (starting from 0, wrapping). A mini-interpreter for two commands.',
+      starter: `pub fn run_pm(src: &str) -> u8 {
+    todo!()
+}`,
+      hint: 'Fold over chars: + => wrapping_add(1), - => wrapping_sub(1).',
+      concepts: ['parsing'],
+      solution: `pub fn run_pm(src: &str) -> u8 {
+    let mut cell = 0u8;
+    for c in src.chars() {
+        match c { '+' => cell = cell.wrapping_add(1), '-' => cell = cell.wrapping_sub(1), _ => {} }
+    }
+    cell
+}`,
+    },
+    sideQuiz: [
+      {
+        prompt: 'Increment the current cell, wrapping past 255. Fill the method.',
+        template: `'+' => tape[ptr] = tape[ptr]._____(1),`,
+        accepted: ['wrapping_add'],
+        acceptedPatterns: ['^wrapping_add$'],
+        hints: ['A byte must wrap from 255 back to 0.', 'Use wrapping_add(1).'],
+        explanation: 'wrapping_add(1) increments the byte and wraps 255 -> 0, which is how Brainfuck cells behave.',
+        whatYouLearned: 'wrapping_add/sub model byte overflow without panicking.',
+        conceptId: 'parsing',
+      },
+      {
+        kind: 'choice',
+        prompt: 'What does the "." command do?',
+        options: [
+          'output the current byte as an ASCII character',
+          'move the pointer right',
+          'increment the current byte',
+          'start a loop',
+        ],
+        correct: [0],
+        why: [
+          '"." prints the current cell as a character.',
+          '">" moves the pointer right.',
+          '"+" increments the byte.',
+          '"[" starts a loop.',
+        ],
+        hints: ['It is the only output command.', 'Think print.'],
+        explanation: 'The "." command outputs the byte at the pointer interpreted as ASCII.',
+        whatYouLearned: 'Each Brainfuck symbol maps to one tiny operation.',
+        conceptId: 'parsing',
+      },
+      {
+        kind: 'bug',
+        prompt: 'The "[" handler ignores nested brackets when skipping. Click the part that should track nesting.',
+        code: `'[' => if tape[ptr] == 0 {
+    while code[pc] != ']' { pc += 1; }
+},`,
+        bugs: [{ line: 2, token: ']' }],
+        hints: ['What if there is a "[" inside the loop body?', 'You must count depth, not stop at the first "]".'],
+        explanation: 'Stopping at the first "]" breaks on nested loops; instead track a depth counter, increasing on "[" and decreasing on "]", until it returns to zero.',
+        whatYouLearned: 'Matching nested brackets requires a depth counter.',
+        conceptId: 'parsing',
+      },
+      {
+        kind: 'order',
+        prompt: 'Order the steps of the interpreter\'s main loop body for one command. One fragment does not belong.',
+        scaffold: `// inside: while pc < code.len() {
+    [ slot 1 ]
+    [ slot 2 ]
+// }`,
+        fragments: [
+          "match code[pc] { '>' => ptr += 1, '<' => ptr -= 1, '+' => tape[ptr] = tape[ptr].wrapping_add(1), '-' => tape[ptr] = tape[ptr].wrapping_sub(1), '.' => print!(\"{}\", tape[ptr] as char), '[' => {/* skip if zero */}, ']' => {/* jump back if non-zero */}, _ => {} }",
+          'pc += 1;',
+        ],
+        distractors: ['tape = [0u8; 2048];'],
+        hints: ['Handle the current command, then advance the program counter.', 'Re-initializing the tape inside the loop would erase memory.'],
+        explanation: 'Each iteration dispatches on the current command, then advances pc. Re-creating the tape inside the loop is a distractor — it would wipe memory every step.',
+        whatYouLearned: 'Interpret-then-advance is the heart of a bytecode/loop interpreter.',
+        conceptId: 'parsing',
+      },
+    ],
+    documentation: {
+      apis: [
+        { name: 'u8::wrapping_add / wrapping_sub', url: 'https://doc.rust-lang.org/std/primitive.u8.html#method.wrapping_add', note: 'byte cells wrap' },
+        { name: 'arrays [u8; N]', url: 'https://doc.rust-lang.org/std/primitive.array.html', note: 'the 2048-byte tape' },
+        { name: 'std::env::args', url: 'https://doc.rust-lang.org/std/env/fn.args.html', note: 'read the source program' },
+        { name: 'print! macro', url: 'https://doc.rust-lang.org/std/macro.print.html', note: 'output a byte as a char' },
+      ],
+      links: [
+        { title: 'Brainfuck (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Brainfuck' },
+        { title: 'The Book — Command line arguments', url: 'https://doc.rust-lang.org/book/ch12-01-accepting-command-line-arguments.html' },
+      ],
+    },
+    editorHints: [
+      'Keep a [u8; 2048] tape, a data pointer, and a program counter.',
+      'match on each command; use wrapping_add/sub for + and -.',
+      'For [ and ], scan to the matching bracket using a depth counter (handles nesting).',
+    ],
+  },
 };
