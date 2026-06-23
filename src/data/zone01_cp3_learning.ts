@@ -460,6 +460,23 @@ let mut counts: HashMap<String, u32> = _____;`,
         conceptId: 'iterators',
       },
       {
+        kind: 'match',
+        prompt: 'Match each piece of the word-counting solution to what it does.',
+        pairs: [
+          { left: 'split_whitespace()', right: 'break the text into words' },
+          { left: '.to_lowercase()', right: 'make the count case-insensitive' },
+          { left: '.entry(key)', right: 'look up the slot for a word' },
+          { left: '.or_insert(0)', right: 'start a new word at count 0' },
+        ],
+        hints: [
+          'Think about the order: split, normalize, then count.',
+          'entry/or_insert together create-or-update a counter.',
+        ],
+        explanation: 'The text is split into words, each word is lowercased so cases merge, and entry(key).or_insert(0) returns a counter (creating it at 0 the first time) that is then incremented.',
+        whatYouLearned: 'Each method has a single clear role in the counting pipeline.',
+        conceptId: 'collections',
+      },
+      {
         prompt: 'Lowercase the word so that "Hello" and "hello" count as one.',
         template: `let key = word._____();`,
         accepted: ['to_lowercase'],
@@ -603,6 +620,29 @@ $ cargo run
         conceptId: 'error_handling',
       },
       {
+        kind: 'choice',
+        prompt: 'Which iterator adapter reverses the order of the characters?',
+        template: `let reversed: String = abs.to_string()
+    .chars()
+    .____()
+    .collect();`,
+        options: ['reverse()', 'rev()', 'flip()', 'sort()'],
+        correct: [1],
+        why: [
+          'reverse() reverses a slice in place and returns (), it is not an iterator adapter.',
+          'rev() reverses a double-ended iterator — exactly what we need.',
+          'There is no flip() method on iterators.',
+          'sort() orders items; it does not reverse the sequence.',
+        ],
+        hints: [
+          'You want to walk the characters back to front.',
+          'It is the double-ended iterator adapter.',
+        ],
+        explanation: 'chars() yields a double-ended iterator, and rev() walks it from the last character to the first before collect() rebuilds the String.',
+        whatYouLearned: 'rev() reverses an iterator without copying.',
+        conceptId: 'iterators',
+      },
+      {
         prompt: 'Reverse the characters of the digit string.',
         template: `let reversed: String = original.chars()._____.collect();`,
         accepted: ['rev()'],
@@ -627,6 +667,23 @@ $ cargo run
         conceptId: 'pattern_matching',
       },
       {
+        kind: 'bug',
+        prompt: 'This attempt to reverse a string does not compile. Click the token that is the mistake.',
+        code: `fn reverse_it(v: i32) -> String {
+    let s = v.to_string();
+    let reversed = s.reverse();
+    reversed
+}`,
+        bugs: [{ line: 3, token: 'reverse' }],
+        hints: [
+          'String has no method that reverses it directly.',
+          'Look at the method called on s.',
+        ],
+        explanation: 'String has no reverse() method; reversing text goes through an iterator: s.chars().rev().collect(). (Slices do have reverse(), but it mutates in place and returns ().)',
+        whatYouLearned: 'Reverse text via chars().rev().collect(), not a reverse() method.',
+        conceptId: 'iterators',
+      },
+      {
         prompt: 'Append the original number after the reversed digits.',
         template: `let out = format!("{}{}", reversed, _____);`,
         accepted: ['original'],
@@ -635,6 +692,32 @@ $ cargo run
         explanation: 'format! concatenates the reversed digits and the original digits into the final answer (a "-" is prepended for negatives).',
         whatYouLearned: 'format! is the clean way to assemble a string from parts.',
         conceptId: 'display_trait',
+      },
+      {
+        kind: 'order',
+        prompt: 'Assemble the full reverse_it function. Drop the right fragments into order — one fragment does not belong.',
+        scaffold: `fn reverse_it(v: i32) -> String {
+    [ slot 1 ]
+    [ slot 2 ]
+    [ slot 3 ]
+    [ slot 4 ]
+}`,
+        fragments: [
+          'let abs = (v as i64).abs();',
+          'let reversed: String = abs.to_string().chars().rev().collect();',
+          'let sign = if v < 0 { "-" } else { "" };',
+          'format!("{}{}{}", sign, reversed, abs)',
+        ],
+        distractors: [
+          'let reversed = v.to_string().reverse();',
+        ],
+        hints: [
+          'Take the absolute value first, then reverse its digits.',
+          'Work out the sign separately, and assemble sign + reversed + original last.',
+        ],
+        explanation: 'First widen and take the absolute value, then reverse its digits, then decide the sign, and finally format sign + reversed digits + original number. The reverse() fragment is a distractor — String has no reverse().',
+        whatYouLearned: 'The algorithm flows: normalize → transform → sign → assemble.',
+        conceptId: 'iterators',
       },
     ],
   },
