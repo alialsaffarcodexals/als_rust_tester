@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type {
   SideQuizStep,
   BlankQuizStep,
@@ -22,6 +22,7 @@ import { BugWidget, ChoiceWidget, OrderWidget, MatchWidget } from './QuizWidgets
 interface SideQuizProps {
   steps: SideQuizStep[];
   title?: string;
+  onProgress?: (solved: number, total: number) => void;
 }
 
 type StepStatus = 'unanswered' | 'wrong' | 'correct';
@@ -39,7 +40,7 @@ const KIND_LABEL: Record<string, string> = {
 // code ordering, matching). This component owns the shared chrome — progress,
 // stepper, hints, feedback, navigation — and delegates the interaction body and
 // answer-checking to per-kind helpers and widgets.
-export default function SideQuiz({ steps, title }: SideQuizProps) {
+export default function SideQuiz({ steps, title, onProgress }: SideQuizProps) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, QuizAnswer>>({});
   const [status, setStatus] = useState<Record<number, StepStatus>>({});
@@ -59,6 +60,12 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
     () => steps.filter((_, i) => (status[i] ?? 'unanswered') === 'correct').length,
     [steps, status]
   );
+
+  // Report completion upward (e.g. to drive the lesson's journey progress).
+  useEffect(() => {
+    onProgress?.(solvedCount, total);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solvedCount, total]);
 
   if (!step) {
     return <div className="sq-empty">No side quiz available for this exercise yet.</div>;
@@ -183,6 +190,13 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
           );
         })}
       </div>
+
+      {allSolved && (
+        <div className="sq-celebrate animate-slide-up">
+          <span className="sq-celebrate-icon">🎉</span>
+          <span>Quiz complete — all {total} steps solved! You understand the moving parts; now attempt the exercise.</span>
+        </div>
+      )}
 
       <div className="sq-card">
         <div className="sq-step-label">
@@ -331,6 +345,13 @@ export default function SideQuiz({ steps, title }: SideQuizProps) {
         .sq-actions { display: flex; flex-wrap: wrap; gap: 8px; }
         .sq-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .sq-done { font-size: 0.85rem; color: var(--success); font-weight: 600; text-align: right; }
+        .sq-celebrate {
+          display: flex; align-items: center; gap: 10px;
+          background: var(--success-bg); border: 1px solid rgba(74,222,128,0.4);
+          border-radius: var(--radius-lg); padding: 12px 16px;
+          font-size: 0.88rem; color: var(--text-primary); font-weight: 500;
+        }
+        .sq-celebrate-icon { font-size: 1.4rem; }
         @media (max-width: 768px) {
           .sq-card { padding: 14px; }
           .sq-actions { gap: 6px; }

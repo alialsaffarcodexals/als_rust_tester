@@ -41,6 +41,8 @@ export default function FinalPrepPage() {
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
   const [hintsShown, setHintsShown] = useState(0);
+  const [mode, setMode] = useState<'practice' | 'exam'>('practice');
+  const [timeLeft, setTimeLeft] = useState(0);
 
   // Always resolve the active challenge within the current level.
   const active = levelChallenges.find((c) => c.id === activeId) ?? levelChallenges[0];
@@ -57,6 +59,19 @@ export default function FinalPrepPage() {
     setTestResults(null);
     setHintsShown(0);
   }, [activeId]);
+
+  // Exam mode: a per-challenge countdown that emphasises solving under pressure.
+  const examSeconds = (d: string) =>
+    ({ easiest: 300, easy: 300, medium: 480, hard: 720, hardest: 900 } as Record<string, number>)[d] ?? 480;
+  useEffect(() => {
+    if (mode !== 'exam' || !active) return;
+    setTimeLeft(examSeconds(active.difficulty));
+    const id = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, activeId]);
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const persist = useCallback((nextCodes: Record<string, string>, nextSolved: Set<string>) => {
     try {
@@ -112,7 +127,18 @@ export default function FinalPrepPage() {
           <button className="fp-back" onClick={() => navigate('/')} title="Dashboard">🏠</button>
           <span className="fp-title">🏁 Final Preparation Quiz</span>
         </div>
-        <span className="fp-progress">{totalSolved}/{finalPrepChallenges.length} solved</span>
+        <div className="fp-header-right">
+          {mode === 'exam' && (
+            <span className={`fp-timer ${timeLeft === 0 ? 'up' : timeLeft < 60 ? 'warn' : ''}`}>
+              ⏱ {timeLeft === 0 ? "Time's up" : formatTime(timeLeft)}
+            </span>
+          )}
+          <div className="fp-mode" role="group" aria-label="Quiz mode">
+            <button className={mode === 'practice' ? 'active' : ''} onClick={() => setMode('practice')} title="Show hints and documentation">📖 Practice</button>
+            <button className={mode === 'exam' ? 'active' : ''} onClick={() => setMode('exam')} title="Hide hints, add a timer — solve under pressure">⏱ Exam</button>
+          </div>
+          <span className="fp-progress">{totalSolved}/{finalPrepChallenges.length} solved</span>
+        </div>
       </div>
 
       {/* Level rail */}
@@ -172,22 +198,28 @@ export default function FinalPrepPage() {
               <div className="fp-chips">{concepts.map((n) => <span key={n} className="fp-chip">{n}</span>)}</div>
             )}
 
-            <div className="fp-hints">
-              {active.hints.slice(0, hintsShown).map((h, i) => (
-                <div key={i} className="fp-hint"><span className="fp-hint-label">Hint {i + 1}</span><span>{h}</span></div>
-              ))}
-              {hintsShown < active.hints.length && (
-                <button className="btn btn-ghost btn-sm" onClick={() => setHintsShown((h) => h + 1)}>
-                  💡 Show hint {hintsShown + 1} of {active.hints.length}
-                </button>
-              )}
-            </div>
+            {mode === 'practice' ? (
+              <>
+                <div className="fp-hints">
+                  {active.hints.slice(0, hintsShown).map((h, i) => (
+                    <div key={i} className="fp-hint"><span className="fp-hint-label">Hint {i + 1}</span><span>{h}</span></div>
+                  ))}
+                  {hintsShown < active.hints.length && (
+                    <button className="btn btn-ghost btn-sm" onClick={() => setHintsShown((h) => h + 1)}>
+                      💡 Show hint {hintsShown + 1} of {active.hints.length}
+                    </button>
+                  )}
+                </div>
 
-            {active.docs && (
-              <details className="fp-docs">
-                <summary>📚 Documentation</summary>
-                <DocumentationPanel docs={active.docs} />
-              </details>
+                {active.docs && (
+                  <details className="fp-docs">
+                    <summary>📚 Documentation</summary>
+                    <DocumentationPanel docs={active.docs} />
+                  </details>
+                )}
+              </>
+            ) : (
+              <div className="fp-exam-note">⏱ Exam mode — hints and documentation are hidden. Switch to Practice if you get stuck.</div>
             )}
           </div>
         </div>
@@ -233,6 +265,15 @@ export default function FinalPrepPage() {
         .fp-back { background: none; border: none; font-size: 1rem; cursor: pointer; }
         .fp-title { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
         .fp-progress { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .fp-header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .fp-mode { display: inline-flex; border: 1px solid var(--border-normal); border-radius: var(--radius-md); overflow: hidden; }
+        .fp-mode button { background: var(--bg-elevated); border: none; padding: 5px 12px; font-size: 0.78rem; color: var(--text-secondary); cursor: pointer; transition: all var(--transition); }
+        .fp-mode button + button { border-left: 1px solid var(--border-normal); }
+        .fp-mode button.active { background: var(--rust-dim); color: var(--rust-light); font-weight: 600; }
+        .fp-timer { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+        .fp-timer.warn { color: var(--warning); }
+        .fp-timer.up { color: var(--error); animation: pulse 1s ease infinite; }
+        .fp-exam-note { font-size: 0.82rem; color: var(--text-muted); background: var(--bg-elevated); border: 1px dashed var(--border-normal); border-radius: var(--radius-md); padding: 10px 12px; }
         .fp-levels { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 18px; background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; }
         .fp-level { width: 36px; height: 32px; border-radius: var(--radius-md); border: 1px solid var(--border-normal); background: var(--bg-elevated); color: var(--text-muted); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all var(--transition); }
         .fp-level.priority { border-color: var(--border-strong); }

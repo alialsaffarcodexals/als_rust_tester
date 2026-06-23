@@ -59,6 +59,9 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [journeyTab, setJourneyTab] = useState<JourneyTab>('overview');
   const [showEditorHints, setShowEditorHints] = useState(false);
+  const [visited, setVisited] = useState<Set<string>>(() => new Set(['overview']));
+  const [quizSolvedAll, setQuizSolvedAll] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
 
   const isZone01 = exercise?.checkpoint?.startsWith('zone01') ?? false;
   const isZone01Final = exercise?.checkpoint === 'zone01_final';
@@ -80,6 +83,35 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
     !!exercise &&
     (exercise.checkpoint === 'zone01_cp3' || isZone01Final) &&
     walkthroughSteps.length > 0;
+
+  // Ordered journey sections (drives the tabs, progress bar, and "Continue").
+  const journeyTabs: [JourneyTab, string][] = learning
+    ? ([
+        ['overview', '🎯 Overview'],
+        ['description', '📄 Description'],
+        ['concepts', '💡 Concepts'],
+        ...(learning.documentation ? [['documentation', '📚 Documentation'] as [JourneyTab, string]] : []),
+        ['practice', '🔁 Practice'],
+        ['sidequiz', '🧩 Side Quiz'],
+        ...(learning.terminal ? [['terminal', '🖥️ Terminal'] as [JourneyTab, string]] : []),
+        ...(hasWalkthrough ? [['walkthrough', '🪜 Step-by-Step'] as [JourneyTab, string]] : []),
+        ['selfcheck', '✅ Self-Check'],
+      ] as [JourneyTab, string][])
+    : [];
+  // A section is "done" once visited; the Side Quiz is done only when fully solved.
+  const isSectionDone = (t: JourneyTab) => (t === 'sidequiz' ? quizSolvedAll : visited.has(t));
+  const journeyTotal = journeyTabs.length;
+  const journeyDone = journeyTabs.filter(([t]) => isSectionDone(t)).length;
+  const sectionOrder = journeyTabs.map(([t]) => t);
+  const nextSection = (() => {
+    const i = sectionOrder.indexOf(journeyTab);
+    return sectionOrder.slice(i + 1).find((t) => !isSectionDone(t)) ?? sectionOrder.find((t) => !isSectionDone(t));
+  })();
+  const labelOf = (t: JourneyTab) => journeyTabs.find(([x]) => x === t)?.[1] ?? '';
+  const goToSection = (t: JourneyTab) => {
+    setJourneyTab(t);
+    setVisited((prev) => new Set(prev).add(t));
+  };
 
   const { runCode, runTests, isRunning, isTesting } = useRustExecution();
   const lessonProgress = progress.lessons[exerciseId];
@@ -116,6 +148,9 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       setShowWalkthrough(false);
       setActiveTab('concept');
       setJourneyTab('overview');
+      setVisited(new Set(['overview']));
+      setQuizSolvedAll(false);
+      setFocusMode(false);
     }
   }, [exerciseId, exercise]);
 
@@ -221,31 +256,33 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       </div>
 
       {/* Main layout */}
-      <div className="lesson-layout">
+      <div className={`lesson-layout${focusMode ? ' focus' : ''}`}>
         {/* Left panel: content tabs */}
         <div className="lesson-left">
           {learning ? (
-            <div className="tabs lesson-tabs lesson-journey-tabs">
-              {([
-                ['overview', '🎯 Overview'],
-                ['description', '📄 Description'],
-                ['concepts', '💡 Concepts'],
-                ...(learning.documentation ? [['documentation', '📚 Documentation'] as [JourneyTab, string]] : []),
-                ['practice', '🔁 Practice'],
-                ['sidequiz', '🧩 Side Quiz'],
-                ...(learning.terminal ? [['terminal', '🖥️ Terminal'] as [JourneyTab, string]] : []),
-                ...(hasWalkthrough ? [['walkthrough', '🪜 Step-by-Step'] as [JourneyTab, string]] : []),
-                ['selfcheck', '✅ Self-Check'],
-              ] as [JourneyTab, string][]).map(([tab, label]) => (
-                <button
-                  key={tab}
-                  className={`tab ${journeyTab === tab ? 'active' : ''}`}
-                  onClick={() => setJourneyTab(tab)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="journey-bar">
+                <div className="journey-bar-track">
+                  <div className="journey-bar-fill" style={{ width: `${journeyTotal ? (journeyDone / journeyTotal) * 100 : 0}%` }} />
+                </div>
+                <span className="journey-bar-label">
+                  {journeyDone === journeyTotal
+                    ? '🎉 Journey complete'
+                    : `${journeyDone}/${journeyTotal} · Next: ${nextSection ? labelOf(nextSection).replace(/^\S+\s/, '') : ''}`}
+                </span>
+              </div>
+              <div className="tabs lesson-tabs lesson-journey-tabs">
+                {journeyTabs.map(([tab, label]) => (
+                  <button
+                    key={tab}
+                    className={`tab ${journeyTab === tab ? 'active' : ''} ${isSectionDone(tab) ? 'done' : ''}`}
+                    onClick={() => goToSection(tab)}
+                  >
+                    {label}{isSectionDone(tab) ? ' ✓' : ''}
+                  </button>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="tabs lesson-tabs">
               {(['concept', 'examples', 'exercise', 'hints'] as TabId[]).map((tab) => (
@@ -318,7 +355,11 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
                   <SimilarExample data={learning.similar} />
                 )}
                 {journeyTab === 'sidequiz' && (
-                  <SideQuiz steps={learning.sideQuiz} title={`${exercise.title} — Side Quiz`} />
+                  <SideQuiz
+                    steps={learning.sideQuiz}
+                    title={`${exercise.title} — Side Quiz`}
+                    onProgress={(s, t) => setQuizSolvedAll(t > 0 && s === t)}
+                  />
                 )}
                 {journeyTab === 'terminal' && learning.terminal && (
                   <TerminalSimulator config={learning.terminal} />
@@ -331,6 +372,14 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
                     prompts={learning.selfAssessment}
                     onViewSolution={() => setShowSolutionModal(true)}
                   />
+                )}
+                {nextSection && (
+                  <div className="journey-continue">
+                    <span className="journey-continue-hint">Up next</span>
+                    <button className="btn btn-primary btn-sm" onClick={() => goToSection(nextSection)}>
+                      Continue → {labelOf(nextSection)}
+                    </button>
+                  </div>
                 )}
               </>
             ) : (
@@ -382,6 +431,15 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
               solution.rs
             </span>
             <div className="editor-toolbar-actions">
+              {learning && (
+                <button
+                  className={`btn btn-sm${focusMode ? ' btn-save-done' : ' btn-ghost'}`}
+                  onClick={() => setFocusMode((f) => !f)}
+                  title={focusMode ? 'Show the learning journey' : 'Focus mode — hide the journey and expand the editor'}
+                >
+                  {focusMode ? '⤡ Exit Focus' : '⤢ Focus'}
+                </button>
+              )}
               <button
                 className="btn btn-ghost btn-sm"
                 onClick={handleReset}
@@ -551,6 +609,22 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         .lesson-tabs { border-bottom: 1px solid var(--border-subtle); padding: 0 16px; flex-shrink: 0; }
         .lesson-journey-tabs { flex-wrap: wrap; gap: 2px 4px; padding: 6px 12px 0; }
         .lesson-journey-tabs .tab { padding: 6px 10px; font-size: 0.8rem; }
+        .lesson-journey-tabs .tab.done { color: var(--success); }
+        .lesson-journey-tabs .tab.done.active { color: var(--rust-light); }
+        /* Journey progress bar */
+        .journey-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; }
+        .journey-bar-track { flex: 1; height: 6px; background: var(--bg-hover); border-radius: 3px; overflow: hidden; }
+        .journey-bar-fill { height: 100%; background: var(--rust); border-radius: 3px; transition: width 0.35s ease; }
+        .journey-bar-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+        /* Continue-to-next-section footer */
+        .journey-continue {
+          display: flex; align-items: center; gap: 10px; justify-content: flex-end;
+          margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle);
+        }
+        .journey-continue-hint { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+        /* Focus mode — hide the journey, give the editor the full width */
+        .lesson-layout.focus { grid-template-columns: 1fr; }
+        .lesson-layout.focus .lesson-left { display: none; }
         .lesson-tab-content { flex: 1; overflow-y: auto; padding: 20px; }
         .lesson-right { display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; }
         .editor-guidance { background: var(--info-bg); border: 1px solid rgba(96,165,250,0.3); border-radius: var(--radius-md); }
@@ -719,6 +793,10 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           .lesson-actions-top { gap: 4px; }
           .lesson-actions-top .btn-ghost { padding: 6px 8px; font-size: 0.8125rem; }
           .lesson-tabs { padding: 0 10px; }
+          .lesson-journey-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 6px 10px 0; }
+          .lesson-journey-tabs .tab { white-space: nowrap; flex-shrink: 0; }
+          .journey-bar { padding: 8px 10px 4px; }
+          .journey-continue { flex-wrap: wrap; }
           .tab { padding: 8px 10px; font-size: 0.8rem; }
           .lesson-tab-content { padding: 14px; }
           .editor-toolbar { flex-wrap: wrap; gap: 6px; }
