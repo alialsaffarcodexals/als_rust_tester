@@ -7,6 +7,10 @@ import { useRustExecution } from '../hooks/useRustExecution';
 import { zone01Guides } from '../data/zone01_guides';
 import { zone01Walkthroughs } from '../data/zone01_walkthroughs';
 import { zone01Cp3Learning } from '../data/zone01_cp3_learning';
+import { zone01FinalLearning } from '../data/zone01_final_learning';
+import { zone01FinalWalkthroughs } from '../data/zone01_final_walkthroughs';
+import DocumentationPanel from '../components/learn/DocumentationPanel';
+import { seedHints } from '../components/learn/editorHints';
 import ExerciseOverview from '../components/learn/ExerciseOverview';
 import OfficialDescription from '../components/learn/OfficialDescription';
 import ConceptGuide from '../components/learn/ConceptGuide';
@@ -27,6 +31,7 @@ type JourneyTab =
   | 'overview'
   | 'description'
   | 'concepts'
+  | 'documentation'
   | 'practice'
   | 'sidequiz'
   | 'terminal'
@@ -53,16 +58,28 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
   const [showSolutionModal, setShowSolutionModal] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [journeyTab, setJourneyTab] = useState<JourneyTab>('overview');
+  const [showEditorHints, setShowEditorHints] = useState(false);
 
   const isZone01 = exercise?.checkpoint?.startsWith('zone01') ?? false;
-  const hasWalkthrough = !!exercise && exercise.checkpoint === 'zone01_cp3' && !!zone01Walkthroughs[exercise.slug];
-  // CP3 guided-learning content (data-driven journey). Undefined for other zones
-  // or any CP3 exercise without authored content — those fall back to the
-  // original four-tab layout, so there is no regression.
-  const cp3Learning =
+  const isZone01Final = exercise?.checkpoint === 'zone01_final';
+  // Guided-learning content (data-driven journey), resolved by slug for CP3 and
+  // Final. Undefined for other zones or exercises without authored content —
+  // those fall back to the original four-tab layout, so there is no regression.
+  const learning =
     exercise && exercise.checkpoint === 'zone01_cp3'
       ? zone01Cp3Learning[exercise.slug]
+      : exercise && isZone01Final
+      ? zone01FinalLearning[exercise.slug]
       : undefined;
+  // Walkthrough steps: Final-only slugs use their own file; shared slugs reuse
+  // the CP3 walkthroughs.
+  const walkthroughSteps = exercise
+    ? zone01FinalWalkthroughs[exercise.slug] ?? zone01Walkthroughs[exercise.slug] ?? []
+    : [];
+  const hasWalkthrough =
+    !!exercise &&
+    (exercise.checkpoint === 'zone01_cp3' || isZone01Final) &&
+    walkthroughSteps.length > 0;
 
   const { runCode, runTests, isRunning, isTesting } = useRustExecution();
   const lessonProgress = progress.lessons[exerciseId];
@@ -73,7 +90,14 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       const isZ01 = exercise.checkpoint.startsWith('zone01');
       const draft = localStorage.getItem(`rustpath_lesson_draft_${exerciseId}`);
       const submitted = progress.lessons[exerciseId]?.lastCode;
-      setCode(draft || submitted || exercise.starterCode);
+      // Zone01 Final: when there's no saved work, seed the starter with
+      // progressive // Hint: comments so guidance appears right in the editor.
+      const finalLearning = exercise.checkpoint === 'zone01_final' ? zone01FinalLearning[exercise.slug] : undefined;
+      const seededStarter =
+        finalLearning?.editorHints?.length
+          ? seedHints(exercise.starterCode, finalLearning.editorHints)
+          : exercise.starterCode;
+      setCode(draft || submitted || seededStarter);
       if (isZ01) {
         const savedMain = localStorage.getItem(`rustpath_lesson_main_${exerciseId}`);
         setMainCode(savedMain || exercise.testCases[0]?.code || '');
@@ -200,15 +224,16 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       <div className="lesson-layout">
         {/* Left panel: content tabs */}
         <div className="lesson-left">
-          {cp3Learning ? (
+          {learning ? (
             <div className="tabs lesson-tabs lesson-journey-tabs">
               {([
                 ['overview', '🎯 Overview'],
                 ['description', '📄 Description'],
                 ['concepts', '💡 Concepts'],
+                ...(learning.documentation ? [['documentation', '📚 Documentation'] as [JourneyTab, string]] : []),
                 ['practice', '🔁 Practice'],
                 ['sidequiz', '🧩 Side Quiz'],
-                ...(cp3Learning.terminal ? [['terminal', '🖥️ Terminal'] as [JourneyTab, string]] : []),
+                ...(learning.terminal ? [['terminal', '🖥️ Terminal'] as [JourneyTab, string]] : []),
                 ...(hasWalkthrough ? [['walkthrough', '🪜 Step-by-Step'] as [JourneyTab, string]] : []),
                 ['selfcheck', '✅ Self-Check'],
               ] as [JourneyTab, string][]).map(([tab, label]) => (
@@ -275,32 +300,35 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           )}
 
           <div className="lesson-tab-content">
-            {cp3Learning ? (
+            {learning ? (
               <>
                 {journeyTab === 'overview' && (
-                  <ExerciseOverview overview={cp3Learning.overview} objectives={cp3Learning.objectives} />
+                  <ExerciseOverview overview={learning.overview} objectives={learning.objectives} />
                 )}
                 {journeyTab === 'description' && (
-                  <OfficialDescription slug={exercise.slug} description={cp3Learning.officialDescription} />
+                  <OfficialDescription slug={exercise.slug} description={learning.officialDescription} />
+                )}
+                {journeyTab === 'documentation' && learning.documentation && (
+                  <DocumentationPanel docs={learning.documentation} />
                 )}
                 {journeyTab === 'concepts' && (
-                  <ConceptGuide conceptIds={cp3Learning.conceptIds} notes={cp3Learning.conceptNotes} />
+                  <ConceptGuide conceptIds={learning.conceptIds} notes={learning.conceptNotes} />
                 )}
                 {journeyTab === 'practice' && (
-                  <SimilarExample data={cp3Learning.similar} />
+                  <SimilarExample data={learning.similar} />
                 )}
                 {journeyTab === 'sidequiz' && (
-                  <SideQuiz steps={cp3Learning.sideQuiz} title={`${exercise.title} — Side Quiz`} />
+                  <SideQuiz steps={learning.sideQuiz} title={`${exercise.title} — Side Quiz`} />
                 )}
-                {journeyTab === 'terminal' && cp3Learning.terminal && (
-                  <TerminalSimulator config={cp3Learning.terminal} />
+                {journeyTab === 'terminal' && learning.terminal && (
+                  <TerminalSimulator config={learning.terminal} />
                 )}
                 {journeyTab === 'walkthrough' && (
-                  <Walkthrough steps={zone01Walkthroughs[exercise.slug] ?? []} onLoad={setCode} />
+                  <Walkthrough steps={walkthroughSteps} onLoad={setCode} />
                 )}
                 {journeyTab === 'selfcheck' && (
                   <SelfAssessment
-                    prompts={cp3Learning.selfAssessment}
+                    prompts={learning.selfAssessment}
                     onViewSolution={() => setShowSolutionModal(true)}
                   />
                 )}
@@ -326,6 +354,25 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
 
         {/* Right panel: editor + console */}
         <div className="lesson-right">
+          {isZone01Final && learning?.editorHints && learning.editorHints.length > 0 && (
+            <div className="editor-guidance">
+              <button
+                className="editor-guidance-toggle"
+                onClick={() => setShowEditorHints((s) => !s)}
+                aria-expanded={showEditorHints}
+              >
+                <span>💡 Editor guidance ({learning.editorHints.length})</span>
+                <span className="editor-guidance-caret">{showEditorHints ? '▾' : '▸'}</span>
+              </button>
+              {showEditorHints && (
+                <ul className="editor-guidance-list">
+                  {learning.editorHints.map((h, i) => (
+                    <li key={i}>{h}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           <div className="editor-toolbar">
             <span className="editor-filename">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -506,6 +553,15 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         .lesson-journey-tabs .tab { padding: 6px 10px; font-size: 0.8rem; }
         .lesson-tab-content { flex: 1; overflow-y: auto; padding: 20px; }
         .lesson-right { display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; }
+        .editor-guidance { background: var(--info-bg); border: 1px solid rgba(96,165,250,0.3); border-radius: var(--radius-md); }
+        .editor-guidance-toggle {
+          width: 100%; display: flex; align-items: center; justify-content: space-between;
+          background: none; border: none; padding: 8px 12px; cursor: pointer;
+          font-size: 0.82rem; font-weight: 600; color: var(--accent-blue);
+        }
+        .editor-guidance-caret { color: var(--text-muted); }
+        .editor-guidance-list { margin: 0; padding: 0 14px 10px 28px; display: flex; flex-direction: column; gap: 5px; }
+        .editor-guidance-list li { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; list-style: disc; }
         .editor-toolbar {
           display: flex; align-items: center; justify-content: space-between;
           padding: 6px 0;
