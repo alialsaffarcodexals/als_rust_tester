@@ -4602,14 +4602,14 @@ The function must respect the following rules:
       id: 'tc_113_1',
       description: 'Usage example',
       code: `fn main() {
-    println!("{:?}", counting_words("Hello, world!"));
+    println!("{:?}", counting_words("Hello, world!").into_iter().collect::<std::collections::BTreeMap<_, _>>());
     println!("{:?}", counting_words("\u{201c}Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.\u{201d}
-    ― Albert Einstein "));
-    println!("{:?}", counting_words("Batman, BATMAN, batman, Stop stop"));
+    ― Albert Einstein ").into_iter().collect::<std::collections::BTreeMap<_, _>>());
+    println!("{:?}", counting_words("Batman, BATMAN, batman, Stop stop").into_iter().collect::<std::collections::BTreeMap<_, _>>());
 }`,
-      expectedOutput: `{"world": 1, "hello": 1}
-{"are": 1, "about": 1, "stupidity": 1, "human": 1, "infinite": 1, "i'm": 1, "things": 1, "einstein": 1, "albert": 1, "sure": 1, "the": 2, "not": 1, "universe": 2, "and": 2, "two": 1}
-{"stop": 2, "batman": 3}`,
+      expectedOutput: `{"hello": 1, "world": 1}
+{"about": 1, "albert": 1, "and": 2, "are": 1, "einstein": 1, "human": 1, "i'm": 1, "infinite": 1, "not": 1, "stupidity": 1, "sure": 1, "the": 2, "things": 1, "two": 1, "universe": 2}
+{"batman": 3, "stop": 2}`,
       hidden: false,
     }],
     hints: [],
@@ -4814,7 +4814,21 @@ Example — \`inv_pyramid(">".to_string(), 5)\`:
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_117_1',
+      description: 'Usage example',
+      code: `fn main() {
+    for line in inv_pyramid(String::from("x"), 3) {
+        println!("{}", line);
+    }
+}`,
+      expectedOutput: ` x
+  xx
+   xxx
+  xx
+ x`,
+      hidden: false,
+    }],
     hints: [],
   },
   {
@@ -4938,15 +4952,23 @@ This is how partial sums work:
 \`\`\`rs
 parts_sums(&[1, 2, 3, 4, 5]) // == [15, 10, 6, 3 ,1, 0]
 \`\`\``,
-    functionSignatures: [`pub fn partial_sums() {
+    functionSignatures: [`pub fn parts_sums(v: &[u64]) -> Vec<u64> {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn partial_sums() {
+    starterCode: `pub fn parts_sums(v: &[u64]) -> Vec<u64> {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_119_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{:?}", parts_sums(&[1, 2, 3, 4, 5]));
+}`,
+      expectedOutput: `[15, 10, 6, 3, 1, 0]`,
+      hidden: false,
+    }],
     hints: [],
   },
   {
@@ -5125,7 +5147,19 @@ Your function will receive a \`String\` representing the ciphered message, and a
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_123_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{:?}", scytale_decoder("abcdef".to_string(), 2));
+    println!("{:?}", scytale_decoder("abcdef".to_string(), 3));
+    println!("{:?}", scytale_decoder("".to_string(), 3));
+}`,
+      expectedOutput: `Some("acebdf")
+Some("adbecf")
+None`,
+      hidden: false,
+    }],
     hints: [],
   },
   {
@@ -5261,7 +5295,17 @@ To calculate a 3x3 matrix determinant you have to take 'a' and multiply it by th
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_125_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{}", matrix_determinant([[1, 2, 3], [4, 5, 6], [7, 8, 10]]));
+    println!("{}", matrix_determinant([[2, 0, 0], [0, 3, 0], [0, 0, 4]]));
+}`,
+      expectedOutput: `-3
+24`,
+      hidden: false,
+    }],
     hints: [],
   },
   {
@@ -5301,15 +5345,50 @@ A function \`order_books\` should be created outside of the previous modules whi
     - \`year\`: \`u32\` as its year of publication
 
 A function \`order_books\` should be created outside of the previous modules which receives a \`Writer\`, and orders the set of books alphabetically (case insensitive!).`,
-    functionSignatures: [`pub fn order_books() {
+    functionSignatures: [`pub fn order_books(writer: &mut Writer) {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn order_books() {
+    starterCode: `#[derive(Debug)]
+pub struct Book {
+    pub title: String,
+    pub year: u32,
+}
+
+#[derive(Debug)]
+pub struct Writer {
+    pub first_name: String,
+    pub last_name: String,
+    pub books: Vec<Book>,
+}
+
+pub fn order_books(writer: &mut Writer) {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_126_1',
+      description: 'Usage example',
+      code: `fn main() {
+    let mut writer = Writer {
+        first_name: String::from("George"),
+        last_name: String::from("Orwell"),
+        books: vec![
+            Book { title: String::from("Nineteen Eighty-Four"), year: 1949 },
+            Book { title: String::from("Animal Farm"), year: 1945 },
+            Book { title: String::from("Burmese Days"), year: 1934 },
+        ],
+    };
+    order_books(&mut writer);
+    for book in &writer.books {
+        println!("{} ({})", book.title, book.year);
+    }
+}`,
+      expectedOutput: `Animal Farm (1945)
+Burmese Days (1934)
+Nineteen Eighty-Four (1949)`,
+      hidden: false,
+    }],
     hints: [],
   },
   {
@@ -5449,15 +5528,44 @@ Or:
 \`\`\`
 
 > Use \`std::env::args()\` to get the program's arguments.`,
-    functionSignatures: [`pub fn rpn() {
+    functionSignatures: [`pub fn rpn(expr: &str) -> f64 {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn rpn() {
+    starterCode: `// In this trainer, implement RPN as a function that evaluates the
+// expression and returns the numeric result (operands fit in f64).
+pub fn rpn(expr: &str) -> f64 {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_128_1',
+      description: 'Simple addition: 3 4 + = 7',
+      code: `fn main() {
+    assert_eq!(rpn("3 4 +"), 7.0);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: false,
+    }, {
+      id: 'tc_128_2',
+      description: 'Nested expression: 5 1 2 + 4 * + 3 - = 14',
+      code: `fn main() {
+    assert_eq!(rpn("5 1 2 + 4 * + 3 -"), 14.0);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: false,
+    }, {
+      id: 'tc_128_3',
+      description: 'Division: 10 2 / = 5',
+      code: `fn main() {
+    assert_eq!(rpn("10 2 /"), 5.0);
+    println!("ok");
+}`,
+      expectedOutput: `ok`,
+      hidden: true,
+    }],
     hints: [],
   },
   {
@@ -5907,6 +6015,8 @@ pub struct Table {
     pub body: Vec<Vec<String>>,
 }
 
+use std::fmt;
+
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         todo!()
@@ -5928,6 +6038,8 @@ pub struct Table {
     pub headers: Vec<String>,
     pub body: Vec<Vec<String>>,
 }
+
+use std::fmt;
 
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -6211,11 +6323,11 @@ impl Table {
         todo!()
     }
 
-    pub fn filter_col(&self, filter: T) -> Option<Self> {
+    pub fn filter_col<F: Fn(&str) -> bool>(&self, filter: F) -> Option<Self> {
         todo!()
     }
 
-    pub fn filter_row(&self, col_name: &str, filter: T) -> Option<Self> {
+    pub fn filter_row<F: Fn(&str) -> bool>(&self, col_name: &str, filter: F) -> Option<Self> {
         todo!()
     }
 }`],
@@ -6235,11 +6347,11 @@ impl Table {
         todo!()
     }
 
-    pub fn filter_col(&self, filter: T) -> Option<Self> {
+    pub fn filter_col<F: Fn(&str) -> bool>(&self, filter: F) -> Option<Self> {
         todo!()
     }
 
-    pub fn filter_row(&self, col_name: &str, filter: T) -> Option<Self> {
+    pub fn filter_row<F: Fn(&str) -> bool>(&self, col_name: &str, filter: F) -> Option<Self> {
         todo!()
     }
 }`,
@@ -6378,15 +6490,29 @@ fn main() {
 }
 
 \`\`\``,
-    functionSignatures: [`pub fn brackets_matching() {
+    functionSignatures: [`pub fn brackets_matching(s: &str) -> bool {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn brackets_matching() {
+    starterCode: `// In this trainer, implement the core check as a function: return true when
+// the brackets in s are balanced. (A CLI wrapper would print "OK"/"Error".)
+pub fn brackets_matching(s: &str) -> bool {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_137_1',
+      description: 'Usage example',
+      code: `fn main() {
+    println!("{}", brackets_matching("(a[b]{c})"));
+    println!("{}", brackets_matching("(]"));
+    println!("{}", brackets_matching("((("));
+}`,
+      expectedOutput: `true
+false
+false`,
+      hidden: false,
+    }],
     hints: [],
   },
   {
@@ -6436,15 +6562,25 @@ Every operator consists of a single character :
 Any other character is a comment.
 
 > Use \`std::env::args()\` to get the program's arguments.`,
-    functionSignatures: [`pub fn brain_fuck() {
+    functionSignatures: [`pub fn brain_fuck(code: &str) -> String {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn brain_fuck() {
+    starterCode: `// In this trainer, implement the interpreter as a function: run the Brainfuck
+// source and return everything it prints. (A CLI wrapper would print the result.)
+pub fn brain_fuck(code: &str) -> String {
     todo!()
 }`,
     solution: '',
-    testCases: [],
+    testCases: [{
+      id: 'tc_138_1',
+      description: 'Prints the letter I (ASCII 73)',
+      code: `fn main() {
+    println!("{}", brain_fuck("++++++++[>++++++++<-]>+++++++++."));
+}`,
+      expectedOutput: `I`,
+      hidden: false,
+    }],
     hints: [],
   },
   // ── Exam-1 missing exercises ─────────────────────────────────────────────

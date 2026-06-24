@@ -102,6 +102,7 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
   const [focused, setFocused] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const searchRef = useRef<HTMLInputElement>(null);
+  const curriculumRef = useRef<HTMLDivElement>(null);
   const suggestions = searchExercises(query);
   const showSuggestions = focused && query.trim().length > 0;
 
@@ -141,6 +142,45 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  // Auto-scroll the active exercise into comfortable view inside the left nav
+  // whenever the route changes (URL open, Next/Prev, search, or sidebar click).
+  // Note: navigating to a lesson mounts a fresh Monaco editor, whose heavy
+  // synchronous work starves both JS rAF animations and the browser's native
+  // smooth scrolling (both get cancelled), so we set scrollTop synchronously —
+  // it lands reliably and the active item appears centered in the nav.
+  useEffect(() => {
+    let handled = false;
+    let rafId = 0;
+    let timerId = 0;
+
+    const run = () => {
+      if (handled) return;
+      const container = curriculumRef.current;
+      if (!container || container.clientHeight === 0) return; // not laid out yet — let the fallback retry
+      const el = container.querySelector<HTMLElement>('.sidebar-item.active');
+      if (!el) return;
+      handled = true;
+      const elRect = el.getBoundingClientRect();
+      const cRect = container.getBoundingClientRect();
+      const fullyVisible = elRect.top >= cRect.top && elRect.bottom <= cRect.bottom;
+      if (fullyVisible) return; // already comfortably visible — don't move
+      // Center the active item within the scroll container (never scrolls the page).
+      const delta = (elRect.top - cRect.top) - (container.clientHeight - el.clientHeight) / 2;
+      const maxScroll = container.scrollHeight - container.clientHeight;
+      container.scrollTop = Math.max(0, Math.min(container.scrollTop + delta, maxScroll));
+    };
+
+    // rAF covers SPA navigation (Next/Prev, sidebar click, search) on the next
+    // frame; the timeout fallback covers initial page load, where the curriculum
+    // list height may not be laid out yet on the first frame.
+    rafId = window.requestAnimationFrame(run);
+    timerId = window.setTimeout(run, 160);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timerId);
+    };
+  }, [location.pathname]);
 
   const getLessonStatus = (id: number): 'completed' | 'unlocked' | 'locked' => {
     const lesson = progress.lessons[id];
@@ -417,7 +457,7 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
       </div>
 
       {/* Curriculum sections */}
-      <div className="sidebar-curriculum">
+      <div className="sidebar-curriculum" ref={curriculumRef}>
         {sections.map((section) => {
           const isOpen = !collapsed[section.key];
 

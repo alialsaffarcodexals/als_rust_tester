@@ -31,6 +31,8 @@ export const zone01FinalWalkthroughs: Record<string, SolutionStep[]> = {
     { code: `    s.chars().filter(|&c| c != letter).collect()\n}`, explain: `Keep only the characters that are not the target letter, then collect into a String.` },
     { code: `pub fn remove_letter_insensitive(s: &str, letter: char) -> String {`, explain: `Same idea, but ignore case.` },
     { code: `    let target = letter.to_ascii_lowercase();\n    s.chars().filter(|c| c.to_ascii_lowercase() != target).collect()\n}`, explain: `Compare lowercased characters so both 'A' and 'a' are removed.` },
+    { code: `pub fn swap_letter_case(s: &str, letter: char) -> String {`, explain: `Flip the case of every occurrence of letter (matched case-insensitively), leaving everything else unchanged.` },
+    { code: `    let target = letter.to_ascii_lowercase();\n    s.chars()\n        .map(|c| {\n            if c.to_ascii_lowercase() == target {\n                if c.is_ascii_uppercase() { c.to_ascii_lowercase() } else { c.to_ascii_uppercase() }\n            } else {\n                c\n            }\n        })\n        .collect()\n}`, explain: `For each char, if it matches the target letter (ignoring case) flip its case, otherwise keep it. swap_letter_case("byE bye", 'e') = "bye byE".` },
   ],
 
   smallest: [
@@ -68,6 +70,8 @@ export const zone01FinalWalkthroughs: Record<string, SolutionStep[]> = {
   ],
 
   order_books: [
+    { code: `#[derive(Debug)]\npub struct Book {\n    pub title: String,\n    pub year: u32,\n}`, explain: `A Book has a title and a year of publication.` },
+    { code: `#[derive(Debug)]\npub struct Writer {\n    pub first_name: String,\n    pub last_name: String,\n    pub books: Vec<Book>,\n}`, explain: `A Writer has a name and a list of books.` },
     { code: `pub fn order_books(writer: &mut Writer) {`, explain: `Sort the writer's books alphabetically by title, case-insensitively, in place.` },
     { code: `    writer.books.sort_by(|a, b| {\n        a.title.to_lowercase().cmp(&b.title.to_lowercase())\n    });\n}`, explain: `sort_by compares lowercased titles so "hamlet" and "Hamlet" order the same way.` },
   ],
@@ -87,37 +91,37 @@ export const zone01FinalWalkthroughs: Record<string, SolutionStep[]> = {
   ],
 
   brackets_matching: [
-    { code: `use std::env;`, explain: `Read command-line arguments.` },
-    { code: `fn is_balanced(s: &str) -> bool {\n    let mut stack: Vec<char> = Vec::new();`, explain: `A stack remembers the opening brackets seen so far.` },
+    { code: `pub fn brackets_matching(s: &str) -> bool {\n    let mut stack: Vec<char> = Vec::new();`, explain: `Return whether the brackets in s are balanced. A stack remembers the opening brackets seen so far.` },
     { code: `    for c in s.chars() {\n        match c {\n            '(' | '[' | '{' => stack.push(c),`, explain: `Push every opening bracket; ignore all other characters.` },
     { code: `            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }`, explain: `A closing bracket must pop the matching opener; a mismatch (or empty stack) means unbalanced.` },
-    { code: `    stack.is_empty()\n}`, explain: `Balanced only if no openers are left unclosed.` },
-    { code: `fn main() {\n    let args: Vec<String> = env::args().collect();\n    for arg in &args[1..] {\n        println!("{}", if is_balanced(arg) { "OK" } else { "Error" });\n    }\n}`, explain: `For each argument print OK or Error. No arguments prints nothing.` },
+    { code: `    stack.is_empty()\n}`, explain: `Balanced only if no openers are left unclosed. (A CLI wrapper would just print "OK"/"Error" from this.)` },
   ],
 
   brain_fuck: [
-    { code: `use std::env;`, explain: `The Brainfuck source is the first command-line argument.` },
-    { code: `fn main() {\n    let args: Vec<String> = env::args().collect();\n    let code: Vec<char> = args[1].chars().collect();`, explain: `Collect the program's characters so we can jump around by index.` },
-    { code: `    let mut tape = [0u8; 2048];\n    let mut ptr = 0usize;\n    let mut pc = 0usize;`, explain: `A 2048-byte tape, a data pointer, and a program counter.` },
-    { code: `    while pc < code.len() {\n        match code[pc] {\n            '>' => ptr += 1,\n            '<' => ptr -= 1,\n            '+' => tape[ptr] = tape[ptr].wrapping_add(1),\n            '-' => tape[ptr] = tape[ptr].wrapping_sub(1),\n            '.' => print!("{}", tape[ptr] as char),`, explain: `Move the pointer, change the current cell, or output it as ASCII. wrapping_add/sub model byte overflow.` },
+    { code: `pub fn brain_fuck(code: &str) -> String {\n    let code: Vec<char> = code.chars().collect();`, explain: `Interpret the Brainfuck source and return everything it would print. Collect the chars so we can jump around by index.` },
+    { code: `    let mut tape = [0u8; 2048];\n    let mut ptr = 0usize;\n    let mut pc = 0usize;\n    let mut out = String::new();`, explain: `A 2048-byte tape, a data pointer, a program counter, and an output buffer.` },
+    { code: `    while pc < code.len() {\n        match code[pc] {\n            '>' => ptr += 1,\n            '<' => ptr -= 1,\n            '+' => tape[ptr] = tape[ptr].wrapping_add(1),\n            '-' => tape[ptr] = tape[ptr].wrapping_sub(1),\n            '.' => out.push(tape[ptr] as char),`, explain: `Move the pointer, change the current cell, or append it as ASCII to the output. wrapping_add/sub model byte overflow.` },
     { code: `            '[' => if tape[ptr] == 0 {\n                let mut depth = 1;\n                while depth > 0 { pc += 1; if code[pc] == '[' { depth += 1; } else if code[pc] == ']' { depth -= 1; } }\n            },`, explain: `At '[' with a zero cell, skip forward past the matching ']' (counting nesting).` },
-    { code: `            ']' => if tape[ptr] != 0 {\n                let mut depth = 1;\n                while depth > 0 { pc -= 1; if code[pc] == ']' { depth += 1; } else if code[pc] == '[' { depth -= 1; } }\n            },\n            _ => {}\n        }\n        pc += 1;\n    }\n}`, explain: `At ']' with a non-zero cell, jump back to the matching '['. Any other character is a comment. Advance the program counter each step.` },
+    { code: `            ']' => if tape[ptr] != 0 {\n                let mut depth = 1;\n                while depth > 0 { pc -= 1; if code[pc] == ']' { depth += 1; } else if code[pc] == '[' { depth -= 1; } }\n            },\n            _ => {}\n        }\n        pc += 1;\n    }\n    out\n}`, explain: `At ']' with a non-zero cell, jump back to the matching '['. Any other character is a comment. Return the collected output. (A CLI wrapper would print this.)` },
   ],
 
   display_table: [
-    { code: `use std::fmt;`, explain: `We implement Display for the Table.` },
+    { code: `use std::fmt;`, explain: `Display lives in std::fmt, so import it (the starter omits this — add it).` },
+    { code: `#[derive(Clone, Debug, PartialEq)]\npub struct Table {\n    pub headers: Vec<String>,\n    pub body: Vec<Vec<String>>,\n}`, explain: `The Table holds a row of headers and a grid of body rows.` },
+    { code: `impl Table {\n    pub fn new() -> Table {\n        Table { headers: Vec::new(), body: Vec::new() }\n    }\n    pub fn add_row(&mut self, row: &[String]) {\n        self.body.push(row.to_vec());\n    }\n}`, explain: `new() starts empty; add_row copies a borrowed slice into an owned row.` },
     { code: `impl fmt::Display for Table {\n    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {\n        if self.headers.is_empty() {\n            return Ok(());\n        }`, explain: `Print nothing for an empty table.` },
-    { code: `        let mut widths: Vec<usize> = self.headers.iter().map(|h| h.len()).collect();\n        for row in &self.body {\n            for (i, cell) in row.iter().enumerate() {\n                widths[i] = widths[i].max(cell.len());\n            }\n        }`, explain: `Each column is as wide as its widest cell (header or body).` },
-    { code: `        let center = |s: &str, w: usize| {\n            let pad = w - s.len();\n            let left = pad / 2;\n            format!("{}{}{}", " ".repeat(left), s, " ".repeat(pad - left))\n        };`, explain: `Centre a value in its column; when the padding is odd the extra space goes on the right (text sits one to the left).` },
+    { code: `        let mut widths: Vec<usize> = self.headers.iter().map(|h| h.chars().count()).collect();\n        for row in &self.body {\n            for (i, cell) in row.iter().enumerate() {\n                widths[i] = widths[i].max(cell.chars().count());\n            }\n        }`, explain: `Each column is as wide as its widest cell (header or body). Count chars, not bytes, so "N°" measures correctly.` },
+    { code: `        let center = |s: &str, w: usize| {\n            let pad = w - s.chars().count();\n            let left = pad / 2;\n            format!("{}{}{}", " ".repeat(left), s, " ".repeat(pad - left))\n        };`, explain: `Centre a value in its column; when the padding is odd the extra space goes on the right (text sits one to the left).` },
     { code: `        let line = |cells: &[String]| cells.iter().enumerate().map(|(i, c)| center(c, widths[i])).collect::<Vec<_>>().join(" | ");`, explain: `Build one row: centre every cell and join with " | ".` },
-    { code: `        writeln!(f, "| {} |", line(&self.headers))?;\n        let sep: Vec<String> = widths.iter().map(|w| "-".repeat(w + 2)).collect();\n        writeln!(f, "+{}+", sep.join("+"))?;\n        for row in &self.body {\n            writeln!(f, "| {} |", line(row))?;\n        }\n        Ok(())\n    }\n}`, explain: `Write the header row, a dash/plus separator sized to each column, then the body rows. (Exact spacing follows the subject.)` },
+    { code: `        writeln!(f, "| {} |", line(&self.headers))?;\n        let sep: Vec<String> = widths.iter().map(|w| "-".repeat(w + 2)).collect();\n        writeln!(f, "|{}|", sep.join("+"))?;\n        for row in &self.body {\n            writeln!(f, "| {} |", line(row))?;\n        }\n        Ok(())\n    }\n}`, explain: `Write the header row, then a "|---+---|" separator sized to each column, then the body rows. The separator is bordered by "|" with "+" at each column join.` },
   ],
 
   filter_table: [
-    { code: `impl Table {\n    pub fn new() -> Table {\n        Table { headers: Vec::new(), body: Vec::new() }\n    }`, explain: `Start with an empty table.` },
-    { code: `    pub fn add_row(&mut self, row: &[String]) {\n        self.body.push(row.to_vec());\n    }`, explain: `Append a row (copying the borrowed slice into an owned Vec).` },
-    { code: `    pub fn filter_col(&self, column_index: usize, value: &str) -> Table {`, explain: `Return a new Table containing only the rows whose given column equals value.` },
-    { code: `        let body = self.body.iter()\n            .filter(|row| row.get(column_index).map(|c| c == value).unwrap_or(false))\n            .cloned()\n            .collect();`, explain: `filter keeps matching rows; get() guards against a missing column.` },
-    { code: `        Table { headers: self.headers.clone(), body }\n    }\n}`, explain: `Keep the same headers, with the filtered body.` },
+    { code: `#[derive(Clone, Debug, PartialEq)]\npub struct Table {\n    pub headers: Vec<String>,\n    pub body: Vec<Vec<String>>,\n}`, explain: `The Table holds headers and a grid of body rows.` },
+    { code: `impl Table {\n    pub fn new() -> Table {\n        Table { headers: Vec::new(), body: Vec::new() }\n    }\n    pub fn add_row(&mut self, row: &[String]) {\n        self.body.push(row.to_vec());\n    }`, explain: `new() starts empty; add_row copies a borrowed slice into an owned row.` },
+    { code: `    pub fn filter_col<F: Fn(&str) -> bool>(&self, filter: F) -> Option<Self> {`, explain: `filter_col keeps only the columns whose header passes the predicate. The filter is any closure &str -> bool, so the signature is generic (the starter's bare T won't compile — give it a Fn bound).` },
+    { code: `        let idxs: Vec<usize> = self\n            .headers\n            .iter()\n            .enumerate()\n            .filter(|(_, h)| filter(h))\n            .map(|(i, _)| i)\n            .collect();\n        if idxs.is_empty() {\n            return None;\n        }`, explain: `Find the indexes of the matching columns; if none match, return None.` },
+    { code: `        let headers = idxs.iter().map(|&i| self.headers[i].clone()).collect();\n        let body = self\n            .body\n            .iter()\n            .map(|row| idxs.iter().map(|&i| row[i].clone()).collect())\n            .collect();\n        Some(Table { headers, body })\n    }`, explain: `Project every row down to just the kept columns and return Some(new table).` },
+    { code: `    pub fn filter_row<F: Fn(&str) -> bool>(&self, col_name: &str, filter: F) -> Option<Self> {\n        let idx = self.headers.iter().position(|h| h == col_name)?;\n        let body: Vec<Vec<String>> = self\n            .body\n            .iter()\n            .filter(|row| filter(&row[idx]))\n            .cloned()\n            .collect();\n        if body.is_empty() {\n            return None;\n        }\n        Some(Table { headers: self.headers.clone(), body })\n    }\n}`, explain: `filter_row finds the named column (None if missing via ?), keeps the rows whose cell in that column passes the predicate, and returns Some — or None if nothing matched.` },
   ],
 };

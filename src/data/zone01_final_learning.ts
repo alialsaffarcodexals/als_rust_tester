@@ -1735,34 +1735,41 @@ impl std::fmt::Display for Table { ... }
 
   filter_table: {
     overview: {
-      whatYouBuild: 'A Table type that can be built up row by row and filtered: return a new Table containing only the rows whose chosen column matches a value.',
-      inputOutput: 'Table::new(); add_row(&[String]); a filter method returns a new Table with the matching rows (same headers).',
-      constraints: ['Keep the original headers in the filtered Table.', 'Compare the chosen column to the target value.', 'Build a new Table; do not mutate the original.'],
-      commonMistakes: ['Indexing a missing column (use get()).', 'Mutating the original instead of returning a new Table.'],
+      whatYouBuild: 'A Table you can filter two ways: filter_col keeps the columns whose header passes a closure; filter_row keeps the rows whose value in a named column passes a closure. Both return Option<Table>.',
+      inputOutput: 'Table::new(); add_row(&[String]); filter_col(|header| ...) -> Option<Table> (keep matching columns); filter_row(col_name, |cell| ...) -> Option<Table> (keep matching rows). None when nothing matches.',
+      constraints: ['filter_col and filter_row each take a closure (Fn(&str) -> bool).', 'Return Some(table) on a match, None when nothing matches (or the column name is missing).', 'Build a new Table; do not mutate the original.'],
+      commonMistakes: ['Declaring the predicate as a bare type T instead of a generic F: Fn(&str) -> bool (the starter ships with the bare T — fix it).', 'Returning an empty Table instead of None when nothing matches.', 'Confusing filter_col (filters columns by header) with filter_row (filters rows by a cell).'],
     },
     officialDescription: `## filter_table
 
-Build a Table (headers + body rows) with new() and add_row, then implement a filter that returns a new Table containing only the rows whose value in a given column equals a target string. The headers are preserved.
+Build a Table (headers + body rows) with new() and add_row, then implement two filters:
+
+- filter_col keeps only the columns whose header satisfies the predicate.
+- filter_row keeps only the rows whose value in the named column satisfies the predicate.
+
+Each predicate is a closure taking a &str and returning a bool, and each method returns Option<Table> (None when nothing matches, or when the column name is not found).
 
 ### Expected items
 
 ~~~
+#[derive(Clone, Debug, PartialEq)]
 pub struct Table { pub headers: Vec<String>, pub body: Vec<Vec<String>> }
 impl Table {
     pub fn new() -> Table
     pub fn add_row(&mut self, row: &[String])
-    // a filter returning a new Table of matching rows
+    pub fn filter_col<F: Fn(&str) -> bool>(&self, filter: F) -> Option<Self>
+    pub fn filter_row<F: Fn(&str) -> bool>(&self, col_name: &str, filter: F) -> Option<Self>
 }
 ~~~`,
     objectives: {
-      learn: ['Filter a collection with a predicate.', 'Clone matching rows into a new structure.', 'Guard against missing indices.'],
-      whyExists: 'Practices iterator filtering over structured data and building new owned values.',
-      rustSkills: ['iterators', 'closures', 'Vec'],
+      learn: ['Accept a closure as a generic parameter (F: Fn(&str) -> bool).', 'Project/filter rows and columns with iterators.', 'Return Option to signal "no match".'],
+      whyExists: 'Practices closures-as-parameters, iterator filtering over structured data, and Option results.',
+      rustSkills: ['closures', 'iterators', 'generics', 'Option'],
     },
     conceptIds: ['iterators', 'closures', 'collections'],
     conceptNotes: {
-      iterators: 'body.iter().filter(...).cloned().collect() keeps the matching rows.',
-      closures: 'The filter predicate compares one column of each row to the target.',
+      iterators: 'filter_row: body.iter().filter(|row| filter(&row[idx])).cloned().collect(). filter_col projects each row down to the kept column indexes.',
+      closures: 'The predicate is any Fn(&str) -> bool, passed as a generic F so any closure works.',
     },
     similar: {
       title: 'Keep even numbers',
@@ -1778,58 +1785,54 @@ impl Table {
     },
     sideQuiz: [
       {
-        prompt: 'Keep only the matching rows. Fill the iterator adapter.',
-        template: `let body = self.body.iter()
-    ._____(|row| row.get(column_index).map(|c| c == value).unwrap_or(false))
-    .cloned()
-    .collect();`,
-        accepted: ['filter'],
-        acceptedPatterns: ['^filter$'],
-        hints: ['You want to keep rows that pass a test.', 'Use filter with a predicate.'],
-        explanation: 'filter keeps rows where the closure is true; cloned() copies each kept row; collect() gathers them into the new body.',
-        whatYouLearned: 'iter().filter(pred).cloned().collect() selects matching elements.',
-        conceptId: 'iterators',
+        prompt: 'filter_col takes any closure that tests a &str. Fill its generic bound.',
+        template: `pub fn filter_col<F: _____>(&self, filter: F) -> Option<Self> {`,
+        accepted: ['Fn(&str) -> bool'],
+        acceptedPatterns: ['^Fn\\(&str\\)\\s*->\\s*bool$'],
+        hints: ['It is called as filter(header), passing a &str.', 'A closure from &str to bool: Fn(&str) -> bool.'],
+        explanation: 'The predicate is any Fn(&str) -> bool, so the method is generic over F: Fn(&str) -> bool.',
+        whatYouLearned: 'Accept a closure as a generic parameter bounded by an Fn trait.',
+        conceptId: 'closures',
       },
       {
         kind: 'choice',
-        prompt: 'Why use row.get(column_index) instead of row[column_index]?',
+        prompt: 'What does filter_col(|h| h == "Name") return?',
         options: [
-          'get returns an Option, avoiding a panic on a missing column',
-          'get is faster',
-          'indexing does not compile',
-          'get sorts the row',
+          'Some(table) with only the columns whose header passes the predicate',
+          'Some(table) with only the rows that contain "Name"',
+          'the index of the matching column',
+          'a Vec of the headers',
         ],
         correct: [0],
         why: [
-          'get() returns Option<&T>, so a short row yields None instead of panicking.',
-          'Performance is not the reason.',
-          'Indexing compiles but can panic out of bounds.',
-          'get() does not sort anything.',
+          'filter_col keeps the columns whose header matches and projects every row down to them.',
+          'Filtering rows is filter_row\'s job, not filter_col.',
+          'It returns a whole Table (in an Option), not an index.',
+          'It returns Option<Table>, not a Vec.',
         ],
-        hints: ['What if a row is shorter than expected?', 'Indexing out of bounds panics.'],
-        explanation: 'row.get(i) safely returns None for an out-of-range index, which the closure treats as "no match".',
-        whatYouLearned: 'Prefer get() over [] when an index might be out of range.',
-        conceptId: 'collections',
+        hints: ['_col filters columns, _row filters rows.', 'The predicate is tested against each header.'],
+        explanation: 'filter_col selects columns by header; filter_row selects rows by a named column. Both return Option<Table>.',
+        whatYouLearned: 'Distinguish column filtering (by header) from row filtering (by cell).',
+        conceptId: 'iterators',
       },
       {
         kind: 'bug',
-        prompt: 'The filtered Table loses its headers. Click the mistake.',
-        code: `Table {
-    headers: Vec::new(),
-    body,
+        prompt: 'Nothing matched, but this still returns a table. Click the mistake.',
+        code: `if idxs.is_empty() {
+    return Some(Table::new());
 }`,
-        bugs: [{ line: 2, token: 'Vec::new' }],
-        hints: ['A filtered table should keep its column titles.', 'Reuse the original headers.'],
-        explanation: 'headers should be self.headers.clone(), not a fresh empty Vec — the filtered Table keeps the same columns.',
-        whatYouLearned: 'Preserve unchanged fields when deriving a new value.',
+        bugs: [{ line: 2, token: 'Some' }],
+        hints: ['The signature returns Option for a reason.', 'No match should be None.'],
+        explanation: 'When nothing matches, return None — not Some(empty). The Option lets callers detect "no result".',
+        whatYouLearned: 'Use None to signal "no match" instead of an empty success value.',
         conceptId: 'collections',
       },
     ],
     documentation: {
       apis: [
+        { name: 'Closures as parameters (Fn)', url: 'https://doc.rust-lang.org/book/ch13-01-closures.html', note: 'F: Fn(&str) -> bool' },
         { name: 'Iterator::filter', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.filter', note: 'keep matching rows' },
-        { name: 'slice::get', url: 'https://doc.rust-lang.org/std/primitive.slice.html#method.get', note: 'safe indexing (Option)' },
-        { name: 'Iterator::cloned', url: 'https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.cloned', note: 'copy kept rows' },
+        { name: 'Option', url: 'https://doc.rust-lang.org/std/option/enum.Option.html', note: 'Some(table) / None' },
       ],
       links: [
         { title: 'Rust By Example — Iterators', url: 'https://doc.rust-lang.org/rust-by-example/trait/iter.html' },
@@ -1837,9 +1840,9 @@ impl Table {
       ],
     },
     editorHints: [
-      'Filter self.body, keeping rows where the chosen column equals the value.',
-      'Use row.get(i) so a short row does not panic.',
-      'Return a new Table that clones the original headers.',
+      'Give filter_col/filter_row a generic closure bound: <F: Fn(&str) -> bool> (the starter has a bare T that will not compile).',
+      'filter_col keeps columns whose header passes the closure; filter_row keeps rows whose named-column cell passes it.',
+      'Return None when nothing matches (or the column name is missing); otherwise Some(new_table).',
     ],
   },
 
