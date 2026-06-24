@@ -42,7 +42,11 @@ pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
+    starterCode: `// Matrix is a tuple struct of two tuples (the two rows of a 2x2 matrix).
+#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix((i32, i32), (i32, i32));
+
+pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
     todo!()
 }`,
     solution: '',
@@ -4485,7 +4489,11 @@ pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
     todo!()
 }`],
     constraints: [],
-    starterCode: `pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
+    starterCode: `// Matrix is a tuple struct of two tuples (the two rows of a 2x2 matrix).
+#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix((i32, i32), (i32, i32));
+
+pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
     todo!()
 }`,
     solution: '',

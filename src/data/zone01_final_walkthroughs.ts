@@ -14,8 +14,9 @@ export const zone01FinalWalkthroughs: Record<string, SolutionStep[]> = {
   ],
 
   matrix_multiplication: [
-    { code: `pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {`, explain: `Scale every element of the matrix by the scalar multiplier and return a new Matrix.` },
-    { code: `    Matrix {\n        a: m.a * multiplier,\n        b: m.b * multiplier,\n        c: m.c * multiplier,\n        d: m.d * multiplier,\n    }\n}`, explain: `Build a fresh Matrix literal, multiplying each field. This is scalar multiplication.` },
+    { code: `#[derive(Debug, PartialEq, Eq)]\npub struct Matrix((i32, i32), (i32, i32));`, explain: `Matrix is a tuple struct of two tuples (the two rows). Derive Debug, PartialEq and Eq as the spec requires (Debug also makes the {:?} print work).` },
+    { code: `pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {`, explain: `Take the matrix by value and a scalar, and return a new scaled Matrix.` },
+    { code: `    Matrix(\n        (m.0.0 * multiplier, m.0.1 * multiplier),\n        (m.1.0 * multiplier, m.1.1 * multiplier),\n    )\n}`, explain: `Index the nested tuples positionally (m.0.0 is row 0 column 0), multiply every number by the scalar, and build a new Matrix tuple.` },
   ],
 
   min_and_max: [

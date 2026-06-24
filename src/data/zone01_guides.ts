@@ -6,32 +6,39 @@ export const zone01Guides: Record<string, Zone01Guide> = {
     builtinFunctions: [],
     concepts: [
       {
-        name: 'Struct Field Access',
-        description: 'Access fields of a struct using dot notation: `value.field_name`',
-        example: 'let x = my_struct.row_a;',
+        name: 'Tuple Structs',
+        description: 'A struct with positional (unnamed) fields. Define with `struct Name(T, U);` and access by index: `value.0`, `value.1`',
+        example: 'pub struct Matrix((i32, i32), (i32, i32));',
       },
       {
-        name: 'Returning a Struct Literal',
-        description: 'Build and return a new struct by listing every field explicitly',
-        example: 'Matrix { a: 1, b: 2, c: 3, d: 4 }',
+        name: 'Tuple Indexing',
+        description: 'Reach nested tuple elements by chaining positions',
+        example: 'let first = m.0.0; // row 0, column 0',
+      },
+      {
+        name: 'Derived Traits',
+        description: 'Add standard behavior with `#[derive(...)]` — here Debug (for {:?}), PartialEq and Eq',
+        example: '#[derive(Debug, PartialEq, Eq)]',
       },
     ],
     dataStructures: [
       {
-        name: 'Matrix (custom struct)',
+        name: 'Matrix (tuple struct)',
         description:
-          'A user-defined struct representing a 2×2 matrix. Each field holds one element. Multiply every field by the scalar.',
+          'A 2x2 matrix stored as a tuple struct of two tuples: `Matrix((i32, i32), (i32, i32))`. The rows are m.0 and m.1; the four numbers are m.0.0, m.0.1, m.1.0, m.1.1. Multiply every number by the scalar.',
       },
     ],
-    annotatedSolution: `// The Matrix struct has individual fields (e.g. a, b, c, d) for its elements.
-// Multiply every field by the scalar 'multiplier' and return a new Matrix.
+    annotatedSolution: `// Matrix is a tuple struct of two tuples (the two rows).
+// Derive Debug/PartialEq/Eq as the spec requires.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix((i32, i32), (i32, i32));
+
+// Index the nested tuples positionally and multiply each number by the scalar.
 pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {
-    Matrix {
-        a: m.a * multiplier,
-        b: m.b * multiplier,
-        c: m.c * multiplier,
-        d: m.d * multiplier,
-    }
+    Matrix(
+        (m.0.0 * multiplier, m.0.1 * multiplier),
+        (m.1.0 * multiplier, m.1.1 * multiplier),
+    )
 }`,
   },
 

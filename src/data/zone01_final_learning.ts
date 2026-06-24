@@ -470,114 +470,127 @@ return i;`,
   matrix_multiplication: {
     overview: {
       whatYouBuild:
-        'A function that multiplies every element of a Matrix by a scalar and returns a new Matrix (scalar multiplication).',
+        'A 2x2 Matrix modeled as a tuple struct of two tuples, plus a multiply function that scales every number in it by a scalar and returns a new Matrix.',
       inputOutput:
-        'Input: a Matrix and an i32 multiplier. Output: a new Matrix with each field scaled by the multiplier.',
+        'Input: a Matrix (e.g. Matrix((1, 3), (4, 5))) and an i32 multiplier. Output: a new Matrix with each of its four numbers multiplied. multiply(Matrix((1, 3), (4, 5)), 3) = Matrix((3, 9), (12, 15)).',
       constraints: [
-        'Return a new Matrix; do not mutate the input.',
-        'Every field is multiplied by the same scalar.',
+        'Define Matrix as a tuple struct of two tuples: struct Matrix((i32, i32), (i32, i32)).',
+        'Matrix must derive Debug, PartialEq and Eq.',
+        'Scale all four numbers (m.0.0, m.0.1, m.1.0, m.1.1) by the same scalar; return a new Matrix.',
       ],
       commonMistakes: [
-        'Multiplying only some fields.',
-        'Trying to mutate the moved-in Matrix instead of building a fresh one.',
+        'Forgetting to define the Matrix struct (the starter only has the function).',
+        'Using named fields like m.a instead of tuple indexing (m.0.0, m.0.1, m.1.0, m.1.1).',
+        'Scaling only some of the numbers.',
       ],
     },
     officialDescription: `## matrix_multiplication
 
-Create a function multiply that takes a Matrix and an i32 multiplier and returns a new Matrix in which every element has been multiplied by the scalar.
+- Define a struct named Matrix as a tuple of two tuples; each nested tuple holds two i32.
+- Create a function named multiply that receives a Matrix and an i32 and returns the Matrix with every number multiplied by the second argument.
 
-### Expected function
+Matrix must implement Debug, PartialEq and Eq (use derive). Remember you are defining a library, so public items must be marked pub.
+
+### Expected items
 
 ~~~
+#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix((i32, i32), (i32, i32));
+
 pub fn multiply(m: Matrix, multiplier: i32) -> Matrix
 ~~~
 
 ### Usage
 
-Multiplying a matrix by 3 scales each of its elements by 3.`,
+multiply(Matrix((1, 3), (4, 5)), 3) prints Matrix((3, 9), (12, 15)).`,
     objectives: {
-      learn: ['Read struct fields and build a struct literal.', 'Apply the same operation to every field.'],
-      whyExists: 'A gentle introduction to structs and returning new values rather than mutating.',
-      rustSkills: ['structs', 'arithmetic'],
+      learn: ['Define a tuple struct and derive traits on it.', 'Index nested tuples with .0.0 syntax.', 'Build and return a new value rather than mutating.'],
+      whyExists: 'A gentle introduction to tuple structs, derives, and tuple indexing.',
+      rustSkills: ['tuple structs', 'derive', 'arithmetic'],
     },
     conceptIds: ['structs', 'matrices'],
     conceptNotes: {
-      structs: 'Access fields with m.a and build a new Matrix { a, b, c, d } literal.',
-      matrices: 'Scalar multiplication scales every entry by the same number.',
+      structs: 'Matrix is a tuple struct: struct Matrix((i32, i32), (i32, i32)). Access its parts by position — m.0 and m.1 are the rows, m.0.0 is the first number of the first row.',
+      matrices: 'A 2x2 matrix stored as two rows; scalar multiplication scales every entry by the same number.',
     },
     similar: {
       title: 'Scale a point',
-      prompt: 'Given a struct Point { x: i32, y: i32 }, write scale(p, k) returning a new Point with both fields multiplied by k.',
-      starter: `pub struct Point { pub x: i32, pub y: i32 }
+      prompt: 'Given a tuple struct Point(i32, i32), write scale(p, k) returning a new Point with both numbers multiplied by k. Same tuple-struct indexing as Matrix.',
+      starter: `#[derive(Debug, PartialEq, Eq)]
+pub struct Point(i32, i32);
 
 pub fn scale(p: Point, k: i32) -> Point {
     todo!()
 }`,
-      hint: 'Return Point { x: p.x * k, y: p.y * k }.',
+      hint: 'Index with p.0 and p.1: Point(p.0 * k, p.1 * k).',
       concepts: ['structs'],
-      solution: `pub struct Point { pub x: i32, pub y: i32 }
+      solution: `#[derive(Debug, PartialEq, Eq)]
+pub struct Point(i32, i32);
 
 pub fn scale(p: Point, k: i32) -> Point {
-    Point { x: p.x * k, y: p.y * k }
+    Point(p.0 * k, p.1 * k)
 }`,
     },
     sideQuiz: [
       {
-        prompt: 'Scale one field of the new Matrix. Fill the expression for field a.',
-        template: `Matrix {
-    a: _____,
-    b: m.b * multiplier,
-    c: m.c * multiplier,
-    d: m.d * multiplier,
-}`,
-        accepted: ['m.a * multiplier'],
-        acceptedPatterns: ['^m\\.a\\s*\\*\\s*multiplier$'],
-        hints: ['Read field a with m.a.', 'Multiply it by the scalar.'],
-        explanation: 'Each field of the new Matrix is the old field times the multiplier.',
-        whatYouLearned: 'Access struct fields with dot notation and build a struct literal.',
+        prompt: 'Define the Matrix type. Fill the tuple-struct body (two tuples of two i32).',
+        template: `#[derive(Debug, PartialEq, Eq)]
+pub struct Matrix(_____);`,
+        accepted: ['(i32, i32), (i32, i32)'],
+        acceptedPatterns: ['^\\(i32,\\s*i32\\),\\s*\\(i32,\\s*i32\\)$'],
+        hints: ['Two rows, each a pair of i32.', 'It is two tuples: (i32, i32), (i32, i32).'],
+        explanation: 'Matrix is a tuple struct of two (i32, i32) tuples — the two rows of the 2x2 matrix.',
+        whatYouLearned: 'A tuple struct groups fixed, positional fields under a name.',
         conceptId: 'structs',
       },
       {
         kind: 'choice',
-        prompt: 'Why does multiply return a new Matrix instead of editing m in place?',
-        options: [
-          'm is taken by value and the signature returns a fresh Matrix',
-          'Rust cannot multiply integers',
-          'Matrices are immutable in Rust',
-          'It is faster to allocate a new one',
-        ],
+        prompt: 'What must Matrix derive, per the spec (and the {:?} usage)?',
+        options: ['Debug, PartialEq, Eq', 'Clone, Copy', 'Display, Hash', 'nothing'],
         correct: [0],
         why: [
-          'The signature consumes m and returns a new Matrix, so we build and return one.',
-          'Rust multiplies integers fine.',
-          'Nothing is inherently immutable here; it is the API shape.',
-          'Performance is not the reason; the contract is.',
+          'The usage prints with {:?} (needs Debug); the spec also requires PartialEq and Eq.',
+          'Clone/Copy are not required here.',
+          'Display/Hash are not needed.',
+          'At minimum Debug is required for the {:?} print.',
         ],
-        hints: ['Look at the return type.', 'm is moved in; a new value comes out.'],
-        explanation: 'The function signature returns Matrix, so the idiomatic solution constructs and returns a new struct literal.',
-        whatYouLearned: 'Follow the signature: return a value rather than mutating an argument.',
+        hints: ['The test prints the matrix with {:?}.', 'The spec lists three traits.'],
+        explanation: 'derive(Debug, PartialEq, Eq) gives the {:?} printing the test uses plus the equality the spec requires.',
+        whatYouLearned: 'derive adds standard behavior (printing, comparison) to your struct.',
+        conceptId: 'structs',
+      },
+      {
+        prompt: 'Scale the first number of the first row. Fill the indexed access.',
+        template: `Matrix(
+    (_____ * multiplier, m.0.1 * multiplier),
+    (m.1.0 * multiplier, m.1.1 * multiplier),
+)`,
+        accepted: ['m.0.0'],
+        acceptedPatterns: ['^m\\.0\\.0$'],
+        hints: ['m.0 is the first row; .0 again is its first number.', 'Use m.0.0.'],
+        explanation: 'Tuple structs are indexed by position: m.0 is the first row tuple, and m.0.0 is its first number.',
+        whatYouLearned: 'Index nested tuples with chained .N, e.g. m.0.0.',
         conceptId: 'structs',
       },
       {
         kind: 'bug',
-        prompt: 'This scaling forgot something. Click the mistake.',
-        code: `Matrix {
-    a: m.a * multiplier,
-    b: m.b,
-    c: m.c * multiplier,
-    d: m.d * multiplier,
-}`,
-        bugs: [{ line: 3, token: 'b' }],
-        hints: ['Every field must be scaled.', 'Compare line b to the others.'],
-        explanation: 'Field b is copied unscaled; it should be m.b * multiplier like the others.',
-        whatYouLearned: 'Apply the operation uniformly to every field.',
+        prompt: 'This uses the wrong field syntax for a tuple struct. Click the mistake.',
+        code: `Matrix(
+    (m.a * multiplier, m.0.1 * multiplier),
+    (m.1.0 * multiplier, m.1.1 * multiplier),
+)`,
+        bugs: [{ line: 2, token: 'a' }],
+        hints: ['Tuple structs have no named fields.', 'Use positional indexing instead of m.a.'],
+        explanation: 'A tuple struct has no field named a; the first number is m.0.0, not m.a.',
+        whatYouLearned: 'Tuple-struct fields are positional (m.0.0), not named (m.a).',
         conceptId: 'structs',
       },
     ],
     documentation: {
       apis: [
-        { name: 'Struct update / literals', url: 'https://doc.rust-lang.org/book/ch05-01-defining-structs.html', note: 'build Matrix { ... }' },
-        { name: 'i32 multiplication', url: 'https://doc.rust-lang.org/std/primitive.i32.html', note: 'scale each field' },
+        { name: 'Tuple structs', url: 'https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types', note: 'struct Matrix((i32,i32),(i32,i32))' },
+        { name: 'derive(Debug, PartialEq, Eq)', url: 'https://doc.rust-lang.org/book/ch05-02-example-structs.html#adding-useful-functionality-with-derived-traits', note: 'printing and comparison' },
+        { name: 'Tuple indexing', url: 'https://doc.rust-lang.org/rust-by-example/primitives/tuples.html', note: 'm.0.0, m.0.1, m.1.0, m.1.1' },
       ],
       links: [
         { title: 'The Book — Structs', url: 'https://doc.rust-lang.org/book/ch05-00-structs.html' },
@@ -586,9 +599,9 @@ pub fn scale(p: Point, k: i32) -> Point {
       videos: [{ title: 'Structs in Rust', channel: "Let's Get Rusty", url: 'https://www.youtube.com/watch?v=n3bPhdiJm9I' }],
     },
     editorHints: [
-      'Read each field with m.a, m.b, ...',
-      'Build and return a brand-new Matrix literal.',
-      'Multiply every field by the same multiplier.',
+      'Define the Matrix tuple struct: #[derive(Debug, PartialEq, Eq)] pub struct Matrix((i32, i32), (i32, i32));',
+      'Index the nested tuples with m.0.0, m.0.1, m.1.0, m.1.1.',
+      'Build and return a new Matrix(...), multiplying every number by the multiplier.',
     ],
   },
 
