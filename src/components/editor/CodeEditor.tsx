@@ -94,6 +94,8 @@ interface CodeEditorProps {
   readOnly?: boolean;
   height?: string;
   language?: string;
+  /** Fill the parent container's height instead of using a fixed height (for resizable layouts). */
+  fill?: boolean;
 }
 
 export default function CodeEditor({
@@ -102,6 +104,7 @@ export default function CodeEditor({
   readOnly = false,
   height = '400px',
   language = 'rust',
+  fill = false,
 }: CodeEditorProps) {
   const monacoRef = useRef<Monaco | null>(null);
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
@@ -209,7 +212,7 @@ export default function CodeEditor({
   );
 
   const editorEl = (
-    <div className={`code-editor-wrapper ${isFullscreen ? 'fullscreen' : ''}`}>
+    <div className={`code-editor-wrapper ${isFullscreen ? 'fullscreen' : ''} ${fill ? 'fill' : ''}`}>
       {/* Fullscreen toggle button */}
       <button
         className="editor-fs-btn"
@@ -220,7 +223,7 @@ export default function CodeEditor({
       </button>
 
       <Editor
-        height={isFullscreen ? '100%' : height}
+        height={isFullscreen || fill ? '100%' : height}
         language={language}
         value={value}
         onChange={(v) => onChange(v ?? '')}
@@ -273,6 +276,12 @@ export default function CodeEditor({
           /* Resize handle */
           resize: vertical;
           min-height: 120px;
+        }
+        /* Fill mode: occupy the parent's height (driven by a resizable container). */
+        .code-editor-wrapper.fill {
+          height: 100%;
+          min-height: 0;
+          resize: none;
         }
         .code-editor-wrapper.fullscreen {
           position: fixed;

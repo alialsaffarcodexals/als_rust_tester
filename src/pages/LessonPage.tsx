@@ -20,6 +20,8 @@ import SideQuiz from '../components/learn/SideQuiz';
 import TerminalSimulator from '../components/learn/TerminalSimulator';
 import Walkthrough from '../components/learn/Walkthrough';
 import SelfAssessment from '../components/learn/SelfAssessment';
+import ResizeHandle from '../components/layout/ResizeHandle';
+import { useResizable, useMediaQuery } from '../hooks/useResizable';
 
 interface LessonPageProps {
   exercises: Exercise[];
@@ -64,6 +66,31 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
   // Section completion is controlled manually by the user (not by visiting).
   const [completed, setCompleted] = useState<Set<string>>(() => new Set());
   const [focusMode, setFocusMode] = useState(false);
+
+  // Resizable panels (desktop-only; the layout stacks below 900px). The
+  // description/editor split and the console height each persist their size.
+  const isWide = useMediaQuery('(min-width: 901px)');
+  const leftPanel = useResizable<HTMLDivElement>({
+    storageKey: 'rustpath_lesson_left_w',
+    axis: 'x',
+    property: 'flexBasis',
+    min: 300,
+    max: () => {
+      const layout = document.querySelector('.lesson-layout');
+      return layout ? layout.clientWidth - 380 : 900;
+    },
+  });
+  const consolePanel = useResizable<HTMLDivElement>({
+    storageKey: 'rustpath_lesson_console_h',
+    axis: 'y',
+    property: 'height',
+    invert: true, // dragging the handle up grows the console
+    min: 90,
+    max: () => {
+      const region = document.querySelector('.editor-console');
+      return region ? region.clientHeight - 160 : 400;
+    },
+  });
 
   const isZone01 = exercise?.checkpoint?.startsWith('zone01') ?? false;
   const isZone01Final = exercise?.checkpoint === 'zone01_final';
@@ -265,7 +292,11 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
       {/* Main layout */}
       <div className={`lesson-layout${focusMode ? ' focus' : ''}`}>
         {/* Left panel: content tabs */}
-        <div className="lesson-left">
+        <div
+          className="lesson-left"
+          ref={leftPanel.panelRef}
+          style={isWide && !focusMode ? leftPanel.style : undefined}
+        >
           {learning ? (
             <>
               <div className="journey-bar">
@@ -413,6 +444,19 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           </div>
         </div>
 
+        {/* Draggable separator between the description and the editor */}
+        {isWide && !focusMode && (
+          <ResizeHandle
+            axis="x"
+            className="lesson-split-handle"
+            ariaLabel="Resize description panel"
+            onResizeStart={leftPanel.onResizeStart}
+            onResize={leftPanel.onResize}
+            onResizeEnd={leftPanel.onResizeEnd}
+            onReset={leftPanel.reset}
+          />
+        )}
+
         {/* Right panel: editor + console */}
         <div className="lesson-right">
           {isZone01Final && learning?.editorHints && learning.editorHints.length > 0 && (
@@ -525,22 +569,49 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
               </button>
             </div>
           )}
-          <div style={{ display: !isZone01 || activeEditorTab === 'solution' ? 'block' : 'none' }}>
-            <CodeEditor value={code} onChange={setCode} height="360px" />
-          </div>
-          {isZone01 && (
-            <div style={{ display: activeEditorTab === 'main' ? 'block' : 'none' }}>
-              <CodeEditor value={mainCode} onChange={setMainCode} height="360px" />
+          <div className="editor-console">
+            <div className="editor-pane">
+              <div
+                className="editor-fill"
+                style={{ display: !isZone01 || activeEditorTab === 'solution' ? 'block' : 'none' }}
+              >
+                <CodeEditor value={code} onChange={setCode} height="360px" fill />
+              </div>
+              {isZone01 && (
+                <div
+                  className="editor-fill"
+                  style={{ display: activeEditorTab === 'main' ? 'block' : 'none' }}
+                >
+                  <CodeEditor value={mainCode} onChange={setMainCode} height="360px" fill />
+                </div>
+              )}
             </div>
-          )}
 
-          <div className="console-section">
-            <Console
-              output={testResults ? null : runResult}
-              testResults={submitClicked ? testResults : null}
-              isRunning={isRunning}
-              isTesting={isTesting}
-            />
+            {/* Draggable separator between the editor and the output console */}
+            {isWide && (
+              <ResizeHandle
+                axis="y"
+                className="console-split-handle"
+                ariaLabel="Resize output console"
+                onResizeStart={consolePanel.onResizeStart}
+                onResize={consolePanel.onResize}
+                onResizeEnd={consolePanel.onResizeEnd}
+                onReset={consolePanel.reset}
+              />
+            )}
+
+            <div
+              className="console-pane"
+              ref={consolePanel.panelRef}
+              style={isWide ? consolePanel.style : undefined}
+            >
+              <Console
+                output={testResults ? null : runResult}
+                testResults={submitClicked ? testResults : null}
+                isRunning={isRunning}
+                isTesting={isTesting}
+              />
+            </div>
           </div>
 
           {/* Progress indicator */}
@@ -612,8 +683,10 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         .lesson-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
         .lesson-number { color: var(--text-muted); margin-right: 8px; font-family: var(--font-mono); font-size: 0.875rem; }
         .lesson-actions-top { display: flex; align-items: center; gap: 8px; }
-        .lesson-layout { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0; overflow: hidden; }
+        .lesson-layout { flex: 1; display: flex; gap: 0; overflow: hidden; }
         .lesson-left {
+          flex: 0 0 50%;
+          min-width: 0;
           display: flex; flex-direction: column;
           border-right: 1px solid var(--border-subtle);
           overflow: hidden;
@@ -638,10 +711,9 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           border: 1px solid rgba(74,222,128,0.4);
         }
         /* Focus mode — hide the journey, give the editor the full width */
-        .lesson-layout.focus { grid-template-columns: 1fr; }
         .lesson-layout.focus .lesson-left { display: none; }
         .lesson-tab-content { flex: 1; overflow-y: auto; padding: 20px; }
-        .lesson-right { display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; }
+        .lesson-right { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow: hidden; }
         .editor-guidance { background: var(--info-bg); border: 1px solid rgba(96,165,250,0.3); border-radius: var(--radius-md); }
         .editor-guidance-toggle {
           width: 100%; display: flex; align-items: center; justify-content: space-between;
@@ -662,7 +734,17 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         }
         .editor-toolbar-actions { display: flex; align-items: center; gap: 6px; }
         .btn-save-done { background: none; color: var(--success, #4ade80); border-color: rgba(74,222,128,0.35); }
-        .console-section { flex-shrink: 0; }
+        /* Bounded editor + console region: the editor fills, the console height
+           is resizable via the row handle between them. */
+        .editor-console { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+        .editor-pane { flex: 1; min-height: 120px; position: relative; }
+        .editor-fill { height: 100%; }
+        .console-pane { height: 220px; min-height: 90px; display: flex; flex-direction: column; overflow: hidden; }
+        .console-pane .console-wrapper { height: 100%; }
+        .console-pane .console-body { max-height: none; }
+        /* Resize separators within the lesson layout */
+        .lesson-split-handle { margin: 0; }
+        .console-split-handle { margin: 2px 0; }
         .lesson-submit-summary {
           display: flex; align-items: center; gap: 12px;
           padding: 12px 16px;
@@ -797,9 +879,16 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
           text-align: center; padding: 24px;
         }
         @media (max-width: 900px) {
-          .lesson-layout { grid-template-columns: 1fr; overflow: visible; }
-          .lesson-left { border-right: none; border-bottom: 1px solid var(--border-subtle); max-height: 55vh; }
+          /* Stack the panels; resizing is disabled here (handles are not rendered),
+             so revert to the natural scrolling, fixed-editor-height layout. */
+          .lesson-layout { flex-direction: column; overflow: visible; }
+          .lesson-left { flex-basis: auto; border-right: none; border-bottom: 1px solid var(--border-subtle); max-height: 55vh; }
           .lesson-right { overflow: visible; }
+          .editor-console { display: block; min-height: 0; }
+          .editor-pane { height: 360px; min-height: 0; }
+          .console-pane { height: auto; }
+          .console-pane .console-wrapper { height: auto; }
+          .console-pane .console-body { max-height: 280px; }
         }
         @media (max-width: 768px) {
           .lesson-top-bar { padding: 10px 16px; gap: 8px; flex-wrap: wrap; }

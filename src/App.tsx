@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
+import ResizeHandle from './components/layout/ResizeHandle';
+import { useResizable, useMediaQuery } from './hooks/useResizable';
 import Dashboard from './pages/Dashboard';
 import IntroPage from './pages/IntroPage';
 import LessonPage from './pages/LessonPage';
@@ -32,13 +34,34 @@ function AppContent() {
   const totalExercises = exercises.length;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Resizable sidebar (desktop only — on mobile it's an overlay drawer).
+  const isDesktop = useMediaQuery('(min-width: 769px)');
+  const sidebar = useResizable<HTMLDivElement>({
+    storageKey: 'rustpath_sidebar_width',
+    axis: 'x',
+    cssVar: '--sidebar-width',
+    min: 210,
+    max: () => Math.min(560, Math.round(window.innerWidth * 0.42)),
+  });
+
   return (
-    <div className="app-layout">
+    <div className="app-layout" ref={sidebar.panelRef} style={isDesktop ? sidebar.style : undefined}>
       <Sidebar
         progress={progress}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
+      {isDesktop && (
+        <ResizeHandle
+          axis="x"
+          className="sidebar-resize-handle"
+          ariaLabel="Resize sidebar"
+          onResizeStart={sidebar.onResizeStart}
+          onResize={sidebar.onResize}
+          onResizeEnd={sidebar.onResizeEnd}
+          onReset={sidebar.reset}
+        />
+      )}
       <div className="main-content">
         <Header
           progress={progress}
