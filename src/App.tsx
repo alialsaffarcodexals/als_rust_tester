@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import ResizeHandle from './components/layout/ResizeHandle';
@@ -12,6 +12,7 @@ import QuizPage from './pages/QuizPage';
 import FinalPrepPage from './pages/FinalPrepPage';
 import Playground from './pages/Playground';
 import { useProgress } from './hooks/useProgress';
+import { saveLastRoute, readLastLessonRoute } from './store/navigation';
 import type { Exercise } from './types';
 import './styles/globals.css';
 
@@ -21,6 +22,9 @@ import { getAllExercises } from './data/curriculum';
 
 const exercises: Exercise[] = getAllExercises();
 
+// The last exercise to restore on startup, read once per page load.
+const initialRedirectTarget: string | null = readLastLessonRoute();
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -29,10 +33,34 @@ export default function App() {
   );
 }
 
+/**
+ * Index route: on a fresh page load (refresh / reopen), bounce straight to the
+ * last opened exercise; otherwise render the dashboard.
+ *
+ * `location.key === 'default'` is React Router's marker for the initial history
+ * entry, so this only fires on startup — a later client-side visit to "/" (e.g.
+ * clicking "Dashboard") has a different key and renders the dashboard normally.
+ * Being a pure render decision (no flags/effects), it's StrictMode-safe and the
+ * dashboard never flashes before the redirect.
+ */
+function IndexRoute({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  if (initialRedirectTarget && location.key === 'default') {
+    return <Navigate to={initialRedirectTarget} replace />;
+  }
+  return <>{children}</>;
+}
+
 function AppContent() {
   const { progress, completeLesson, saveExam, markIntroComplete } = useProgress();
   const totalExercises = exercises.length;
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Remember the last exercise the user opened so it can be restored next time.
+  const location = useLocation();
+  useEffect(() => {
+    saveLastRoute(location.pathname);
+  }, [location.pathname]);
 
   // Resizable sidebar (desktop only — on mobile it's an overlay drawer).
   const isDesktop = useMediaQuery('(min-width: 769px)');
@@ -72,7 +100,11 @@ function AppContent() {
           <Routes>
             <Route
               path="/"
-              element={<Dashboard progress={progress} totalExercises={totalExercises} />}
+              element={
+                <IndexRoute>
+                  <Dashboard progress={progress} totalExercises={totalExercises} />
+                </IndexRoute>
+              }
             />
             <Route
               path="/chapter/intro"

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import type { UserProgress, Exercise } from '../../types';
 import { getCheckpointStats } from '../../store/progress';
 import { getAllExercises, getExercisesByCheckpoint } from '../../data/curriculum';
+import { readExpandedSections, saveExpandedSections } from '../../store/navigation';
 
 interface NavItem {
   id: string;
@@ -95,7 +96,13 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
     navigate(path);
     onClose?.();
   }, [navigate, onClose]);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  // Which sidebar sections are expanded — restored from localStorage so the user
+  // returns to the same layout. An empty map means everything is collapsed, so
+  // new users start fully collapsed. Lazy init avoids any expand/collapse flash.
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => readExpandedSections());
+  useEffect(() => {
+    saveExpandedSections(expanded);
+  }, [expanded]);
 
   // Search state
   const [query, setQuery] = useState('');
@@ -138,7 +145,7 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
   useEffect(() => { setActiveIdx(-1); }, [query]);
 
   const toggleSection = (key: string) => {
-    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -459,7 +466,7 @@ export default function Sidebar({ progress, isOpen = false, onClose }: SidebarPr
       {/* Curriculum sections */}
       <div className="sidebar-curriculum" ref={curriculumRef}>
         {sections.map((section) => {
-          const isOpen = !collapsed[section.key];
+          const isOpen = !!expanded[section.key];
 
           if (section.key === 'intro') {
             return (
