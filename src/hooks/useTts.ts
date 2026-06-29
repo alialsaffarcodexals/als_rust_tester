@@ -44,7 +44,7 @@ export interface UseTts {
   toggleMute: () => void;
 }
 
-export function useTts(sentences: string[]): UseTts {
+export function useTts(sentences: string[], lang: 'en' | 'ar' = 'en'): UseTts {
   const supported =
     typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
@@ -88,21 +88,34 @@ export function useTts(sentences: string[]): UseTts {
   useEffect(() => { cumRef.current = cum; durRef.current = dur; }, [cum, dur]);
   useEffect(() => { sentencesRef.current = sentences; }, [sentences]);
 
-  // Choose a voice once the (async) voice list is available.
+  // The BCP-47 language tag we ask the engine to speak in.
+  const utterLang = lang === 'ar' ? 'ar-SA' : 'en-US';
+  const langRef = useRef(utterLang);
+  useEffect(() => { langRef.current = utterLang; }, [utterLang]);
+
+  // Choose a voice matching the language once the (async) voice list is ready.
+  // Re-picks when the language changes (English <-> Arabic).
   useEffect(() => {
     if (!supported) return;
     const pick = () => {
       const voices = window.speechSynthesis.getVoices();
       if (!voices.length) return;
-      voiceRef.current =
-        voices.find((v) => /^en[-_]US/i.test(v.lang) && /google|samantha|natural|aria|jenny/i.test(v.name)) ||
-        voices.find((v) => /^en/i.test(v.lang)) ||
-        voices[0];
+      if (lang === 'ar') {
+        voiceRef.current =
+          voices.find((v) => /^ar/i.test(v.lang)) ||
+          voices.find((v) => /arabic|عرب/i.test(v.name)) ||
+          null; // fall back to the engine default (still narrates; pronunciation may vary)
+      } else {
+        voiceRef.current =
+          voices.find((v) => /^en[-_]US/i.test(v.lang) && /google|samantha|natural|aria|jenny/i.test(v.name)) ||
+          voices.find((v) => /^en/i.test(v.lang)) ||
+          voices[0];
+      }
     };
     pick();
     window.speechSynthesis.addEventListener?.('voiceschanged', pick);
     return () => window.speechSynthesis.removeEventListener?.('voiceschanged', pick);
-  }, [supported]);
+  }, [supported, lang]);
 
   const speak = useCallback(
     (i: number) => {
@@ -114,6 +127,7 @@ export function useTts(sentences: string[]): UseTts {
 
       const u = new SpeechSynthesisUtterance(list[i]);
       if (voiceRef.current) u.voice = voiceRef.current;
+      u.lang = langRef.current; // ask the engine for the right language (esp. Arabic)
       u.rate = rateRef.current;
       u.pitch = 1;
       u.volume = mutedRef.current ? 0 : volRef.current;
@@ -260,13 +274,26 @@ export function useTts(sentences: string[]): UseTts {
     });
   }, [speak]);
 
-  // Reset when the narration text changes (navigating to another exercise).
+  // Reset to a clean idle state whenever the narration text changes — switching
+  // language or navigating to another exercise stops any in-flight speech and
+  // moves the highlight back to the start.
+  useEffect(() => {
+    tokenRef.current++;
+    if (supported) window.speechSynthesis.cancel();
+    setStatus('idle');
+    statusRef.current = 'idle';
+    setIndex(0);
+    indexRef.current = 0;
+    setNow(0);
+  }, [supported, sentences]);
+
+  // Cancel any speech when the component unmounts.
   useEffect(() => {
     return () => {
       tokenRef.current++;
       if (supported) window.speechSynthesis.cancel();
     };
-  }, [supported, sentences]);
+  }, [supported]);
 
   return {
     supported,

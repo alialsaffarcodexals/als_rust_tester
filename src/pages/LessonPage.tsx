@@ -412,7 +412,7 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
                   <Walkthrough steps={walkthroughSteps} onLoad={setCode} />
                 )}
                 {journeyTab === 'explanation' && learning.explanation && (
-                  <ExplanationPanel explanation={learning.explanation} />
+                  <ExplanationPanel explanation={learning.explanation} explanationAr={learning.explanationAr} />
                 )}
                 {journeyTab === 'selfcheck' && (
                   <SelfAssessment

@@ -358,7 +358,8 @@ export interface Cp3LearningContent {
   documentation?: ExerciseDocs;           // Documentation tab (Final)
   editorHints?: string[];                 // progressive in-editor guidance (Final)
   expectedIO?: ExpectedIO;                // quick I/O summary at top of Overview (Final)
-  explanation?: Explanation;              // beginner explanation + TTS narration (Final)
+  explanation?: Explanation;              // beginner explanation + TTS narration (Final, English)
+  explanationAr?: Explanation;            // Arabic (MSA) explanation + TTS narration (Final)
 }
 
 // A self-contained coding challenge for the Final Preparation Quiz.

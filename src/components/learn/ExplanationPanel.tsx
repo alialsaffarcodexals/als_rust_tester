@@ -4,6 +4,7 @@ import { useTts } from '../../hooks/useTts';
 
 interface ExplanationPanelProps {
   explanation: Explanation;
+  explanationAr?: Explanation;
 }
 
 type Part = { gi: number; text: string };
@@ -11,12 +12,13 @@ type Block =
   | { type: 'intro' | 'heading' | 'body' | 'walk'; parts: Part[] }
   | { type: 'code'; code: string };
 
+// Splits on Latin (. ! ?) and Arabic (؟ and the Arabic full stop) terminators.
 function splitSentences(text: string): string[] {
-  const matched = text.match(/[^.!?]+[.!?]+["')\]]*(\s|$)|[^.!?]+$/g);
+  const matched = text.match(/[^.!?؟]+[.!?؟]+["')\]]*(\s|$)|[^.!?؟]+$/g);
   return (matched || [text]).map((s) => s.trim()).filter(Boolean);
 }
 
-function build(explanation: Explanation): { blocks: Block[]; sentences: string[] } {
+function build(explanation: Explanation, walkHeading: string): { blocks: Block[]; sentences: string[] } {
   const sentences: string[] = [];
   const blocks: Block[] = [];
   const mk = (text: string): Part[] =>
@@ -32,13 +34,22 @@ function build(explanation: Explanation): { blocks: Block[]; sentences: string[]
     blocks.push({ type: 'body', parts: mk(s.body) });
   }
   if (explanation.walkthrough && explanation.walkthrough.length) {
-    blocks.push({ type: 'heading', parts: mk('Code walkthrough') });
+    blocks.push({ type: 'heading', parts: mk(walkHeading) });
     for (const line of explanation.walkthrough) {
       blocks.push({ type: 'code', code: line.code });
       blocks.push({ type: 'walk', parts: mk(line.explain) });
     }
   }
   return { blocks, sentences };
+}
+
+const LANG_STORAGE_KEY = 'rustpath_explanation_lang';
+function readLang(): 'en' | 'ar' {
+  try {
+    return localStorage.getItem(LANG_STORAGE_KEY) === 'ar' ? 'ar' : 'en';
+  } catch {
+    return 'en';
+  }
 }
 
 function fmt(seconds: number): string {
@@ -55,11 +66,27 @@ const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
  * through of *why* the exercise works, with an audiobook-style TTS player that
  * narrates the text and highlights the sentence being spoken.
  */
-export default function ExplanationPanel({ explanation }: ExplanationPanelProps) {
+export default function ExplanationPanel({ explanation, explanationAr }: ExplanationPanelProps) {
   const [open, setOpen] = useState(true);
-  const { blocks, sentences } = useMemo(() => build(explanation), [explanation]);
-  const tts = useTts(sentences);
+  const [lang, setLang] = useState<'en' | 'ar'>(() => (explanationAr ? readLang() : 'en'));
+
+  const isAr = lang === 'ar' && !!explanationAr;
+  const active = isAr ? (explanationAr as Explanation) : explanation;
+  const walkHeading = isAr ? 'شرح الكود سطراً بسطر' : 'Code walkthrough';
+  const { blocks, sentences } = useMemo(() => build(active, walkHeading), [active, walkHeading]);
+  const tts = useTts(sentences, isAr ? 'ar' : 'en');
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const switchLang = (next: 'en' | 'ar') => {
+    if (next === lang) return;
+    tts.stop();
+    setLang(next);
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const highlighting = tts.status !== 'idle';
   const activeIndex = highlighting ? tts.index : -1;
@@ -99,6 +126,26 @@ export default function ExplanationPanel({ explanation }: ExplanationPanelProps)
 
       {open && (
         <div className="xpl-card">
+          {/* ---- Language switcher ---- */}
+          {explanationAr && (
+            <div className="xpl-langs" role="group" aria-label="Explanation language">
+              <button
+                className={`xpl-lang${!isAr ? ' active' : ''}`}
+                onClick={() => switchLang('en')}
+                aria-pressed={!isAr}
+              >
+                🇺🇸 English
+              </button>
+              <button
+                className={`xpl-lang${isAr ? ' active' : ''}`}
+                onClick={() => switchLang('ar')}
+                aria-pressed={isAr}
+              >
+                🇸🇦 العربية
+              </button>
+            </div>
+          )}
+
           {/* ---- Audio player ---- */}
           {tts.supported ? (
             <div className="xpl-player" role="group" aria-label="Narration player">
@@ -165,11 +212,16 @@ export default function ExplanationPanel({ explanation }: ExplanationPanelProps)
           )}
 
           {/* ---- Explanation content ---- */}
-          <div className="xpl-content" ref={contentRef}>
+          <div
+            className={`xpl-content${isAr ? ' rtl' : ''}`}
+            ref={contentRef}
+            dir={isAr ? 'rtl' : 'ltr'}
+            lang={isAr ? 'ar' : 'en'}
+          >
             {blocks.map((b, i) => {
               if (b.type === 'code') {
                 return (
-                  <pre key={i} className="xpl-code">
+                  <pre key={i} className="xpl-code" dir="ltr">
                     {b.code}
                   </pre>
                 );
@@ -207,6 +259,16 @@ export default function ExplanationPanel({ explanation }: ExplanationPanelProps)
           border-radius: var(--radius-lg); padding: 14px 16px;
           display: flex; flex-direction: column; gap: 14px;
         }
+        /* Language switcher */
+        .xpl-langs { display: flex; gap: 6px; }
+        .xpl-lang {
+          flex: 1; padding: 7px 10px; border-radius: var(--radius-md);
+          background: var(--bg-base); border: 1px solid var(--border-normal);
+          color: var(--text-muted); font-size: 0.82rem; font-weight: 600;
+          transition: all var(--transition);
+        }
+        .xpl-lang:hover { color: var(--text-secondary); border-color: var(--border-strong); }
+        .xpl-lang.active { background: var(--rust-dim); border-color: var(--rust); color: var(--rust-light); }
         /* Player */
         .xpl-player {
           display: flex; flex-direction: column; gap: 10px;
@@ -252,6 +314,15 @@ export default function ExplanationPanel({ explanation }: ExplanationPanelProps)
         .xpl-nosupport { font-size: 0.82rem; color: var(--text-muted); padding: 8px 10px; background: var(--bg-base); border-radius: var(--radius-md); }
         /* Content */
         .xpl-content { display: flex; flex-direction: column; gap: 10px; }
+        /* Arabic, right-to-left */
+        .xpl-content.rtl {
+          text-align: right;
+          font-family: 'Segoe UI', Tahoma, 'Geeza Pro', 'Noto Naskh Arabic', 'Amiri', system-ui, sans-serif;
+        }
+        .xpl-content.rtl .xpl-p { font-size: 0.95rem; line-height: 2; }
+        .xpl-content.rtl .xpl-h { font-size: 1rem; }
+        /* Code always reads left-to-right, even inside Arabic content */
+        .xpl-content.rtl .xpl-code { direction: ltr; text-align: left; }
         .xpl-h { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin: 6px 0 0; }
         .xpl-p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.75; margin: 0; }
         .xpl-p.intro { color: var(--text-primary); font-weight: 500; }
