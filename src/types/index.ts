@@ -185,6 +185,22 @@ export interface Cp3Overview {
   commonMistakes: string[];
 }
 
+// "Expected Input / Output" — a tiny, scannable summary (shown at the top of the
+// Overview) so the task is graspable in seconds without reading the full subject.
+export interface ExpectedIOExample {
+  input: string;
+  output: string;
+  note?: string;            // optional short tag, e.g. "edge case"
+}
+export interface ExpectedIO {
+  kind?: 'function' | 'program';  // labels: inputs/returns vs stdin/stdout
+  input: string;                  // e.g. "numbers: Vec<i32>"
+  output: string;                 // e.g. "i32"
+  behavior?: string;
+  constraints?: string;
+  examples: ExpectedIOExample[];
+}
+
 // "Learning Objectives" — what/why/which-skills.
 export interface Cp3Objectives {
   learn: string[];      // what the student is expected to learn
@@ -324,6 +340,7 @@ export interface Cp3LearningContent {
   selfAssessment?: SelfAssessmentPrompt[];// defaults applied if omitted
   documentation?: ExerciseDocs;           // Documentation tab (Final)
   editorHints?: string[];                 // progressive in-editor guidance (Final)
+  expectedIO?: ExpectedIO;                // quick I/O summary at top of Overview (Final)
 }
 
 // A self-contained coding challenge for the Final Preparation Quiz.

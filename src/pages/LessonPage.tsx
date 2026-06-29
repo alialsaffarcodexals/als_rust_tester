@@ -13,6 +13,7 @@ import DocumentationPanel from '../components/learn/DocumentationPanel';
 import VideosPanel from '../components/learn/VideosPanel';
 import { seedHints } from '../components/learn/editorHints';
 import ExerciseOverview from '../components/learn/ExerciseOverview';
+import ExpectedIOPanel from '../components/learn/ExpectedIOPanel';
 import OfficialDescription from '../components/learn/OfficialDescription';
 import ConceptGuide from '../components/learn/ConceptGuide';
 import SimilarExample from '../components/learn/SimilarExample';
@@ -378,7 +379,10 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
             {learning ? (
               <>
                 {journeyTab === 'overview' && (
-                  <ExerciseOverview overview={learning.overview} objectives={learning.objectives} />
+                  <>
+                    {learning.expectedIO && <ExpectedIOPanel io={learning.expectedIO} />}
+                    <ExerciseOverview overview={learning.overview} objectives={learning.objectives} />
+                  </>
                 )}
                 {journeyTab === 'description' && (
                   <OfficialDescription slug={exercise.slug} description={learning.officialDescription} />

@@ -19,6 +19,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   // Shared with CP3 — reuse the full journey, add Documentation + editor hints.
   // -------------------------------------------------------------------------
   counting_words: {
+    expectedIO: {
+      input: `words: &str`,
+      output: `HashMap<String, u32>`,
+      behavior: `Counts how often each word appears — case-insensitive, punctuation ignored, but an apostrophe inside a word (like "it's") is kept.`,
+      examples: [
+        { input: `"Hello, world!"`, output: `{"hello": 1, "world": 1}` },
+        { input: `"Batman, BATMAN, batman, Stop stop"`, output: `{"batman": 3, "stop": 2}` },
+        { input: `"it's IT'S"`, output: `{"it's": 2}`, note: `apostrophe kept` },
+      ],
+    },
     ...zone01Cp3Learning.counting_words,
     documentation: {
       apis: [
@@ -41,6 +51,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   reverse_it: {
+    expectedIO: {
+      input: `v: i32`,
+      output: `String`,
+      behavior: `Returns the reversed digits followed by the original number; a negative sign stays at the front.`,
+      examples: [
+        { input: `123`, output: `"321123"` },
+        { input: `-123`, output: `"-321123"`, note: `sign kept in front` },
+        { input: `50`, output: `"0550"`, note: `zeros preserved` },
+      ],
+    },
     ...zone01Cp3Learning.reverse_it,
     documentation: {
       apis: [
@@ -63,6 +83,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   inv_pyramid: {
+    expectedIO: {
+      input: `v: String, i: usize`,
+      output: `Vec<String>  (the lines)`,
+      behavior: `Builds a centered diamond: rows grow from 1 to i repeats of v, then shrink back to 1, each indented by its row number.`,
+      examples: [
+        { input: `"x", 3`, output: ` x\n  xx\n   xxx\n  xx\n x` },
+        { input: `"x", 2`, output: ` x\n  xx\n x` },
+        { input: `"o", 1`, output: ` o`, note: `single row` },
+      ],
+    },
     ...zone01Cp3Learning.inv_pyramid,
     documentation: {
       apis: [
@@ -84,6 +114,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   nextprime: {
+    expectedIO: {
+      input: `nbr: usize`,
+      output: `usize`,
+      behavior: `Returns the smallest prime greater than or equal to nbr.`,
+      examples: [
+        { input: `4`, output: `5` },
+        { input: `11`, output: `11`, note: `already prime → itself` },
+        { input: `14`, output: `17` },
+      ],
+    },
     ...zone01Cp3Learning.nextprime,
     documentation: {
       apis: [
@@ -103,6 +143,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   partial_sums: {
+    expectedIO: {
+      input: `v: &[u64]`,
+      output: `Vec<u64>`,
+      behavior: `Sums of the shrinking prefixes: the total, then drop the last element each time, down to the empty sum (always ends in 0).`,
+      examples: [
+        { input: `[1, 2, 3, 4, 5]`, output: `[15, 10, 6, 3, 1, 0]` },
+        { input: `[10, 20]`, output: `[30, 10, 0]` },
+        { input: `[]`, output: `[0]`, note: `empty slice → [0]` },
+      ],
+    },
     ...zone01Cp3Learning.partial_sums,
     documentation: {
       apis: [
@@ -123,6 +173,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   previousprime: {
+    expectedIO: {
+      input: `nbr: u64`,
+      output: `u64`,
+      behavior: `Returns the largest prime less than or equal to nbr.`,
+      examples: [
+        { input: `34`, output: `31` },
+        { input: `13`, output: `13`, note: `already prime → itself` },
+        { input: `20`, output: `19` },
+      ],
+    },
     ...zone01Cp3Learning.previousprime,
     documentation: {
       apis: [
@@ -142,6 +202,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   scytale_decoder: {
+    expectedIO: {
+      input: `s: String, letters_per_turn: usize`,
+      output: `Option<String>`,
+      behavior: `Decodes a scytale cipher by reading the text column by column. Returns None if the text is empty or its length isn't divisible by letters_per_turn.`,
+      examples: [
+        { input: `"abcdef", 2`, output: `Some("acebdf")` },
+        { input: `"abcdef", 3`, output: `Some("adbecf")` },
+        { input: `"", 3`, output: `None`, note: `empty → None` },
+      ],
+    },
     ...zone01Cp3Learning.scytale_decoder,
     documentation: {
       apis: [
@@ -162,6 +232,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   rpn: {
+    expectedIO: {
+      input: `expr: &str  (space-separated postfix tokens)`,
+      output: `f64`,
+      behavior: `Evaluates a Reverse Polish (postfix) expression. Supports + - * / %.`,
+      examples: [
+        { input: `"3 4 +"`, output: `7` },
+        { input: `"5 1 2 + 4 * + 3 -"`, output: `14` },
+        { input: `"10 2 /"`, output: `5` },
+      ],
+    },
     ...zone01Cp3Learning.rpn,
     documentation: {
       apis: [
@@ -184,6 +264,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   blood_types_s: {
+    expectedIO: {
+      input: `BloodType { antigen, rh_factor }  + its methods`,
+      output: `recipients()/donors(): Vec<BloodType> · can_receive_from(o): bool`,
+      behavior: `Model blood-type compatibility: recipients() = who can receive this type, donors() = who it can receive from, can_receive_from(o) checks one pair (ABO + Rh rules).`,
+      examples: [
+        { input: `O+ .can_receive_from(O+)`, output: `true` },
+        { input: `O+ .can_receive_from(O-)`, output: `true` },
+        { input: `O- .can_receive_from(O+)`, output: `false`, note: `Rh+ donor → Rh- recipient not allowed` },
+      ],
+    },
     ...zone01Cp3Learning.blood_types_s,
     documentation: {
       apis: [
@@ -205,6 +295,15 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   office_worker: {
+    expectedIO: {
+      input: `&str  ("name,age,role")  via  OfficeWorker::from`,
+      output: `OfficeWorker { name, age, role }`,
+      behavior: `Parse a "name,age,role" string into an OfficeWorker; the role text maps to a WorkerRole enum variant.`,
+      examples: [
+        { input: `"Manuel,23,admin"`, output: `OfficeWorker { name: "Manuel", age: 23, role: Admin }` },
+        { input: `"Jean Jacques,44,guest"`, output: `OfficeWorker { name: "Jean Jacques", age: 44, role: Guest }`, note: `spaces in name kept` },
+      ],
+    },
     ...zone01Cp3Learning.office_worker,
     documentation: {
       apis: [
@@ -225,6 +324,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   matrix_display: {
+    expectedIO: {
+      input: `Matrix(Vec<Vec<i32>>)  built via Matrix::new(&[&[i32]])`,
+      output: `Display — each row as "(a b c)"`,
+      behavior: `Implement Display so the matrix prints one row per line, values space-separated inside parentheses.`,
+      examples: [
+        { input: `Matrix::new(&[&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]])`, output: `(1 2 3)\n(4 5 6)\n(7 8 9)` },
+        { input: `Matrix::new(&[&[1, 2], &[3, 4]])`, output: `(1 2)\n(3 4)` },
+        { input: `Matrix::new(&[&[1]])`, output: `(1)`, note: `single cell` },
+      ],
+    },
     ...zone01Cp3Learning.matrix_display,
     documentation: {
       apis: [
@@ -246,6 +355,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   queens: {
+    expectedIO: {
+      input: `two Queens at board positions (rank, file)`,
+      output: `can_attack(other): bool`,
+      behavior: `Two queens can attack each other if they share a rank, a file, or a diagonal.`,
+      examples: [
+        { input: `Queen(2, 2).can_attack(Queen(0, 4))`, output: `true`, note: `same diagonal` },
+        { input: `Queen(1, 2).can_attack(Queen(0, 4))`, output: `false` },
+        { input: `Queen(3, 1).can_attack(Queen(3, 7))`, output: `true`, note: `same rank` },
+      ],
+    },
     ...zone01Cp3Learning.queens,
     documentation: {
       apis: [
@@ -266,6 +385,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   drop_the_blog: {
+    expectedIO: {
+      input: `Blog + Article handles (new_article, discard, is_dropped, drops)`,
+      output: `is_dropped(id): bool · drops: Cell<usize> counter`,
+      behavior: `A blog tracks its articles. Discarding (dropping) an article marks it dropped and bumps the shared drop counter; is_dropped(id) reports a given article's state.`,
+      examples: [
+        { input: `new_article → discard → (is_dropped(id), id, &drops)`, output: `(true, 0, Cell { value: 1 })` },
+        { input: `discard a 2nd article → (is_dropped(id1), id1, &drops)`, output: `(true, 1, Cell { value: 2 })` },
+        { input: `3rd article still alive via Rc clone`, output: `(false, 2, Cell { value: 2 }, 1)`, note: `not dropped` },
+      ],
+    },
     ...zone01Cp3Learning.drop_the_blog,
     documentation: {
       apis: [
@@ -287,6 +416,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   lunch_queue: {
+    expectedIO: {
+      input: `Queue (linked list) + add(name, discount), rm(), search(name), invert_queue()`,
+      output: `rm()/search(): Option<(String, i32)> · Debug prints the chain`,
+      behavior: `A singly-linked queue of people: add appends to the back, rm removes the front, search finds a person by name, invert_queue reverses the order.`,
+      examples: [
+        { input: `add Marie/Monica/Ana/Alice; search("Marie")`, output: `Some(("Marie", 20))` },
+        { input: `search("someone")`, output: `None`, note: `not in the queue` },
+        { input: `rm()`, output: `Some(("Marie", 20))`, note: `removes the front` },
+      ],
+    },
     ...zone01Cp3Learning.lunch_queue,
     documentation: {
       apis: [
@@ -311,6 +450,16 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   // NEW Final-only slugs — full guided content.
   // -------------------------------------------------------------------------
   count_factorial_steps: {
+    expectedIO: {
+      input: `factorial: u64`,
+      output: `u64`,
+      behavior: `Given a number that is a factorial, return the n where n! == factorial. Return 0 when the input isn't a factorial.`,
+      examples: [
+        { input: `720`, output: `6`, note: `6! = 720` },
+        { input: `6`, output: `3`, note: `3! = 6` },
+        { input: `13`, output: `0`, note: `not a factorial` },
+      ],
+    },
     overview: {
       whatYouBuild:
         'A function that, given a factorial value, returns how many multiplications produced it — i.e. the n in n!. If the value is not a factorial, or is 0 or 1, it returns 0.',
@@ -468,6 +617,17 @@ return i;`,
   },
 
   matrix_multiplication: {
+    expectedIO: {
+      input: `m: Matrix, multiplier: i32`,
+      output: `Matrix`,
+      behavior: `Multiply every element of the 2x2 matrix by the scalar and return a new Matrix.`,
+      constraints: `Matrix is a tuple struct of two rows: Matrix((i32, i32), (i32, i32)); derive Debug, PartialEq, Eq.`,
+      examples: [
+        { input: `Matrix((1, 3), (4, 5)), 3`, output: `Matrix((3, 9), (12, 15))` },
+        { input: `Matrix((1, -1), (0, 5)), -2`, output: `Matrix((-2, 2), (0, -10))` },
+        { input: `Matrix((7, 7), (7, 7)), 0`, output: `Matrix((0, 0), (0, 0))`, note: `scalar 0` },
+      ],
+    },
     overview: {
       whatYouBuild:
         'A 2x2 Matrix modeled as a tuple struct of two tuples, plus a multiply function that scales every number in it by a scalar and returns a new Matrix.',
@@ -606,6 +766,16 @@ pub struct Matrix(_____);`,
   },
 
   min_and_max: {
+    expectedIO: {
+      input: `nb_1: i32, nb_2: i32, nb_3: i32`,
+      output: `(i32, i32)  // (minimum, maximum)`,
+      behavior: `Returns a tuple of the smallest and largest of the three numbers.`,
+      examples: [
+        { input: `9, 2, 4`, output: `(2, 9)` },
+        { input: `-3, 7, 0`, output: `(-3, 7)` },
+        { input: `5, 5, 5`, output: `(5, 5)`, note: `all equal` },
+      ],
+    },
     overview: {
       whatYouBuild:
         'A function that returns both the smallest and the largest of three integers as a (min, max) tuple.',
@@ -702,6 +872,16 @@ pub fn min_and_max(nb_1: i32, nb_2: i32, nb_3: i32) -> (i32, i32)
   },
 
   modify_letter: {
+    expectedIO: {
+      input: `s: &str, letter: char`,
+      output: `String`,
+      behavior: `Three helpers: remove_letter_sensitive and remove_letter_insensitive delete the letter; swap_letter_case flips the case of every occurrence of it.`,
+      examples: [
+        { input: `remove_letter_sensitive("Jojhn jis sljeepjjing", 'j')`, output: `"John is sleeping"` },
+        { input: `remove_letter_insensitive("JaimA ais swiaAmmingA", 'A')`, output: `"Jim is swimming"`, note: `both cases removed` },
+        { input: `swap_letter_case("byE bye", 'e')`, output: `"bye byE"` },
+      ],
+    },
     overview: {
       whatYouBuild:
         'String functions that remove a chosen letter from a string — one case-sensitive, one case-insensitive (the full subject also includes swapping a letter\'s case).',
@@ -821,6 +1001,16 @@ s.chars().filter(|&c| c != target).collect()`,
   },
 
   smallest: {
+    expectedIO: {
+      input: `h: HashMap<&str, i32>`,
+      output: `i32`,
+      behavior: `Returns the smallest value stored in the map.`,
+      examples: [
+        { input: `{"Cat": 122, "Dog": 333, "Elephant": 334, "Gorilla": 14}`, output: `14` },
+        { input: `{"a": -5, "b": -2, "c": -10}`, output: `-10`, note: `negatives` },
+        { input: `{"only": 42}`, output: `42`, note: `single entry` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A function that returns the smallest value stored in a HashMap of name -> value.',
       inputOutput: 'Input: a HashMap<&str, i32>. Output: the smallest i32 value (0 for an empty map).',
@@ -922,6 +1112,17 @@ pub fn largest(h: HashMap<&str, i32>) -> i32 {
   },
 
   prime_checker: {
+    expectedIO: {
+      input: `nb: usize`,
+      output: `Option<Result<usize, PrimeErr>>`,
+      behavior: `Some(Ok(n)) if prime; Some(Err(Even)) if even; Some(Err(Divider(d))) for an odd composite (smallest divisor d); None when it can't be classified (0 or 1).`,
+      examples: [
+        { input: `2`, output: `Some(Ok(2))` },
+        { input: `14`, output: `Some(Err(Even))`, note: `even` },
+        { input: `9`, output: `Some(Err(Divider(3)))`, note: `odd composite` },
+        { input: `1`, output: `None`, note: `not classifiable` },
+      ],
+    },
     overview: {
       whatYouBuild:
         'A function that classifies a number: None for inputs <= 1, otherwise a Result that is Ok(n) for primes, Err(Even) for even numbers, or Err(Divider(d)) with the smallest odd divider.',
@@ -1069,6 +1270,16 @@ while i < nb {
   },
 
   profanity_filter: {
+    expectedIO: {
+      input: `message: &str`,
+      output: `Result<&str, &str>`,
+      behavior: `Ok(message) if the message is clean; Err("ERROR: illegal") if it contains a banned word or is empty.`,
+      examples: [
+        { input: `"hello there"`, output: `Ok("hello there")` },
+        { input: `"you are stupid"`, output: `Err("ERROR: illegal")`, note: `contains profanity` },
+        { input: `""`, output: `Err("ERROR: illegal")`, note: `empty message` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A message validator that returns the text on success or an error string when the message is empty or contains a banned word.',
       inputOutput: 'Input: a &str message. Output: Result<&str, &str> — Ok(message) or Err("ERROR: illegal").',
@@ -1186,6 +1397,15 @@ Ok(message)`,
   },
 
   insertion_sort: {
+    expectedIO: {
+      input: `slice: &mut [i32], steps: usize`,
+      output: `()  // sorts the slice in place`,
+      behavior: `Runs exactly 'steps' iterations of insertion sort on the slice, mutating it in place (steps = len-1 fully sorts it).`,
+      examples: [
+        { input: `[5, 3, 7, 2, 1, 6, 8, 4], steps = 1`, output: `[3, 5, 7, 2, 1, 6, 8, 4]`, note: `one pass` },
+        { input: `[5, 3, 7, 2, 1, 6, 8, 4], steps = 7`, output: `[1, 2, 3, 4, 5, 6, 7, 8]`, note: `len-1 → fully sorted` },
+      ],
+    },
     overview: {
       whatYouBuild: 'An in-place insertion sort that runs only up to a given number of passes — allowing partial or full sorting.',
       inputOutput: 'Input: &mut [i32] and a steps count. Effect: the slice is sorted in place by up to `steps` outer passes.',
@@ -1309,6 +1529,16 @@ With steps = 1 on [5, 3, 7, 2, 1, 6, 8, 4] -> [3, 5, 7, 2, 1, 6, 8, 4]; with ste
   },
 
   matrix_determinant: {
+    expectedIO: {
+      input: `matrix: [[isize; 3]; 3]`,
+      output: `isize`,
+      behavior: `Returns the determinant of the 3x3 matrix.`,
+      examples: [
+        { input: `[[1, 2, 3], [4, 5, 6], [7, 8, 10]]`, output: `-3` },
+        { input: `[[2, 0, 0], [0, 3, 0], [0, 0, 4]]`, output: `24`, note: `diagonal → product` },
+        { input: `[[1, 0, 0], [0, 1, 0], [0, 0, 1]]`, output: `1`, note: `identity` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A function that computes the determinant of a 3x3 integer matrix by cofactor expansion along the top row.',
       inputOutput: 'Input: [[isize; 3]; 3]. Output: the determinant as isize. The example matrix gives 35.',
@@ -1410,6 +1640,15 @@ The determinant of [[1, 2, 4], [2, -1, 3], [4, 0, 1]] is 35.`,
   },
 
   order_books: {
+    expectedIO: {
+      input: `writer: &mut Writer  (Writer.books: Vec<Book { title, year }>)`,
+      output: `()  // sorts writer.books in place`,
+      behavior: `Sorts the writer's books alphabetically by title (case-insensitive), in place.`,
+      examples: [
+        { input: `["Nineteen Eighty-Four", "Animal Farm", "Burmese Days"]`, output: `["Animal Farm", "Burmese Days", "Nineteen Eighty-Four"]` },
+        { input: `["banana", "Apple"]`, output: `["Apple", "banana"]`, note: `case-insensitive` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A function that sorts a writer\'s list of books alphabetically by title, case-insensitively, in place.',
       inputOutput: 'Input: &mut Writer (which owns a Vec<Book>). Effect: writer.books is sorted by title, ignoring case.',
@@ -1518,6 +1757,16 @@ After sorting, titles appear in case-insensitive alphabetical order (e.g. Hamlet
   },
 
   rot21: {
+    expectedIO: {
+      input: `input: &str`,
+      output: `String`,
+      behavior: `Caesar cipher shifting each letter forward by 21 (a → v); case is preserved and non-letters are left unchanged.`,
+      examples: [
+        { input: `"a"`, output: `"v"` },
+        { input: `"MISS"`, output: `"HDNN"`, note: `uppercase preserved` },
+        { input: `"rot21 works!"`, output: `"mjo21 rjmfn!"`, note: `digits/punctuation unchanged` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A ROT cipher that rotates each ASCII letter 21 positions forward in the alphabet, leaving non-letters unchanged and preserving case.',
       inputOutput: 'Input: a &str. Output: a String with letters shifted by 21. "MISS" -> "HDNN".',
@@ -1622,6 +1871,15 @@ pub fn rot21(input: &str) -> String
   },
 
   display_table: {
+    expectedIO: {
+      input: `Table { headers, body }  built via new() / add_row()`,
+      output: `Display — a bordered ASCII table`,
+      behavior: `Implement Display to render a centered, bordered table; an empty table prints nothing.`,
+      examples: [
+        { input: `headers ["Name","Age"]; rows ["Bob","30"], ["Alexa","7"]`, output: `| Name  | Age |\n|-------+-----|\n|  Bob  | 30  |\n| Alexa |  7  |` },
+        { input: `Table::new()  (empty)`, output: ``, note: `empty → prints nothing` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A Table type whose Display prints a bordered, column-aligned table: a header row, a separator, and centered data cells whose columns auto-size to the widest content.',
       inputOutput: 'Building blocks: Table::new(), add_row(&[String]); printing with {} produces the formatted table (nothing for an empty table).',
@@ -1734,6 +1992,16 @@ impl std::fmt::Display for Table { ... }
   },
 
   filter_table: {
+    expectedIO: {
+      input: `&self + a closure: filter_col(|h| ...) / filter_row(col_name, |v| ...)`,
+      output: `Option<Table>`,
+      behavior: `filter_col keeps the columns whose header passes the closure; filter_row keeps the rows whose value in a named column passes it. Returns None when nothing matches.`,
+      examples: [
+        { input: `table.filter_col(|h| h == "Name")`, output: `Some(Table { headers: ["Name"], body: [["Adam"], ["Adamaris"], ["Ackerley"]] })` },
+        { input: `table.filter_row("Last Name", |v| v == "Philips")`, output: `Some(Table { headers: ["Name", "Last Name", "ID Number"], body: [["Adam", "Philips", "123456789"], ["Ackerley", "Philips", "123456789"]] })` },
+        { input: `table.filter_col(|h| h == "Nope")`, output: `None`, note: `no match → None` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A Table you can filter two ways: filter_col keeps the columns whose header passes a closure; filter_row keeps the rows whose value in a named column passes a closure. Both return Option<Table>.',
       inputOutput: 'Table::new(); add_row(&[String]); filter_col(|header| ...) -> Option<Table> (keep matching columns); filter_row(col_name, |cell| ...) -> Option<Table> (keep matching rows). None when nothing matches.',
@@ -1847,6 +2115,16 @@ impl Table {
   },
 
   flat_tree: {
+    expectedIO: {
+      input: `tree: &BTreeSet<T>`,
+      output: `Vec<T>`,
+      behavior: `Returns the set's elements as a sorted Vec (a BTreeSet already iterates in sorted order).`,
+      examples: [
+        { input: `BTreeSet::from([34, 0, 9, 30])`, output: `[0, 9, 30, 34]` },
+        { input: `BTreeSet::from(["Slow", "kill", "will", "Horses"])`, output: `["Horses", "Slow", "kill", "will"]`, note: `uppercase sorts first` },
+        { input: `BTreeSet::from([3, 3, 1])`, output: `[1, 3]`, note: `set drops duplicates` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A generic function that flattens a BTreeSet into a sorted Vec of its elements.',
       inputOutput: 'Input: &BTreeSet<T>. Output: Vec<T> in sorted order. {34,0,9,30} -> [0,9,30,34].',
@@ -1948,6 +2226,16 @@ v.sort();`,
   },
 
   brackets_matching: {
+    expectedIO: {
+      input: `s: &str`,
+      output: `bool`,
+      behavior: `True when every (), [], {} is correctly matched and nested; any other character is ignored.`,
+      examples: [
+        { input: `"(a[b]{c})"`, output: `true` },
+        { input: `"(]"`, output: `false`, note: `mismatched pair` },
+        { input: `"((("`, output: `false`, note: `unclosed` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A command-line program that, for each argument, prints "OK" if its brackets are correctly matched/nested, otherwise "Error". Non-bracket characters are ignored.',
       inputOutput: 'Args: any number of strings. For each, print OK or Error. No arguments -> print nothing.',
@@ -2094,6 +2382,16 @@ Error
   },
 
   brain_fuck: {
+    expectedIO: {
+      input: `code: &str  (Brainfuck source)`,
+      output: `String  (whatever the program prints)`,
+      behavior: `Interpret the Brainfuck program over a byte tape and return its output. Cells wrap on overflow; '.' emits the current cell as an ASCII char.`,
+      examples: [
+        { input: `"++++++++[>++++++++<-]>+++++++++."`, output: `"I"`, note: `cell = 73 = 'I'` },
+        { input: `"+++++[>+++++++++++++<-]>."`, output: `"A"`, note: `5 x 13 = 65 = 'A'` },
+        { input: `"+++"`, output: `""`, note: `no '.' → no output` },
+      ],
+    },
     overview: {
       whatYouBuild: 'A Brainfuck interpreter: an array of 2048 bytes and a data pointer, executing the program given as the first command-line argument.',
       inputOutput: 'Arg: Brainfuck source (guaranteed valid). Effect: runs it, printing bytes via the "." command.',
