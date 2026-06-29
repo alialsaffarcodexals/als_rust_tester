@@ -201,6 +201,23 @@ export interface ExpectedIO {
   examples: ExpectedIOExample[];
 }
 
+// "Explanation" — a beginner-friendly, instructor-style teach-through of *why*
+// an exercise works (distinct from the how-to Step-by-Step). Drives the TTS
+// narration too. (Zone01 Final.)
+export interface ExplanationSection {
+  heading: string;   // e.g. "The goal"
+  body: string;      // one or more plain-language sentences
+}
+export interface CodeWalkthroughLine {
+  code: string;      // the line(s) of code shown
+  explain: string;   // what it does / why / which Rust feature / without it
+}
+export interface Explanation {
+  intro?: string;                       // a one-line hook
+  sections: ExplanationSection[];       // goal, concepts, logic, mistakes, edge cases, tip…
+  walkthrough?: CodeWalkthroughLine[];  // line-by-line code walkthrough
+}
+
 // "Learning Objectives" — what/why/which-skills.
 export interface Cp3Objectives {
   learn: string[];      // what the student is expected to learn
@@ -341,6 +358,7 @@ export interface Cp3LearningContent {
   documentation?: ExerciseDocs;           // Documentation tab (Final)
   editorHints?: string[];                 // progressive in-editor guidance (Final)
   expectedIO?: ExpectedIO;                // quick I/O summary at top of Overview (Final)
+  explanation?: Explanation;              // beginner explanation + TTS narration (Final)
 }
 
 // A self-contained coding challenge for the Final Preparation Quiz.

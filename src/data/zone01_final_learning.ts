@@ -19,6 +19,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   // Shared with CP3 — reuse the full journey, add Documentation + editor hints.
   // -------------------------------------------------------------------------
   counting_words: {
+    explanation: {
+      intro: `This exercise is a classic, and it teaches the single most useful collection in programming: the hash map.`,
+      sections: [
+        { heading: `The goal`, body: `Take a piece of text and report how many times each word appears, treating uppercase and lowercase as the same word and ignoring punctuation, except for an apostrophe inside a word.` },
+        { heading: `Concepts you need`, body: `A HashMap is a collection that stores key and value pairs and lets you look a value up by its key very quickly. Here the key is a word and the value is its count. An iterator lets us walk through pieces of the text one by one. The entry method is a neat way to either find an existing count or start a new one at zero.` },
+        { heading: `How the solution thinks`, body: `We slice the text into words wherever we hit a character that is not a letter, digit, or apostrophe. For each word we lower case it so that Hello and hello count together, then we bump its counter in the map by one. The mental picture is a tally sheet, where every time you see a word you add one more mark next to it.` },
+        { heading: `Watch out for`, body: `Two beginner traps stand out. First, forgetting to make the comparison case insensitive, which would count Hello and hello separately. Second, the empty pieces that splitting can produce between two separators, which we skip so they do not become a fake empty word. The apostrophe is the tricky edge case, because it must stay inside words like it is, but otherwise be ignored.` },
+        { heading: `Remember this`, body: `The pattern entry of key, or insert zero, then add one, is the standard way to count things in a map. Think find or create, then increment.` },
+      ],
+      walkthrough: [
+        { code: `let mut counts: HashMap<String, u32> = HashMap::new();`, explain: `We create an empty map that will pair each word, a String, with how many times we have seen it, a number. It is mutable because we will keep updating the counts.` },
+        { code: `for word in words.split(|c: char| !c.is_alphanumeric() && c != '\\'') {`, explain: `split cuts the text into pieces wherever the little test in the bars is true, that is wherever a character is neither a letter or digit nor an apostrophe. So punctuation and spaces become the cut points and the words fall out.` },
+        { code: `if word.is_empty() {\n    continue;\n}`, explain: `When two separators sit next to each other, splitting produces an empty piece. We skip those with continue so an empty string never gets counted as a word.` },
+        { code: `*counts.entry(word.to_lowercase()).or_insert(0) += 1;`, explain: `entry looks up the lower cased word, and or insert zero creates it starting at zero if it is new. The star then reaches the actual counter so we can add one to it. This single line both creates and increments.` },
+      ],
+    },
     expectedIO: {
       input: `words: &str`,
       output: `HashMap<String, u32>`,
@@ -51,6 +67,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   reverse_it: {
+    explanation: {
+      intro: `This exercise mixes number thinking with text thinking, which is a skill you will use a lot.`,
+      sections: [
+        { heading: `The goal`, body: `Given a whole number, return a string that is the number's digits reversed, followed by the original number, with a minus sign kept at the very front if the number was negative.` },
+        { heading: `Concepts you need`, body: `Numbers and text are different types in Rust, so we convert between them. The method to string turns a number into text. chars and rev let us walk the characters backwards. The format macro builds a new string by slotting values into a template. The abs method gives the absolute value, dropping any minus sign.` },
+        { heading: `How the solution thinks`, body: `We work with the number without its sign so the minus does not get tangled into the digits. We reverse those digits by flipping the character order. Then we glue three parts together: the sign if there was one, the reversed digits, and the original digits. The mental picture is taking the number's digits, photocopying them, flipping one copy, and taping the two copies side by side.` },
+        { heading: `Watch out for`, body: `A subtle trap is the most negative number, whose absolute value does not fit back into the same signed type, so we convert to a wider integer first to avoid overflow. Beginners also forget that reversing keeps zeros, so a number ending in zero gains a leading zero in the reversed part, which is expected here.` },
+        { heading: `Remember this`, body: `Separate the sign, transform the digits as text, then reassemble. Numbers become easy to rearrange once you treat them as strings of characters.` },
+      ],
+      walkthrough: [
+        { code: `let abs = (v as i64).abs();`, explain: `We widen the number to a larger integer type and take its absolute value, dropping the sign. Widening first avoids an overflow on the most negative possible input.` },
+        { code: `let reversed: String = abs.to_string().chars().rev().collect();`, explain: `We turn the number into text, walk its characters in reverse order, and collect them into a new string. That is the digits flipped around.` },
+        { code: `let sign = if v < 0 { "-" } else { "" };`, explain: `If the original number was negative we remember a minus sign, otherwise an empty piece. This keeps the sign out of the digit juggling until the very end.` },
+        { code: `format!("{}{}{}", sign, reversed, abs)`, explain: `The format macro builds the final string by filling the three slots with the sign, the reversed digits, and the original digits in order. With no semicolon, this string is returned.` },
+      ],
+    },
     expectedIO: {
       input: `v: i32`,
       output: `String`,
@@ -83,6 +115,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   inv_pyramid: {
+    explanation: {
+      intro: `This exercise is about turning a counting pattern into shapes made of text.`,
+      sections: [
+        { heading: `The goal`, body: `Build a diamond shape as a list of text lines. Each line is some spaces followed by a repeated symbol, and the lines grow from one repeat up to a chosen size, then shrink back down again.` },
+        { heading: `Concepts you need`, body: `A range like one up to and including i lets a loop count through numbers. The repeat method makes a string by copying a piece several times, which is perfect for both the spaces and the symbol. We push each finished line into a vector, which is a growable list.` },
+        { heading: `How the solution thinks`, body: `The shape is symmetric, so we build it in two passes. First we count up, making each line a little wider and a little more indented. Then we count down, mirroring the first half to complete the diamond. For every line, the indentation and the number of symbols both equal the current step number. The mental picture is climbing up a staircase of symbols and then walking back down the other side.` },
+        { heading: `Watch out for`, body: `Off by one mistakes are the classic trap here, especially in the shrinking half, where the range must stop before repeating the peak line. Using an inclusive range for the way up and a reversed, exclusive range for the way down gets the mirror exactly right.` },
+        { heading: `Remember this`, body: `Symmetric shapes are easiest as two loops, one counting up and one counting down. The repeat method turns a count into spaces or symbols instantly.` },
+      ],
+      walkthrough: [
+        { code: `let mut result = Vec::new();`, explain: `We start an empty growable list that will hold each finished line of the shape.` },
+        { code: `for k in 1..=i {\n    result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));\n}`, explain: `Counting from one up to i, each line is k spaces followed by the symbol repeated k times, so the lines get wider and more indented. We push each one onto the list.` },
+        { code: `for k in (1..i).rev() {\n    result.push(format!("{}{}", " ".repeat(k), v.repeat(k)));\n}`, explain: `Now we count down from just below the peak back to one, mirroring the first half, and the reversed range is what makes the bottom of the diamond. Including i would repeat the widest line twice.` },
+        { code: `result`, explain: `We return the finished list of lines, and the caller prints them one per line to see the diamond.` },
+      ],
+    },
     expectedIO: {
       input: `v: String, i: usize`,
       output: `Vec<String>  (the lines)`,
@@ -114,6 +162,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   nextprime: {
+    explanation: {
+      intro: `This exercise teaches you how to ask a yes or no question about a number and then search for the next number that answers yes.`,
+      sections: [
+        { heading: `The goal`, body: `Given a starting number, find the smallest prime number that is greater than or equal to it. If the start is already prime, that is the answer.` },
+        { heading: `Concepts you need`, body: `A prime number is a whole number greater than one whose only divisors are one and itself. To test for primeness we check whether any smaller number divides it evenly, using the remainder operator, written with a percent sign, which gives what is left over after division. A helper function lets us name and reuse the primeness check.` },
+        { heading: `How the solution thinks`, body: `We separate the problem into two parts. First, a small function that answers is this number prime. Second, a loop that starts at the given number and keeps stepping up by one until that function says yes. A key efficiency idea is that to check if a number is prime we only need to try divisors up to its square root, because any larger factor would have a partner smaller than the square root. The mental picture is walking forward number by number, knocking on each door and asking are you prime, until one says yes.` },
+        { heading: `Watch out for`, body: `Beginners often check divisors all the way up to the number itself, which is far slower than stopping at the square root. Numbers below two are never prime, so the helper must reject them. Forgetting that the start might already be prime is another trap, since the answer can be the start itself.` },
+        { heading: `Remember this`, body: `Split hard problems into a yes or no helper plus a search loop. To test primeness, only divisors up to the square root matter.` },
+      ],
+      walkthrough: [
+        { code: `fn is_prime(n: usize) -> bool {`, explain: `A helper function defined inside our function. Giving the primeness test its own name makes the main search read clearly.` },
+        { code: `if n < 2 {\n    return false;\n}`, explain: `Zero and one are not prime by definition, so we reject them immediately before doing any division.` },
+        { code: `let mut i = 2;\nwhile i * i <= n {\n    if n % i == 0 {\n        return false;\n    }\n    i += 1;\n}`, explain: `We try each possible divisor starting at two. The condition i times i less than or equal to n means we only go up to the square root, which is all that is needed. If any divisor leaves no remainder, the number is not prime.` },
+        { code: `let mut n = nbr;\nwhile !is_prime(n) {\n    n += 1;\n}\nn`, explain: `Starting at the given number, we step up by one as long as the current number is not prime, then return the first one that is.` },
+      ],
+    },
     expectedIO: {
       input: `nbr: usize`,
       output: `usize`,
@@ -143,6 +207,21 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   partial_sums: {
+    explanation: {
+      intro: `This exercise is a gentle introduction to slices and to summing parts of a list.`,
+      sections: [
+        { heading: `The goal`, body: `Given a list of numbers, produce the sums of its shrinking prefixes: the total of the whole list, then the total without the last element, and so on, all the way down to the empty sum, which is zero.` },
+        { heading: `Concepts you need`, body: `A slice is a borrowed view into part of a list, written with square brackets and a range. The expression v up to k means the first k elements. An iterator's sum method adds up all the items it produces. A range can be reversed so the loop counts downward.` },
+        { heading: `How the solution thinks`, body: `For each length from the full list down to zero, we take that many elements from the front and add them up. Counting the length downward gives us the totals from largest to smallest, ending with the empty list whose sum is zero. The mental picture is repeatedly chopping the last number off the list and writing down the new total each time.` },
+        { heading: `Watch out for`, body: `A frequent confusion is what an empty sum should be, but in Rust summing nothing gives zero, which is exactly the final entry we want. Reserving capacity for the result is a small efficiency nicety, not a requirement. Mixing up which end you shrink from is the main logic trap.` },
+        { heading: `Remember this`, body: `A slice up to k is the first k items, and summing an empty slice is zero. Counting the length down produces every prefix total in order.` },
+      ],
+      walkthrough: [
+        { code: `let mut sums = Vec::with_capacity(v.len() + 1);`, explain: `We make the result list, hinting it will hold one entry per length from the full list down to empty. The capacity hint just avoids regrowing the list as we push.` },
+        { code: `for k in (0..=v.len()).rev() {`, explain: `Here k counts downward from the full length to zero, and each k is how many elements from the front we will add this time.` },
+        { code: `sums.push(v[..k].iter().sum());`, explain: `The slice v up to k is the first k elements, iter walks them, and sum adds them up. We push that total onto the result, and when k is zero the slice is empty so the sum is zero.` },
+      ],
+    },
     expectedIO: {
       input: `v: &[u64]`,
       output: `Vec<u64>`,
@@ -173,6 +252,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   previousprime: {
+    explanation: {
+      intro: `This is the mirror image of finding the next prime, searching downward instead of upward.`,
+      sections: [
+        { heading: `The goal`, body: `Given a number, find the largest prime that is less than or equal to it. If the number itself is prime, that is the answer.` },
+        { heading: `Concepts you need`, body: `As before, a prime is a whole number above one divisible only by one and itself. We reuse a primeness helper and the remainder operator. A loop lets us step downward, and we must be careful not to step below zero with unsigned numbers.` },
+        { heading: `How the solution thinks`, body: `We start at the given number and walk downward one step at a time, asking at each stop is this prime. The first one that says yes is our answer. The mental picture is the same door knocking search as next prime, but walking backwards, and we also guard the bottom so we never try to subtract below zero.` },
+        { heading: `Watch out for`, body: `With unsigned numbers, subtracting one from zero would crash, so we stop at zero deliberately. As with next prime, only checking divisors up to the square root keeps it fast, and numbers below two are never prime.` },
+        { heading: `Remember this`, body: `Search loops can run in either direction. With unsigned numbers, always guard against going below zero before you subtract.` },
+      ],
+      walkthrough: [
+        { code: `fn is_prime(n: u64) -> bool {`, explain: `The same primeness helper as before, written for the unsigned 64 bit type used here.` },
+        { code: `let mut n = nbr;\nloop {`, explain: `We start at the given number and begin an open ended loop that we will exit ourselves once we find a prime or hit the floor.` },
+        { code: `if is_prime(n) {\n    return n;\n}`, explain: `As soon as the current number is prime we return it, and since we move downward this is the largest prime not above the start.` },
+        { code: `if n == 0 {\n    return 0;\n}\nn -= 1;`, explain: `Before stepping down we check for zero, because subtracting one from an unsigned zero would crash. Otherwise we move one step lower and try again.` },
+      ],
+    },
     expectedIO: {
       input: `nbr: u64`,
       output: `u64`,
@@ -202,6 +297,23 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   scytale_decoder: {
+    explanation: {
+      intro: `This exercise recreates an ancient cipher and teaches careful index arithmetic.`,
+      sections: [
+        { heading: `The goal`, body: `Decode a message that was scrambled by writing it in a grid and reading down the columns. You are given the scrambled text and how many letters were on each wrap, and you must rebuild the original, or return nothing if the input does not fit a clean grid.` },
+        { heading: `Concepts you need`, body: `Option expresses the maybe nothing result for invalid input. We treat the text as a grid with a known number of columns, where the number of rows is the total length divided by the columns. Reading at position row times columns plus column lets us jump to any cell in a flattened grid.` },
+        { heading: `How the solution thinks`, body: `The encoder wrote the message across rows and read it down columns, so to decode we do the reverse: read across columns and down rows in the right order. First we reject inputs that cannot form a complete grid, namely empty text or a length not divisible by the columns. Then we visit each column top to bottom, collecting characters into the answer. The mental picture is rebuilding a sheet of paper that was read out column by column, by laying the letters back into their grid.` },
+        { heading: `Watch out for`, body: `The formula row times letters per turn plus column is the heart of the exercise, and getting the multiplication order wrong scrambles the result. Validating the length first prevents reading out of range. Counting characters rather than bytes matters if the text is not plain ASCII.` },
+        { heading: `Remember this`, body: `A flat list can act like a grid using index equals row times width plus column. Always validate that the data fits the grid before indexing into it.` },
+      ],
+      walkthrough: [
+        { code: `if s.is_empty() || letters_per_turn == 0 {\n    return None;\n}`, explain: `Empty text or a zero column count cannot form a valid grid, so we bail out early with None.` },
+        { code: `let len = s.chars().count();\nif len % letters_per_turn != 0 {\n    return None;\n}`, explain: `If the length does not divide evenly by the column count, the letters would not fill a clean rectangle, so this input is invalid and we return None.` },
+        { code: `let rows = len / letters_per_turn;\nlet chars: Vec<char> = s.chars().collect();\nlet mut result = String::with_capacity(len);`, explain: `We compute how many rows the grid has, gather the characters into a list we can index, and prepare an empty string to build the answer.` },
+        { code: `for col in 0..letters_per_turn {\n    for row in 0..rows {\n        result.push(chars[row * letters_per_turn + col]);\n    }\n}`, explain: `For each column we walk down every row, and the formula row times columns plus column finds that cell in the flat list. Pushing them in this order rebuilds the original message.` },
+        { code: `Some(result)`, explain: `We return the decoded text wrapped in Some to signal success.` },
+      ],
+    },
     expectedIO: {
       input: `s: String, letters_per_turn: usize`,
       output: `Option<String>`,
@@ -232,6 +344,24 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   rpn: {
+    explanation: {
+      intro: `This exercise builds a tiny calculator and teaches the stack, one of the most important data structures.`,
+      sections: [
+        { heading: `The goal`, body: `Evaluate an expression written in reverse Polish notation, where the operator comes after its two numbers, and return the numeric result.` },
+        { heading: `Concepts you need`, body: `A stack is a list where you only add to and remove from the top, like a stack of plates. The push method adds to the top and pop removes from the top. We split the text into tokens on spaces, and parse turns a numeric token into an actual number. A match chooses different code based on the token.` },
+        { heading: `How the solution thinks`, body: `We read tokens left to right. A number gets pushed onto the stack. An operator pops the top two numbers, combines them, and pushes the result back. When the tokens run out, the single value left on the stack is the answer. The mental picture is a pile of numbers where each operator scoops the top two off, does the math, and drops the result back on top.` },
+        { heading: `Watch out for`, body: `Order matters for subtraction and division, because the second number popped is the left operand, since it was pushed first. Popping in the wrong order silently gives wrong answers. A well formed expression always leaves exactly one number on the stack at the end.` },
+        { heading: `Remember this`, body: `In reverse Polish notation, numbers wait on a stack until an operator consumes the top two. Pop b first, then a, and compute a operator b.` },
+      ],
+      walkthrough: [
+        { code: `pub fn rpn(expr: &str) -> f64 {\n    let mut stack: Vec<f64> = Vec::new();`, explain: `We create an empty stack of decimal numbers. A vector used only from its end behaves exactly like a stack.` },
+        { code: `for token in expr.split_whitespace() {`, explain: `We break the expression into tokens wherever there are spaces and handle each one in turn.` },
+        { code: `"+" | "-" | "*" | "/" | "%" => {\n    let b = stack.pop().unwrap();\n    let a = stack.pop().unwrap();`, explain: `When the token is an operator, we pop the top two numbers. The first one popped, b, was pushed last, so it is the right operand, and a is the left operand.` },
+        { code: `stack.push(match token {\n    "+" => a + b,\n    "-" => a - b,\n    "*" => a * b,\n    "/" => a / b,\n    "%" => a % b,\n    _ => unreachable!(),\n});`, explain: `We compute a combined with b according to which operator it was, then push the result back onto the stack for later operators to use.` },
+        { code: `num => stack.push(num.parse::<f64>().unwrap()),`, explain: `Any token that is not an operator is a number, so we parse it into a decimal value and push it onto the stack.` },
+        { code: `stack.pop().unwrap()`, explain: `After all tokens are processed, the one remaining value on the stack is the final answer, which we return.` },
+      ],
+    },
     expectedIO: {
       input: `expr: &str  (space-separated postfix tokens)`,
       output: `f64`,
@@ -264,6 +394,24 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   blood_types_s: {
+    explanation: {
+      intro: `This exercise models a real world domain, blood donation, using enums and methods.`,
+      sections: [
+        { heading: `The goal`, body: `Represent blood types and answer compatibility questions: who can receive from a given type, who can donate to it, and whether one specific type can receive from another.` },
+        { heading: `Concepts you need`, body: `An enum lists the fixed possibilities for a value, so Antigen is one of A, AB, B, or O, and RhFactor is Positive or Negative. A struct combines them into a full blood type. A method is a function attached to a type, called with a dot. The matches macro is a quick way to test if a value is one of several cases.` },
+        { heading: `How the solution thinks`, body: `All the rules reduce to one core method, can receive from, which checks two independent conditions: the antigen rule and the Rh rule. Once that single judgement exists, donors and recipients are just filters over the list of all eight blood types, asking the question in one direction or the other. The mental picture is one referee who knows the rules, and two lists built by asking the referee about every possible type.` },
+        { heading: `Watch out for`, body: `The antigen and Rh rules are separate and both must hold, so they are combined with and. A subtle point is direction: recipients asks who can receive from me, while donors asks who I can receive from, so the two filters call can receive from with the arguments swapped. Deriving the right traits, like the ability to compare and to be printed, is needed for the tests.` },
+        { heading: `Remember this`, body: `Build one small truth, can receive from, then express everything else in terms of it. Enums make a fixed set of options safe and clear.` },
+      ],
+      walkthrough: [
+        { code: `pub enum Antigen { A, AB, B, O }`, explain: `The antigen part of a blood type can only be one of these four named values, which an enum captures exactly.` },
+        { code: `pub struct BloodType {\n    pub rh_factor: RhFactor,\n    pub antigen: Antigen,\n}`, explain: `A full blood type pairs an Rh factor with an antigen. The field order here also controls how it prints, which the tests check.` },
+        { code: `pub fn can_receive_from(self, other: Self) -> bool {`, explain: `This is the single rule everything else is built on: can a patient of this type safely receive blood from the other type.` },
+        { code: `let antigen_ok = match other.antigen {\n    Antigen::O => true,\n    Antigen::A => matches!(self.antigen, Antigen::A | Antigen::AB),\n    Antigen::B => matches!(self.antigen, Antigen::B | Antigen::AB),\n    Antigen::AB => self.antigen == Antigen::AB,\n};`, explain: `The antigen rule, written per donor type. O can give to anyone, A can give to A or AB, B to B or AB, and AB only to AB. The matches macro checks if the receiver's antigen is among the allowed ones.` },
+        { code: `let rh_ok = self.rh_factor == RhFactor::Positive || other.rh_factor == RhFactor::Negative;\nantigen_ok && rh_ok`, explain: `The Rh rule: a positive receiver accepts anything, and a negative donor is accepted by anyone. Both the antigen rule and the Rh rule must hold, so we combine them with and.` },
+        { code: `pub fn recipients(self) -> Vec<Self> {\n    Self::all().into_iter().filter(|&other| other.can_receive_from(self)).collect()\n}`, explain: `Recipients are every type that can receive from me, so we filter the full list of types, keeping those where other can receive from self. The donors method is the same idea with the question reversed.` },
+      ],
+    },
     expectedIO: {
       input: `BloodType { antigen, rh_factor }  + its methods`,
       output: `recipients()/donors(): Vec<BloodType> · can_receive_from(o): bool`,
@@ -295,6 +443,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   office_worker: {
+    explanation: {
+      intro: `This exercise teaches conversions, turning a plain string into a fully structured value.`,
+      sections: [
+        { heading: `The goal`, body: `Turn a comma separated string like name, age, role into a structured OfficeWorker value, where the role text becomes a proper role category.` },
+        { heading: `Concepts you need`, body: `A struct holds the worker's fields, and an enum lists the possible roles. The From trait describes how to build one type from another, and implementing it lets us write conversions that read naturally. The split method breaks a string on a separator, and parse turns text into a number.` },
+        { heading: `How the solution thinks`, body: `We implement two conversions. One turns a role word into a role enum value, defaulting unknown words to a guest. The other splits the whole line into its three parts and builds the worker, parsing the age and reusing the role conversion. The mental picture is an assembly line, where raw text goes in, gets cut into pieces, and each piece is fitted into the right slot of the finished worker.` },
+        { heading: `Watch out for`, body: `The order of the comma separated parts must match how you read them, so the first piece is the name, the second the age, the third the role. Parsing the age can fail on bad input, which this simple version assumes will not happen. Providing a sensible default role keeps unknown inputs from breaking the conversion.` },
+        { heading: `Remember this`, body: `Implement From to give your type a clean, reusable way to be built from something else. Split, then index, is the basic recipe for parsing simple delimited text.` },
+      ],
+      walkthrough: [
+        { code: `pub struct OfficeWorker {\n    pub name: String,\n    pub age: u32,\n    pub role: WorkerRole,\n}`, explain: `The finished value groups a name, an age, and a role together under one type.` },
+        { code: `pub enum WorkerRole {\n    Admin,\n    User,\n    Guest,\n}`, explain: `The role is restricted to these named possibilities, which an enum enforces.` },
+        { code: `impl From<&str> for WorkerRole {\n    fn from(s: &str) -> Self {\n        match s {\n            "admin" => WorkerRole::Admin,\n            "user" => WorkerRole::User,\n            _ => WorkerRole::Guest,\n        }\n    }\n}`, explain: `This conversion maps a role word to a role value, and the underscore case makes any unrecognized word default to Guest.` },
+        { code: `let parts: Vec<&str> = s.split(',').collect();\nOfficeWorker {\n    name: parts[0].to_string(),\n    age: parts[1].parse().unwrap(),\n    role: WorkerRole::from(parts[2]),\n}`, explain: `We split the line on commas into three parts, then build the worker: the first part is the name, the second is parsed into a number for the age, and the third is converted into a role.` },
+      ],
+    },
     expectedIO: {
       input: `&str  ("name,age,role")  via  OfficeWorker::from`,
       output: `OfficeWorker { name, age, role }`,
@@ -324,6 +488,23 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   matrix_display: {
+    explanation: {
+      intro: `This exercise teaches you how to control how your own type prints by implementing the Display trait.`,
+      sections: [
+        { heading: `The goal`, body: `Make a matrix type that, when printed, shows each row on its own line wrapped in parentheses, with the numbers separated by spaces.` },
+        { heading: `Concepts you need`, body: `A trait is a shared set of behaviours a type can implement, and Display is the one that controls how a value looks when printed with the normal print macro. The write macro sends text into the formatter. Mapping over rows and joining strings lets us build each line and stitch them together.` },
+        { heading: `How the solution thinks`, body: `For each row we turn its numbers into text, join them with spaces, and wrap the whole thing in parentheses. Then we join all the row strings with newlines so each row sits on its own line, and write that to the formatter. The mental picture is formatting one row at a time, then stacking the rows.` },
+        { heading: `Watch out for`, body: `Implementing Display means writing into the formatter and returning its result, not printing directly. Using write rather than writeln on the final line avoids a trailing blank line. Joining with newlines, rather than printing each row separately, keeps the output exact.` },
+        { heading: `Remember this`, body: `Implement Display to decide how your type appears in print. Build small pieces, the cells, into bigger ones, the rows, then join the rows.` },
+      ],
+      walkthrough: [
+        { code: `pub struct Matrix(pub Vec<Vec<i32>>);`, explain: `A tuple struct wrapping a list of rows, where each row is itself a list of numbers. The single field is reached as dot zero.` },
+        { code: `pub fn new(slice: &[&[i32]]) -> Self {\n    Matrix(slice.iter().map(|row| row.to_vec()).collect())\n}`, explain: `A convenient constructor that copies each borrowed row into an owned list, building the matrix from slices.` },
+        { code: `impl fmt::Display for Matrix {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {`, explain: `Implementing Display means writing this fmt method, which receives a formatter to write text into and returns whether writing succeeded.` },
+        { code: `let lines: Vec<String> = self.0.iter()\n    .map(|row| {\n        let cells: Vec<String> = row.iter().map(|n| n.to_string()).collect();\n        format!("({})", cells.join(" "))\n    })\n    .collect();`, explain: `For each row we turn its numbers into text, join them with single spaces, and wrap the result in parentheses, producing one formatted line per row.` },
+        { code: `write!(f, "{}", lines.join("\\n"))`, explain: `We join the row lines with newlines so each row is on its own line, and write the whole block to the formatter. Using write, not writeln, avoids an extra blank line at the end.` },
+      ],
+    },
     expectedIO: {
       input: `Matrix(Vec<Vec<i32>>)  built via Matrix::new(&[&[i32]])`,
       output: `Display — each row as "(a b c)"`,
@@ -355,6 +536,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   queens: {
+    explanation: {
+      intro: `This exercise models chess queens and teaches validation plus a neat geometric trick for diagonals.`,
+      sections: [
+        { heading: `The goal`, body: `Place two queens on a chess board and decide whether they can attack each other, which happens when they share a row, a column, or a diagonal.` },
+        { heading: `Concepts you need`, body: `A struct holds a position as a rank and file, the chess words for row and column. Returning an Option from the constructor lets us reject positions that fall off the board. The absolute value function and a simple equality give us the diagonal test.` },
+        { heading: `How the solution thinks`, body: `First we make sure a position is on the board, returning nothing if it is not. Then the attack test checks three things: same rank, same file, or the same distance apart vertically and horizontally. That last condition is the clever part, because two squares are on a diagonal exactly when the difference in their rows equals the difference in their columns. The mental picture is a queen shooting straight lines across, down, and diagonally, and asking whether the other queen sits on any of those lines.` },
+        { heading: `Watch out for`, body: `Using unsigned positions, subtracting can underflow, so we convert to signed numbers before taking differences. The diagonal check compares absolute differences, because the queens could be in either order. Validating the board bounds in the constructor keeps impossible positions from ever existing.` },
+        { heading: `Remember this`, body: `Two squares are diagonal when the row gap equals the column gap. Convert to signed numbers before subtracting to avoid underflow.` },
+      ],
+      walkthrough: [
+        { code: `pub fn new(rank: usize, file: usize) -> Option<Self> {\n    if rank < 8 && file < 8 {\n        Some(ChessPosition { rank, file })\n    } else {\n        None\n    }\n}`, explain: `The constructor only succeeds for coordinates on the eight by eight board, returning the position inside Some, or None for anything off the board.` },
+        { code: `pub fn can_attack(self, other: Self) -> bool {`, explain: `The method that answers whether this queen and another can attack each other.` },
+        { code: `let (r1, f1) = (self.position.rank as i64, self.position.file as i64);\nlet (r2, f2) = (other.position.rank as i64, other.position.file as i64);`, explain: `We pull out both queens' coordinates and convert them to signed numbers so the upcoming subtractions cannot underflow.` },
+        { code: `r1 == r2 || f1 == f2 || (r1 - r2).abs() == (f1 - f2).abs()`, explain: `They attack if they share a rank, share a file, or sit on a diagonal. The diagonal test is true when the vertical gap equals the horizontal gap. This boolean is the return value.` },
+      ],
+    },
     expectedIO: {
       input: `two Queens at board positions (rank, file)`,
       output: `can_attack(other): bool`,
@@ -385,6 +582,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   drop_the_blog: {
+    explanation: {
+      intro: `This is an advanced exercise about ownership, interior mutability, and the moment a value is destroyed.`,
+      sections: [
+        { heading: `The goal`, body: `Build a blog that tracks its articles, and have each article automatically report back to the blog when it is dropped, that is, when it goes out of scope and is destroyed.` },
+        { heading: `Concepts you need`, body: `Ownership means each value has a clear owner and is cleaned up when the owner goes away. The Drop trait lets you run code at that exact cleanup moment. Cell and RefCell provide interior mutability, a way to change data even through a shared reference, which we need because the articles only hold a shared reference to the blog. A Cell holds a simple copyable value, while a RefCell guards something larger.` },
+        { heading: `How the solution thinks`, body: `Each article carries its id and a shared reference back to its blog. The blog keeps a counter of drops and a list of which articles have been dropped. When an article is destroyed, Rust automatically calls our drop code, which tells the blog to mark that id and bump the counter. The mental picture is every article holding a string back to its parent, and tugging that string as it disappears so the blog knows.` },
+        { heading: `Watch out for`, body: `This is genuinely advanced, so do not worry if it feels hard. The key insight is that drop runs automatically and you never call it yourself. Interior mutability is needed because you cannot normally change something through a shared reference. Discarding an article simply lets it go out of scope, which triggers the drop.` },
+        { heading: `Remember this`, body: `The Drop trait is your hook into the cleanup moment. Cell and RefCell let you mutate through a shared reference when ownership rules would otherwise forbid it.` },
+      ],
+      walkthrough: [
+        { code: `pub struct Blog {\n    pub drops: Cell<usize>,\n    pub states: RefCell<Vec<bool>>,\n}`, explain: `The blog stores a drop counter in a Cell and a list of dropped flags in a RefCell. Both wrappers allow changes even when the blog is only shared, not owned, by the articles.` },
+        { code: `pub fn new_article(&self, body: String) -> (usize, Article<'_>) {\n    let id = self.new_id();\n    self.states.borrow_mut().push(false);\n    (id, Article::new(id, body, self))\n}`, explain: `Creating an article gives it the next id, records it as not yet dropped, and hands back an article that holds a reference to this blog. The borrow mut call temporarily unlocks the RefCell so we can push.` },
+        { code: `self.states.borrow_mut()[id] = true;\nself.drops.set(self.drops.get() + 1);`, explain: `When told an article was dropped, the blog marks that id as dropped and increases its counter by one, reading and writing the Cell with get and set.` },
+        { code: `impl<'a> Drop for Article<'a> {\n    fn drop(&mut self) {\n        self.parent.add_drop(self.id);\n    }\n}`, explain: `This is the heart of the exercise. When an article is destroyed, Rust automatically calls this drop method, which reports the article's id back to the blog. You never call it yourself.` },
+      ],
+    },
     expectedIO: {
       input: `Blog + Article handles (new_article, discard, is_dropped, drops)`,
       output: `is_dropped(id): bool · drops: Cell<usize> counter`,
@@ -416,6 +629,23 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   },
 
   lunch_queue: {
+    explanation: {
+      intro: `This exercise builds a linked list by hand, which is the best way to truly understand pointers and ownership.`,
+      sections: [
+        { heading: `The goal`, body: `Build a queue of people as a linked list, where each person points to the next, and support adding, removing, searching, and reversing the whole chain.` },
+        { heading: `Concepts you need`, body: `A linked list is a chain where each node holds a value and a link to the next node. A link is an Option of a boxed node, where Box puts the node on the heap and Option allows the end of the chain to be nothing. The take method swaps a value out and leaves nothing behind, which is essential for safely moving nodes around.` },
+        { heading: `How the solution thinks`, body: `Adding a person makes a new node whose next link is the old front, then makes it the new front, which is a quick push at the head. Reversing walks the chain, flipping each next link to point backward. Removing the last person walks to the end and detaches it. Searching walks the chain comparing names. The mental picture is a paper chain of people holding hands, where you carefully unlink and relink hands to rearrange them.` },
+        { heading: `Watch out for`, body: `Ownership makes linked lists famously tricky in Rust, because you cannot have two owners of the same node. The take method is the key tool, letting you move a node out of a link and leave nothing there so the borrow checker stays happy. Reversing requires three pointers, previous, current, and next, so you do not lose the rest of the chain.` },
+        { heading: `Remember this`, body: `A linked node is a value plus a link to the next, and a link is an optional boxed node. Use take to move nodes without breaking ownership rules.` },
+      ],
+      walkthrough: [
+        { code: `pub struct Queue {\n    pub node: Link,\n}\n\npub type Link = Option<Box<Person>>;`, explain: `The queue is just a single link to the first person. A Link is either nothing, the empty end, or a boxed person stored on the heap.` },
+        { code: `pub struct Person {\n    pub name: String,\n    pub discount: i32,\n    pub next_person: Link,\n}`, explain: `Each person holds their data and a link to the next person, which is what forms the chain.` },
+        { code: `pub fn add(&mut self, name: String, discount: i32) {\n    let person = Box::new(Person { name, discount, next_person: self.node.take() });\n    self.node = Some(person);\n}`, explain: `We build a new person whose next link is the current front, taken out with take, then make the new person the front. This adds at the head of the chain.` },
+        { code: `pub fn invert_queue(&mut self) {\n    let mut prev: Link = None;\n    let mut current = self.node.take();\n    while let Some(mut boxed) = current {\n        current = boxed.next_person.take();\n        boxed.next_person = prev;\n        prev = Some(boxed);\n    }\n    self.node = prev;\n}`, explain: `Reversing walks the chain with three links. We detach the next node, point the current node backward at the previous one, then advance. At the end, previous is the new front. The take method is what lets us move nodes without violating ownership.` },
+        { code: `pub fn search(&self, name: &str) -> Option<(&String, &i32)> {\n    let mut current = self.node.as_ref();\n    while let Some(person) = current {\n        if person.name == name {\n            return Some((&person.name, &person.discount));\n        }\n        current = person.next_person.as_ref();\n    }\n    None\n}`, explain: `We walk the chain by borrowing each node with as ref, comparing names. If we find a match we return references to its data, otherwise we reach the end and return None.` },
+      ],
+    },
     expectedIO: {
       input: `Queue (linked list) + add(name, discount), rm(), search(name), invert_queue()`,
       output: `rm()/search(): Option<(String, i32)> · Debug prints the chain`,
@@ -450,6 +680,22 @@ export const zone01FinalLearning: Record<string, Cp3LearningContent> = {
   // NEW Final-only slugs — full guided content.
   // -------------------------------------------------------------------------
   count_factorial_steps: {
+    explanation: {
+      intro: `A factorial is what you get when you multiply 1 times 2 times 3 and so on. This exercise runs that idea backwards.`,
+      sections: [
+        { heading: `The goal`, body: `You are handed a number and asked a question: is this number a factorial, and if so, of what? For example 720 is 6 factorial, because 1 times 2 times 3 times 4 times 5 times 6 equals 720, so you must return 6. If the number is not a factorial at all, you return 0.` },
+        { heading: `Concepts you need`, body: `A loop repeats a block of code many times. A mutable variable is one you are allowed to change as the loop runs, marked with the keyword mut. The factorial of n means multiplying every whole number from 1 up to n. We will rebuild factorials step by step and watch for a match.` },
+        { heading: `How the solution thinks`, body: `Instead of guessing, we grow a running product: 1, then 1 times 2, then times 3, and so on, counting how many steps we took. We stop as soon as the product reaches or passes the target. If it landed exactly on the target, the number of steps is our answer. If it overshot, the target was never a factorial, so we return 0. The mental picture is climbing factorial stairs until you either land on the number or step over it.` },
+        { heading: `Watch out for`, body: `The numbers 0 and 1 are special, because both 0 factorial and 1 factorial equal 1, and the exercise treats these as zero steps, so we return 0 early. A common mistake is using a too small integer type, because factorials grow extremely fast and overflow quickly, which is why we use the large u64 type.` },
+        { heading: `Remember this`, body: `Build up, then compare. When a problem asks whether a value belongs to a sequence, it is often easier to generate the sequence until you reach or pass the value than to work backwards.` },
+      ],
+      walkthrough: [
+        { code: `if factorial <= 1 {\n    return 0;\n}`, explain: `This handles the special small cases up front, since both zero factorial and one factorial equal one, and the exercise counts those as zero steps. Returning early also keeps the main loop simple.` },
+        { code: `let mut product = 1u64;\nlet mut i = 1u64;`, explain: `We set up two changeable values: product holds the factorial we are building, starting at one, and i counts how many numbers we have multiplied in. The little u64 marker says these are 64 bit unsigned integers, big enough for fast growing factorials.` },
+        { code: `while product < factorial {\n    i += 1;\n    product *= i;\n}`, explain: `As long as our product is still smaller than the target, we step to the next number and multiply it in. This is exactly building one factorial after another, and the loop stops the moment product reaches or passes the target.` },
+        { code: `if product == factorial { i } else { 0 }`, explain: `After the loop, if our product landed exactly on the target then i is how many steps it took, so we return it. Otherwise we overshot, which means the target was never a factorial, so we return zero. There is no semicolon, so this is the function's return value.` },
+      ],
+    },
     expectedIO: {
       input: `factorial: u64`,
       output: `u64`,
@@ -617,6 +863,21 @@ return i;`,
   },
 
   matrix_multiplication: {
+    explanation: {
+      intro: `This is your first taste of building your own data type in Rust and giving it behaviour.`,
+      sections: [
+        { heading: `The goal`, body: `A two by two matrix is just four numbers arranged in two rows. You define a type to hold them, then write a function that multiplies every one of those four numbers by the same scalar and returns a new matrix.` },
+        { heading: `Concepts you need`, body: `A struct is a custom type that groups related values together. A tuple struct is a struct whose fields have no names and are reached by position instead, using dot zero, dot one, and so on. A scalar is just a single number you multiply everything by. The derive line asks Rust to automatically write some standard behaviour for our type, like being printable and comparable.` },
+        { heading: `How the solution thinks`, body: `The matrix is stored as two rows, and each row is a pair of numbers, so the whole thing is a pair of pairs. To scale it, we reach into each of the four numbers by its position, multiply it by the scalar, and place the result into a brand new matrix. We never change the original, we build a fresh one. The mental picture is a grid where you touch every cell once and multiply it.` },
+        { heading: `Watch out for`, body: `The biggest beginner trap is forgetting that this is a tuple struct, so the fields are reached by position like m dot 0 dot 0, not by names like m dot a. The starter does not include the type, so you must define it yourself. Also remember to derive Debug so the matrix can be printed and Eq so it can be compared.` },
+        { heading: `Remember this`, body: `Position based access reads as outer dot inner. m dot 0 is the first row, and m dot 0 dot 0 is the first number in that first row.` },
+      ],
+      walkthrough: [
+        { code: `#[derive(Debug, PartialEq, Eq)]\npub struct Matrix((i32, i32), (i32, i32));`, explain: `This defines our Matrix type as a tuple struct holding two pairs of integers, which are the two rows. The derive line tells Rust to generate the ability to print it and compare it, which the tests rely on. Without defining this type the function would not even compile.` },
+        { code: `pub fn multiply(m: Matrix, multiplier: i32) -> Matrix {`, explain: `The function takes a Matrix by value and a single integer to multiply by, and promises to give back a Matrix. Taking it by value means we own it inside the function and can build our result freely.` },
+        { code: `Matrix(\n    (m.0.0 * multiplier, m.0.1 * multiplier),\n    (m.1.0 * multiplier, m.1.1 * multiplier),\n)`, explain: `We construct a new Matrix. The expression m dot 0 dot 0 reaches the first number of the first row, and we multiply each of the four numbers by the multiplier. Because there is no semicolon, this new matrix is what the function returns.` },
+      ],
+    },
     expectedIO: {
       input: `m: Matrix, multiplier: i32`,
       output: `Matrix`,
@@ -766,6 +1027,21 @@ pub struct Matrix(_____);`,
   },
 
   min_and_max: {
+    explanation: {
+      intro: `Sometimes the simplest tasks are really about finding the right tool in the standard library.`,
+      sections: [
+        { heading: `The goal`, body: `Given three numbers, return both the smallest and the largest, packaged together in a single value.` },
+        { heading: `Concepts you need`, body: `A tuple is a fixed size group of values, written in parentheses, that lets a function return more than one thing at once. The standard library gives us ready made functions, cmp min and cmp max, that compare two values and hand back the smaller or the larger one.` },
+        { heading: `How the solution thinks`, body: `To find the smallest of three numbers, we first find the smaller of two of them, then compare that result against the third. The same idea, flipped, finds the largest. Finally we bundle the two answers into a tuple. The mental picture is a small tournament where numbers face off two at a time until a winner remains.` },
+        { heading: `Watch out for`, body: `A beginner might try to write a long chain of if statements and get the comparisons tangled. Using the built in min and max keeps it clear and correct. The edge case where all three numbers are equal still works, because the smaller and larger of equal numbers is that same number.` },
+        { heading: `Remember this`, body: `To compare three things, compare two, then compare the winner with the third. Returning a tuple is how a Rust function says here are two answers at once.` },
+      ],
+      walkthrough: [
+        { code: `let min = std::cmp::min(nb_1, std::cmp::min(nb_2, nb_3));`, explain: `The inner call finds the smaller of the second and third numbers, and the outer call compares that against the first, so the final result is the smallest of all three.` },
+        { code: `let max = std::cmp::max(nb_1, std::cmp::max(nb_2, nb_3));`, explain: `Exactly the same shape, but using max, so this finds the largest of the three numbers.` },
+        { code: `(min, max)`, explain: `We place both answers into a tuple, smallest first and largest second, and return it. The parentheses with a comma are what make this a single two value result.` },
+      ],
+    },
     expectedIO: {
       input: `nb_1: i32, nb_2: i32, nb_3: i32`,
       output: `(i32, i32)  // (minimum, maximum)`,
@@ -872,6 +1148,21 @@ pub fn min_and_max(nb_1: i32, nb_2: i32, nb_3: i32) -> (i32, i32)
   },
 
   modify_letter: {
+    explanation: {
+      intro: `This exercise is really three small string puzzles that all share one idea: transform a string one character at a time.`,
+      sections: [
+        { heading: `The goal`, body: `Write three helpers. The first removes every copy of a given letter exactly as written. The second removes it ignoring case. The third flips the case of that letter wherever it appears, leaving everything else untouched.` },
+        { heading: `Concepts you need`, body: `A string in Rust can be viewed as a sequence of characters using the chars method. From there, filter keeps only the characters that pass a test, map transforms each character into another, and collect gathers the results back into a new String. A closure is the small inline function, written with bars, that says which test or transformation to apply.` },
+        { heading: `How the solution thinks`, body: `For removing, we keep every character that is not the target, which is filtering. For the case insensitive version, we compare the lower cased forms so both A and a match. For swapping, instead of dropping characters we transform them: if a character matches the target letter ignoring case, we flip its case, otherwise we leave it alone. The mental picture is a conveyor belt of characters where you either let each one pass, drop it, or change it.` },
+        { heading: `Watch out for`, body: `A common mistake is comparing characters of different cases directly and being surprised that A does not equal a, which lower casing both sides fixes. Another is trying to edit the string in place; in Rust it is cleaner and safer to build a new string from the old one.` },
+        { heading: `Remember this`, body: `chars, then filter or map, then collect. Filtering removes, mapping transforms, and collect turns the stream back into a String.` },
+      ],
+      walkthrough: [
+        { code: `s.chars().filter(|&c| c != letter).collect()`, explain: `We walk the characters and keep only those that are not the target letter, then gather them into a new String. This removes every exact copy of the letter.` },
+        { code: `let target = letter.to_ascii_lowercase();\ns.chars().filter(|c| c.to_ascii_lowercase() != target).collect()`, explain: `By lower casing both the target and each character before comparing, both the uppercase and lowercase copies of the letter are removed. Comparing without lower casing would miss one of the cases.` },
+        { code: `s.chars()\n    .map(|c| {\n        if c.to_ascii_lowercase() == target {\n            if c.is_ascii_uppercase() { c.to_ascii_lowercase() } else { c.to_ascii_uppercase() }\n        } else {\n            c\n        }\n    })\n    .collect()`, explain: `Here we transform instead of remove. If a character matches the target letter ignoring case, we flip its case, otherwise we return it unchanged. collect rebuilds the final String.` },
+      ],
+    },
     expectedIO: {
       input: `s: &str, letter: char`,
       output: `String`,
@@ -1001,6 +1292,22 @@ s.chars().filter(|&c| c != target).collect()`,
   },
 
   smallest: {
+    explanation: {
+      intro: `This exercise looks tiny, but it teaches a pattern you will reuse constantly: turning a whole collection into a single answer.`,
+      sections: [
+        { heading: `The goal`, body: `You are given a HashMap, which is a table that pairs names (called keys) with numbers (called values). Your job is to return the smallest of all the numbers, ignoring the names completely.` },
+        { heading: `Concepts you need`, body: `A HashMap stores key and value pairs, a bit like a dictionary where you look something up by name. An iterator is a lazy stream of items that you can walk through one at a time. The method min walks an iterator and returns the smallest item it finds. Option is Rust's way of saying maybe there is a value and maybe there is not, because an empty collection has no smallest item.` },
+        { heading: `How the solution thinks`, body: `We do not care about the keys, only the numbers, so first we ask the map for just its values. Then we find the minimum of those values. Because an empty map has no minimum, min hands back an Option, so we provide a fallback of zero for that case. The mental picture is simple: take every number, then squeeze them all down to the smallest one.` },
+        { heading: `Watch out for`, body: `A common beginner mistake is forgetting that min returns an Option and trying to use it directly as a number, which the compiler will refuse. The important edge case is an empty map: without a fallback your program could panic, but with unwrap_or it safely returns zero instead.` },
+        { heading: `Remember this`, body: `Think values, then min, then handle empty. Most find the smallest, largest, or sum tasks follow this same shape: turn the data into an iterator, then collapse it with a single method.` },
+      ],
+      walkthrough: [
+        { code: `h.values()`, explain: `This gives an iterator over just the numbers in the map, skipping the keys. Without it we would be walking over key and value pairs and would have to dig the number out of each one ourselves.` },
+        { code: `.copied()`, explain: `values hands us references to the numbers, written as ampersand i32. copied turns each reference into a plain owned i32 by copying it, which is the type that min and our return value expect. Without copied the types would not line up and the code would not compile.` },
+        { code: `.min()`, explain: `min walks the whole iterator and returns the smallest value, wrapped in an Option. It is Some of a number when there was at least one value, or None when the map was empty.` },
+        { code: `.unwrap_or(0)`, explain: `unwrap_or pulls the number out of the Option, but if it is None, meaning the map was empty, it substitutes zero instead of crashing. This is the safe way to step out of the maybe missing world and back into a plain number.` },
+      ],
+    },
     expectedIO: {
       input: `h: HashMap<&str, i32>`,
       output: `i32`,
@@ -1112,6 +1419,23 @@ pub fn largest(h: HashMap<&str, i32>) -> i32 {
   },
 
   prime_checker: {
+    explanation: {
+      intro: `This exercise is really about Rust's way of describing rich answers using enums, Option, and Result.`,
+      sections: [
+        { heading: `The goal`, body: `Classify a number. If it cannot be classified, like zero or one, return nothing. Otherwise say whether it is prime, and if it is not, explain why: either it is even, or it has a specific smallest divider.` },
+        { heading: `Concepts you need`, body: `An enum is a type that can be one of several named cases, and ours, PrimeErr, has the cases Even and Divider, where Divider carries the number that divides. Option means maybe a value, with the cases Some and None. Result means success or failure, with the cases Ok and Err. Nesting Result inside Option lets one return value express three different outcomes.` },
+        { heading: `How the solution thinks`, body: `We rule out cases from simplest to most specific. Numbers that cannot be judged return None. The smallest prime, two, is a direct yes. Any other even number fails with the Even reason. For the rest, we test odd dividers up to the square root, and the first one that fits is reported as the reason. If none fit, the number is prime. The mental picture is a series of sieves, each catching a particular kind of number, with primes falling through to the end.` },
+        { heading: `Watch out for`, body: `The shape of the return type confuses beginners, so read it as maybe, then success or failure. Only testing odd dividers after handling two is both correct and faster. Forgetting the None case for zero and one is a common miss.` },
+        { heading: `Remember this`, body: `Option says whether there is an answer at all, and Result says whether that answer is success or failure. Combine them to describe several outcomes in one value.` },
+      ],
+      walkthrough: [
+        { code: `pub enum PrimeErr {\n    Even,\n    Divider(usize),\n}`, explain: `Our own error type with two cases. Even is a plain marker, while Divider carries a number, the divider that proves the value is not prime.` },
+        { code: `if nb <= 1 {\n    return None;\n}\nif nb == 2 {\n    return Some(Ok(2));\n}`, explain: `Zero and one cannot be classified, so we return None. Two is the smallest prime, so we report success right away.` },
+        { code: `if nb % 2 == 0 {\n    return Some(Err(PrimeErr::Even));\n}`, explain: `Any other number with no remainder when divided by two is even, so we fail with the Even reason.` },
+        { code: `let mut i = 3;\nwhile i * i <= nb {\n    if nb % i == 0 {\n        return Some(Err(PrimeErr::Divider(i)));\n    }\n    i += 2;\n}`, explain: `We test odd dividers from three up to the square root, stepping by two to skip even numbers. The first divider that fits is reported inside the Divider case.` },
+        { code: `Some(Ok(nb))`, explain: `If no divider was found, the number is prime, so we wrap it in success. With no semicolon, this is the function's return value.` },
+      ],
+    },
     expectedIO: {
       input: `nb: usize`,
       output: `Option<Result<usize, PrimeErr>>`,
@@ -1270,6 +1594,19 @@ while i < nb {
   },
 
   profanity_filter: {
+    explanation: {
+      intro: `A short exercise about validating input and reporting success or failure cleanly.`,
+      sections: [
+        { heading: `The goal`, body: `Check a message. If it is empty or contains a banned word, reject it with an error. Otherwise accept it and hand the message back.` },
+        { heading: `Concepts you need`, body: `Result is Rust's success or failure type, with Ok carrying the good value and Err carrying an error. The contains method tells you whether a string holds a given piece of text. The is empty method tells you whether a string has no characters.` },
+        { heading: `How the solution thinks`, body: `We ask two rejecting questions: is the message empty, or does it contain the forbidden word. If either is true we return an error. Otherwise we return the message wrapped in Ok. The mental picture is a bouncer at a door who turns away anyone empty handed or carrying something banned, and lets everyone else through.` },
+        { heading: `Watch out for`, body: `Returning the message itself inside Ok, rather than a copy, keeps the same borrowed text, which is why the signature ties the input and output together. A beginner might forget the empty case and only check for the banned word.` },
+        { heading: `Remember this`, body: `Use Result when an operation can fail. Ok means here is your value, and Err means here is what went wrong.` },
+      ],
+      walkthrough: [
+        { code: `if message.is_empty() || message.contains("stupid") {\n    Err("ERROR: illegal")\n} else {\n    Ok(message)\n}`, explain: `The two bars mean or, so if the message is empty or contains the banned word, we return an error. In every other case we return the original message wrapped in Ok. This whole if expression is the return value.` },
+      ],
+    },
     expectedIO: {
       input: `message: &str`,
       output: `Result<&str, &str>`,
@@ -1397,6 +1734,21 @@ Ok(message)`,
   },
 
   insertion_sort: {
+    explanation: {
+      intro: `This exercise lets you watch a sorting algorithm work one step at a time.`,
+      sections: [
+        { heading: `The goal`, body: `Sort a list of numbers using insertion sort, but only perform a given number of passes, changing the list in place. Running enough passes fully sorts it.` },
+        { heading: `Concepts you need`, body: `Sorting in place means rearranging the same list rather than building a new one, which is why the function takes a mutable borrow of the slice. Insertion sort builds a sorted region at the front by taking the next element and sliding it left past any larger neighbours. The swap method exchanges two elements.` },
+        { heading: `How the solution thinks`, body: `Imagine sorting playing cards in your hand. You take the next card and move it left until it sits in the right spot among the cards you already arranged. Each outer pass places one more element correctly, and we limit how many passes run so the caller can watch the sort progress. The mental picture is a growing tidy section on the left while the messy section on the right shrinks.` },
+        { heading: `Watch out for`, body: `The inner loop must stop both when it reaches the front and when the element on the left is no longer larger, or it would run off the start of the list. Capping the number of passes to one less than the length avoids pointless extra work. Insertion sort takes time roughly proportional to the square of the length, so it is best for small lists.` },
+        { heading: `Remember this`, body: `Insertion sort grows a sorted front by sliding each new item left into place. In place sorting needs a mutable borrow so the function can rearrange the caller's data.` },
+      ],
+      walkthrough: [
+        { code: `let limit = steps.min(slice.len().saturating_sub(1));`, explain: `We never need more passes than one less than the length, so we cap the requested steps. saturating sub avoids underflow if the slice is empty.` },
+        { code: `for i in 1..=limit {`, explain: `Each pass takes the element at position i and will slide it into the sorted region to its left.` },
+        { code: `let mut j = i;\nwhile j > 0 && slice[j - 1] > slice[j] {\n    slice.swap(j - 1, j);\n    j -= 1;\n}`, explain: `Starting at i, we keep swapping the element with its left neighbour as long as that neighbour is larger and we have not reached the front. This slides the value left until it sits in order.` },
+      ],
+    },
     expectedIO: {
       input: `slice: &mut [i32], steps: usize`,
       output: `()  // sorts the slice in place`,
@@ -1529,6 +1881,21 @@ With steps = 1 on [5, 3, 7, 2, 1, 6, 8, 4] -> [3, 5, 7, 2, 1, 6, 8, 4]; with ste
   },
 
   matrix_determinant: {
+    explanation: {
+      intro: `This exercise turns a math formula directly into code, and teaches indexing into nested arrays.`,
+      sections: [
+        { heading: `The goal`, body: `Compute the determinant of a three by three matrix, a single number that summarizes the matrix and is used throughout linear algebra.` },
+        { heading: `Concepts you need`, body: `A fixed size array holds a known number of values, and an array of arrays gives us a grid we index with two sets of brackets, row first then column. The determinant of a three by three matrix has a standard formula built from products of its entries.` },
+        { heading: `How the solution thinks`, body: `We apply the well known cofactor expansion along the top row. Each top row entry is multiplied by the determinant of the little two by two matrix that remains when you cross out its row and column, with alternating plus and minus signs. We simply write that formula out using the grid positions. The mental picture is sweeping across the top row, and for each entry, multiplying by the cross of the four numbers not in its row or column.` },
+        { heading: `Watch out for`, body: `The signs alternate plus, minus, plus across the top row, and getting one wrong flips the result. Indexing is row then column, so m of zero of one is row zero, column one. Because the size is fixed at three by three, we can hard code the formula rather than loop.` },
+        { heading: `Remember this`, body: `Read m of row of column as grid coordinates. The middle term of the three by three determinant is subtracted, not added.` },
+      ],
+      walkthrough: [
+        { code: `m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])`, explain: `The first top row entry times the cross product of the bottom right two by two block. The first sign is positive.` },
+        { code: `- m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])`, explain: `Minus the second top row entry times its matching two by two cross. This middle term is subtracted, which is the easy part to get wrong.` },
+        { code: `+ m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])`, explain: `Plus the third top row entry times its two by two cross. Adding the three terms gives the determinant, and with no semicolon it is returned.` },
+      ],
+    },
     expectedIO: {
       input: `matrix: [[isize; 3]; 3]`,
       output: `isize`,
@@ -1640,6 +2007,21 @@ The determinant of [[1, 2, 4], [2, -1, 3], [4, 0, 1]] is 35.`,
   },
 
   order_books: {
+    explanation: {
+      intro: `This exercise teaches you how to sort a list of your own structured items by a chosen field.`,
+      sections: [
+        { heading: `The goal`, body: `Given a writer who owns a list of books, reorder that list alphabetically by book title, ignoring case, changing the writer's list in place.` },
+        { heading: `Concepts you need`, body: `A struct groups related fields, so a Book has a title and a year, and a Writer has a name and a list of books. The sort by method orders a list using a comparison you provide. A closure with two parameters describes how to compare any two items. Lower casing both titles before comparing makes the sort case insensitive.` },
+        { heading: `How the solution thinks`, body: `Sorting needs a rule for which of two items comes first. We tell sort by to compare two books by their lower cased titles, so capitalization does not affect the order. Because we sort the writer's own list through a mutable borrow, the change sticks. The mental picture is laying the books on a table and shuffling them until the titles read in dictionary order.` },
+        { heading: `Watch out for`, body: `Comparing titles without lower casing would place all capital letters before lowercase ones, which is rarely what people expect. Sorting in place means we need a mutable borrow of the writer, and forgetting that would stop the change from being saved.` },
+        { heading: `Remember this`, body: `The sort by method takes a closure that compares two items and returns their order. Normalize values, like lower casing, before comparing for fair sorting.` },
+      ],
+      walkthrough: [
+        { code: `pub struct Book {\n    pub title: String,\n    pub year: u32,\n}`, explain: `A Book groups a title and a year of publication into one named type.` },
+        { code: `pub struct Writer {\n    pub first_name: String,\n    pub last_name: String,\n    pub books: Vec<Book>,\n}`, explain: `A Writer holds a name and owns a growable list of books, which is the list we will sort.` },
+        { code: `writer.books.sort_by(|a, b| {\n    a.title.to_lowercase().cmp(&b.title.to_lowercase())\n});`, explain: `The sort by method reorders the books in place. For any two books a and b, we compare their lower cased titles, so the result is alphabetical and case insensitive.` },
+      ],
+    },
     expectedIO: {
       input: `writer: &mut Writer  (Writer.books: Vec<Book { title, year }>)`,
       output: `()  // sorts writer.books in place`,
@@ -1757,6 +2139,22 @@ After sorting, titles appear in case-insensitive alphabetical order (e.g. Hamlet
   },
 
   rot21: {
+    explanation: {
+      intro: `This exercise is a small Caesar cipher, and it teaches how letters are really just numbers underneath.`,
+      sections: [
+        { heading: `The goal`, body: `Shift every letter in the text forward by twenty one places in the alphabet, wrapping around from z back to a, while keeping the upper or lower case and leaving non letters untouched.` },
+        { heading: `Concepts you need`, body: `Each character has a numeric code, and letters sit in consecutive order, so we can do arithmetic on them. Subtracting the code of a, for example, turns a into zero, b into one, and so on. The remainder operator, percent twenty six, wraps the result back into the alphabet. map transforms each character and collect rebuilds the string.` },
+        { heading: `How the solution thinks`, body: `For each letter we find its position in the alphabet, add twenty one, wrap around using remainder by twenty six, and convert back to a letter. We do this separately for lowercase and uppercase so the case is preserved, and we pass everything else through unchanged. The mental picture is a dial for each letter that you spin forward twenty one notches, looping past z back to a.` },
+        { heading: `Watch out for`, body: `Forgetting the wrap around with remainder would push letters past z into other characters. Handling uppercase and lowercase with their own anchor letters keeps the case correct. Digits, spaces, and punctuation must be left exactly as they are.` },
+        { heading: `Remember this`, body: `Map a letter to a number from zero to twenty five, shift, wrap with remainder, then map back. Letters are numbers in disguise.` },
+      ],
+      walkthrough: [
+        { code: `input.chars().map(|c| {`, explain: `We transform the text one character at a time, and whatever each character becomes is collected at the end into the new string.` },
+        { code: `if c.is_ascii_lowercase() {\n    (((c as u8 - b'a' + 21) % 26) + b'a') as char\n}`, explain: `For a lowercase letter, subtracting the code of a gives its position, we add twenty one, wrap with remainder by twenty six, then add the code of a back and turn it into a character. That is the shift, staying lowercase.` },
+        { code: `else if c.is_ascii_uppercase() {\n    (((c as u8 - b'A' + 21) % 26) + b'A') as char\n}`, explain: `The same shift anchored at uppercase A, so uppercase letters stay uppercase.` },
+        { code: `else { c }\n}).collect()`, explain: `Anything that is not a letter is passed through unchanged, and collect gathers all the transformed characters into the final string.` },
+      ],
+    },
     expectedIO: {
       input: `input: &str`,
       output: `String`,
@@ -1871,6 +2269,23 @@ pub fn rot21(input: &str) -> String
   },
 
   display_table: {
+    explanation: {
+      intro: `This is a bigger formatting exercise that brings together measuring, padding, and drawing a table.`,
+      sections: [
+        { heading: `The goal`, body: `Print a table with headers and rows as a tidy bordered grid, where every column is wide enough for its widest value and each cell is centered.` },
+        { heading: `Concepts you need`, body: `Implementing Display controls how the table prints. We measure text length in characters, build padded strings with repeat, and use a closure to center a value inside a fixed width. The write and writeln macros send lines to the formatter.` },
+        { heading: `How the solution thinks`, body: `We work in three stages. First, measure each column's width by taking the longest of its header and all its cells. Second, define how to center a value by padding it with spaces on both sides. Third, draw the header line, a separator line, and each body row using those widths. The mental picture is a carpenter who first measures every column, then cuts each cell to fit, then assembles the rows into a frame.` },
+        { heading: `Watch out for`, body: `Measuring in characters rather than bytes matters for symbols that take more than one byte. When padding cannot be split evenly, the extra space must go on a consistent side. An empty table should print nothing, which we check first.` },
+        { heading: `Remember this`, body: `Format tables in three steps: measure, then pad, then draw. Always measure text by characters when alignment matters.` },
+      ],
+      walkthrough: [
+        { code: `if self.headers.is_empty() {\n    return Ok(());\n}`, explain: `An empty table has nothing to draw, so we succeed immediately without writing anything.` },
+        { code: `let mut widths: Vec<usize> = self.headers.iter().map(|h| h.chars().count()).collect();\nfor row in &self.body {\n    for (i, cell) in row.iter().enumerate() {\n        widths[i] = widths[i].max(cell.chars().count());\n    }\n}`, explain: `We start each column's width at its header length, then widen it if any cell in that column is longer. Counting characters, not bytes, keeps alignment correct.` },
+        { code: `let center = |s: &str, w: usize| {\n    let pad = w - s.chars().count();\n    let left = pad / 2;\n    format!("{}{}{}", " ".repeat(left), s, " ".repeat(pad - left))\n};`, explain: `A small helper that centers a value in a given width by splitting the leftover space between the two sides, putting any odd extra space on the right.` },
+        { code: `let line = |cells: &[String]| cells.iter().enumerate().map(|(i, c)| center(c, widths[i])).collect::<Vec<_>>().join(" | ");`, explain: `This builds one row of the table by centering every cell to its column width and joining them with the vertical bar separator.` },
+        { code: `writeln!(f, "| {} |", line(&self.headers))?;\nlet sep: Vec<String> = widths.iter().map(|w| "-".repeat(w + 2)).collect();\nwriteln!(f, "|{}|", sep.join("+"))?;\nfor row in &self.body {\n    writeln!(f, "| {} |", line(row))?;\n}\nOk(())`, explain: `We write the header row, then a dashed separator joined with plus signs at the column boundaries, then each body row. The question marks pass along any writing error.` },
+      ],
+    },
     expectedIO: {
       input: `Table { headers, body }  built via new() / add_row()`,
       output: `Display — a bordered ASCII table`,
@@ -1992,6 +2407,22 @@ impl std::fmt::Display for Table { ... }
   },
 
   filter_table: {
+    explanation: {
+      intro: `This exercise teaches passing behaviour into a function using closures, and returning optional results.`,
+      sections: [
+        { heading: `The goal`, body: `Add two filters to a table. One keeps only the columns whose header passes a test, the other keeps only the rows whose value in a named column passes a test. Each returns a new table, or nothing if there is no match.` },
+        { heading: `Concepts you need`, body: `A closure is a function you can pass as an argument, and a generic parameter bounded by Fn lets a method accept any such closure. Option expresses the maybe nothing result. Cloning makes owned copies of the parts we keep so the new table does not depend on the old one.` },
+        { heading: `How the solution thinks`, body: `For columns, we first find the positions of the headers that pass the test, then build a new table containing only those positions from every row. For rows, we find the position of the named column, then keep only the rows whose value there passes the test. In both cases, if nothing matches we return nothing. The mental picture is a stencil, where the test decides which columns or rows show through, and we copy only those into a fresh table.` },
+        { heading: `Watch out for`, body: `The starter signature uses a bare type that will not compile, so the methods must be generic over a closure that takes a string and returns a boolean. Returning nothing for an empty result, rather than an empty table, is part of the contract. Cloning the kept values keeps the new table independent.` },
+        { heading: `Remember this`, body: `Accept behaviour as a closure parameter to make a function flexible. Return Option when the result might legitimately be nothing.` },
+      ],
+      walkthrough: [
+        { code: `pub fn filter_col<F: Fn(&str) -> bool>(&self, filter: F) -> Option<Self> {`, explain: `The method is generic over F, any closure that takes a string and returns true or false. That is how the caller hands in the test for which columns to keep.` },
+        { code: `let idxs: Vec<usize> = self.headers.iter().enumerate()\n    .filter(|(_, h)| filter(h))\n    .map(|(i, _)| i)\n    .collect();\nif idxs.is_empty() {\n    return None;\n}`, explain: `We collect the positions of the headers that pass the test. If none pass, there is nothing to return, so we hand back None.` },
+        { code: `let headers = idxs.iter().map(|&i| self.headers[i].clone()).collect();\nlet body = self.body.iter()\n    .map(|row| idxs.iter().map(|&i| row[i].clone()).collect())\n    .collect();\nSome(Table { headers, body })`, explain: `We rebuild a new table keeping only the chosen column positions, both in the headers and in every row, cloning each kept value, then wrap the result in Some.` },
+        { code: `let idx = self.headers.iter().position(|h| h == col_name)?;`, explain: `In filter row we first find the position of the named column. The question mark means if the column does not exist, the method returns None right away.` },
+      ],
+    },
     expectedIO: {
       input: `&self + a closure: filter_col(|h| ...) / filter_row(col_name, |v| ...)`,
       output: `Option<Table>`,
@@ -2115,6 +2546,20 @@ impl Table {
   },
 
   flat_tree: {
+    explanation: {
+      intro: `This short exercise teaches generics and the fact that some collections are always sorted.`,
+      sections: [
+        { heading: `The goal`, body: `Take a balanced search tree of items and return them as a plain list in sorted order.` },
+        { heading: `Concepts you need`, body: `A BTreeSet is a collection that automatically keeps its items unique and in sorted order. A generic function works for many types at once, and the bound here lets us turn each borrowed item into an owned one. Iterating a set yields its items in order.` },
+        { heading: `How the solution thinks`, body: `Because a BTreeSet is already sorted, there is nothing to sort. We simply walk through it, make an owned copy of each item, and collect them into a list. The whole trick is realizing the data structure has done the ordering for us. The mental picture is reading names off an already alphabetized index card box.` },
+        { heading: `Watch out for`, body: `The items come out as references, so we must make owned copies before collecting them into an owned list. Beginners sometimes try to sort the result, which is wasted effort since it is already in order. Writing it generically lets the same function work for numbers, strings, or anything comparable.` },
+        { heading: `Remember this`, body: `A BTreeSet is sorted by construction, so iterating it gives sorted order for free. Generics let one function serve many types.` },
+      ],
+      walkthrough: [
+        { code: `pub fn flatten_tree<T: ToOwned<Owned = T>>(tree: &BTreeSet<T>) -> Vec<T> {`, explain: `A generic function over any item type T that can be turned into an owned copy of itself. It borrows the set and returns an owned list.` },
+        { code: `tree.iter().map(|x| x.to_owned()).collect()`, explain: `We walk the set, which yields items in sorted order, make an owned copy of each, and collect them into a list. No sorting is needed because the set was already ordered.` },
+      ],
+    },
     expectedIO: {
       input: `tree: &BTreeSet<T>`,
       output: `Vec<T>`,
@@ -2226,6 +2671,22 @@ v.sort();`,
   },
 
   brackets_matching: {
+    explanation: {
+      intro: `This exercise is the classic balanced brackets problem, and it is the perfect place to understand a stack.`,
+      sections: [
+        { heading: `The goal`, body: `Decide whether the brackets in a string are correctly matched and nested. Round, square, and curly brackets must each close in the right order, and other characters are ignored.` },
+        { heading: `Concepts you need`, body: `A stack is a last in, first out pile where you only touch the top. We push each opening bracket onto it, and when a closing bracket arrives, the correct partner must be on top. The match expression lets us react differently to each kind of character.` },
+        { heading: `How the solution thinks`, body: `Reading left to right, every opening bracket is remembered by pushing it on the stack. Every closing bracket must match whatever opening bracket is on top, so we pop and compare. If it does not match, or there was nothing to pop, the string is unbalanced. At the end the stack must be empty, meaning every opener was closed. The mental picture is a stack of plates where each closing bracket must remove the matching plate from the top.` },
+        { heading: `Watch out for`, body: `A closing bracket with an empty stack means too many closers, which must fail. Leftover openers at the end mean too few closers, which also fails. The order matters, because closing in the wrong order, like a square bracket trying to close a round one, is invalid even if the counts are equal.` },
+        { heading: `Remember this`, body: `Matched pairs in order is exactly what a stack checks. Push openers, match and pop on closers, and require an empty stack at the end.` },
+      ],
+      walkthrough: [
+        { code: `let mut stack: Vec<char> = Vec::new();`, explain: `An empty stack that will remember the opening brackets we have seen but not yet closed.` },
+        { code: `'(' | '[' | '{' => stack.push(c),`, explain: `Any opening bracket is pushed onto the stack to wait for its matching closer.` },
+        { code: `')' => if stack.pop() != Some('(') { return false; },`, explain: `A closing round bracket must find an opening round bracket on top. pop removes the top, and if it is not the matching opener, or the stack was empty, the string is unbalanced and we return false. The square and curly cases work the same way.` },
+        { code: `stack.is_empty()`, explain: `After scanning everything, the stack must be empty. Any leftover opener means it was never closed, so an empty stack is exactly the condition for balanced brackets.` },
+      ],
+    },
     expectedIO: {
       input: `s: &str`,
       output: `bool`,
@@ -2382,6 +2843,22 @@ Error
   },
 
   brain_fuck: {
+    explanation: {
+      intro: `This exercise builds an interpreter for a tiny programming language, which sounds scary but is just a loop over commands.`,
+      sections: [
+        { heading: `The goal`, body: `Run a Brainfuck program and return whatever it prints. Brainfuck has a memory tape and a handful of single character commands that move and change a pointer and a cell.` },
+        { heading: `Concepts you need`, body: `A tape is just an array of bytes, our memory. A data pointer says which cell we are looking at, and a program counter says which command we are running. A match dispatches each command. The loop commands, the brackets, jump the program counter forward or backward.` },
+        { heading: `How the solution thinks`, body: `We walk through the commands one at a time. Some move the pointer, some add or subtract from the current cell, and the dot command outputs the cell as a character. The brackets form loops: an opening bracket skips ahead past its matching close when the current cell is zero, and a closing bracket jumps back to its opener when the cell is not zero, while keeping track of nesting. The mental picture is a tiny machine with a tape and a finger, following simple instructions and occasionally looping.` },
+        { heading: `Watch out for`, body: `Matching nested brackets is the hard part, so we count depth in order to jump to the correct partner, not the first one we see. Cells wrap around on overflow, which is why we use wrapping addition. Only the eight real commands matter, and any other character is treated as a comment and ignored.` },
+        { heading: `Remember this`, body: `An interpreter is just a loop that reads a command and acts on it. To match nested brackets, track the depth as you scan.` },
+      ],
+      walkthrough: [
+        { code: `let mut tape = [0u8; 2048];\nlet mut ptr = 0usize;\nlet mut pc = 0usize;\nlet mut out = String::new();`, explain: `We set up the machine: a tape of memory cells all starting at zero, a data pointer at cell zero, a program counter at the first command, and an empty string to collect output.` },
+        { code: `'>' => ptr += 1,\n'<' => ptr -= 1,\n'+' => tape[ptr] = tape[ptr].wrapping_add(1),\n'-' => tape[ptr] = tape[ptr].wrapping_sub(1),\n'.' => out.push(tape[ptr] as char),`, explain: `The basic commands: the arrows move the pointer, plus and minus change the current cell with wrapping so it never overflows past a byte, and the dot appends the current cell as a character to the output.` },
+        { code: `'[' => if tape[ptr] == 0 {\n    let mut depth = 1;\n    while depth > 0 { pc += 1; if code[pc] == '[' { depth += 1; } else if code[pc] == ']' { depth -= 1; } }\n},`, explain: `An opening bracket starts a loop. If the current cell is zero we skip the whole loop by scanning forward to the matching close, counting depth so nested brackets are paired correctly.` },
+        { code: `']' => if tape[ptr] != 0 {\n    let mut depth = 1;\n    while depth > 0 { pc -= 1; if code[pc] == ']' { depth += 1; } else if code[pc] == '[' { depth -= 1; } }\n},`, explain: `A closing bracket ends a loop. If the current cell is not zero we jump back to the matching open bracket, again tracking depth, so the loop body repeats until the cell becomes zero.` },
+      ],
+    },
     expectedIO: {
       input: `code: &str  (Brainfuck source)`,
       output: `String  (whatever the program prints)`,

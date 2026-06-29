@@ -14,6 +14,7 @@ import VideosPanel from '../components/learn/VideosPanel';
 import { seedHints } from '../components/learn/editorHints';
 import ExerciseOverview from '../components/learn/ExerciseOverview';
 import ExpectedIOPanel from '../components/learn/ExpectedIOPanel';
+import ExplanationPanel from '../components/learn/ExplanationPanel';
 import OfficialDescription from '../components/learn/OfficialDescription';
 import ConceptGuide from '../components/learn/ConceptGuide';
 import SimilarExample from '../components/learn/SimilarExample';
@@ -41,6 +42,7 @@ type JourneyTab =
   | 'sidequiz'
   | 'terminal'
   | 'walkthrough'
+  | 'explanation'
   | 'selfcheck';
 
 export default function LessonPage({ exercises, progress, onComplete }: LessonPageProps) {
@@ -126,6 +128,7 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
         ['sidequiz', '🧩 Side Quiz'],
         ...(learning.terminal ? [['terminal', '🖥️ Terminal'] as [JourneyTab, string]] : []),
         ...(hasWalkthrough ? [['walkthrough', '🪜 Step-by-Step'] as [JourneyTab, string]] : []),
+        ...(isZone01Final && learning.explanation ? [['explanation', '📖 Explanation'] as [JourneyTab, string]] : []),
         ['selfcheck', '✅ Self-Check'],
       ] as [JourneyTab, string][])
     : [];
@@ -407,6 +410,9 @@ export default function LessonPage({ exercises, progress, onComplete }: LessonPa
                 )}
                 {journeyTab === 'walkthrough' && (
                   <Walkthrough steps={walkthroughSteps} onLoad={setCode} />
+                )}
+                {journeyTab === 'explanation' && learning.explanation && (
+                  <ExplanationPanel explanation={learning.explanation} />
                 )}
                 {journeyTab === 'selfcheck' && (
                   <SelfAssessment
